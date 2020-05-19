@@ -272,6 +272,15 @@ $commandNameMap = @{
     "inspect"="Inspect-DockerObject"
     "kill"="Kill-DockerContainer"
     "load"="Load-DockerImage"
+    "image inspect"="Inspect-DockerImage"
+}
+
+$ParameterAliasMap = @{
+    "dcr-image-inspect:Image"="ID;AnotherAlias"
+}
+
+$ArgumentCompleterMap = @{
+    "dcr-image-inspect:Image"="(dcr-images).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
 }
 
 function GenerateCommandProxy
@@ -283,6 +292,8 @@ function GenerateCommandProxy
     $ParamFillerList = New-Object Collections.Generic.List[string]
     $commandSupportsFormat = $false
     $FormatFillerText = ""
+    $functionName = "dcr-" + $command.Command.Replace(" ", "-")
+
     foreach($p in $command.Options)
     {
         $ParamDefaultValue = ""
@@ -313,7 +324,26 @@ function GenerateCommandProxy
     }
     foreach($p in $command.Parameters)
     {
-        $paramList.Add("[Parameter(Mandatory=`$$($p.IsMandatory))][$($p.TypeName)]`$$($p.Name)")
+        $paramAliases = $ParameterAliasMap["$functionName`:$($p.Name)"]
+        $paramAliasText = ""
+        $paramByPropNameText = ""
+        if (-not [string]::IsNullOrEmpty($paramAliases))
+        {
+            foreach($pAlias in $paramAliases.Split(';'))
+            {
+                $paramAliasText += "[Alias(`"$pAlias`")]"
+            }
+            $paramByPropNameText = ",ValueFromPipelineByPropertyName=`$True"
+        }
+
+        $argumentCompleter = $ArgumentCompleterMap["$functionName`:$($p.Name)"]
+        $argumentCompleterText = ""
+        if (-not [string]::IsNullOrEmpty($argumentCompleter))
+        {
+            $argumentCompleterText = "[ArgumentCompleter({param(`$CommandName,`$ParameterName,`$WordToComplete,`$CommandAst,`$FakeBoundParameters)$argumentCompleter})]"
+        }
+
+        $paramList.Add("[Parameter(Mandatory=`$$($p.IsMandatory)$paramByPropNameText)]$paramAliasText$argumentCompleterText[$($p.TypeName)]`$$($p.Name)")
         $ParamFillerList.Add("if (`$PSBoundParameters['$($p.Name)']) {`$AllArgs += `$PSBoundParameters['$($p.Name)']}")
     }
 
@@ -322,7 +352,6 @@ function GenerateCommandProxy
         $paramList.Add("[Parameter(Mandatory=`$False)][switch]`$NativeOutput")
     }
 
-    $functionName = "dcr-" + $command.Command.Replace(" ", "-")
     $functionAlias = $commandNameMap[ $command.Command ]
     $functionAliasText = ""
     if ($functionAlias)
@@ -346,7 +375,8 @@ function GenerateCommandProxy
 [CmdletBinding()]
 $functionAliasText
 param ($paramText)
-
+PROCESS
+{
 `$AllArgs = @()
 $ParamFillerText
 
@@ -362,6 +392,7 @@ if (`$NativeOutput)
 else
 {
     `$output | %{ `$_ | ConvertFrom-Json}
+}
 }
 }"
 
