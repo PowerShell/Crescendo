@@ -50,25 +50,20 @@ $Utilities = {
     function GetPowerShellType
     {
         [CmdletBinding()]
-        param ([string]$dockerTypeName)
+        param ([string]$dockerTypeName, [hashtable]$metadata)
     
         $result = 'switch'
         if (! [string]::IsNullOrEmpty($dockerTypeName))
         {
-            $result = $dockerTypeName
-            if ($dockerTypeName -eq 'filter') {$result = 'string'}
-            if ($dockerTypeName -eq 'list') {$result = 'string[]'}
-            if ($dockerTypeName -eq 'strings') {$result = 'string'}
-            if ($dockerTypeName -eq 'external-ca') {$result = 'string'}
-            if ($dockerTypeName -eq 'duration') {$result = 'uint'}
-            if ($dockerTypeName -eq 'ipNetSlice') {$result = 'string'}
-            if ($dockerTypeName -eq 'node-addr') {$result = 'string'}
-            if ($dockerTypeName -eq 'pem-file') {$result = 'string'}
-            if ($dockerTypeName -eq 'credential-spec') {$result = 'string'}
-            if ($dockerTypeName -eq 'command') {$result = 'string'}
-            if ($dockerTypeName -eq 'secret') {$result = 'string'}
-            if ($dockerTypeName -eq 'bytes') {$result = 'string'}
-            if ($dockerTypeName -eq 'ulimit') {$result = 'string'}
+            $mapedTypeName = $metadata.TypeMap[$dockerTypeName]
+            if ([string]::IsNullOrEmpty($mapedTypeName))
+            {
+                $result = $dockerTypeName
+            }
+            else
+            {
+                $result = $mapedTypeName
+            }
         }
     
         return $result
@@ -77,7 +72,7 @@ $Utilities = {
     function Get-Options
     {
         [CmdletBinding()]
-        param ( [string[]]$text, [string]$pattern )
+        param ( [string[]]$text, [string]$pattern, [hashtable]$metadata)
     
         $results = [System.Collections.ArrayList]::new()
         for ( $i = 0; $i -lt $text.Count; $i++ )
@@ -108,7 +103,7 @@ $Utilities = {
                     {
                         $OriginalName = $matches['option']
                         $Name = $script:TextInfo.ToTitleCase($OriginalName.ToLower()).Replace("-", "")
-                        $typeName = GetPowerShellType -dockerTypeName $matches['type']
+                        $typeName = GetPowerShellType -dockerTypeName $matches['type'] -metadata $metadata
                         $description = $matches['description']
                         if ([string]::IsNullOrEmpty($typeName)) {$typeName = "switch"}
                         
@@ -226,7 +221,7 @@ $Utilities = {
     {
         [CmdletBinding()]
         #param ([string]$cmd, [string[]]$text)
-        param ([string]$cmd, [string]$description, [string[]]$commandHelpText)
+        param ([string]$cmd, [string]$description, [string[]]$commandHelpText, [hashtable]$metadata)
 
         $command = [CommandBase]::new($cmd,$description,$commandHelpText)
     
@@ -234,7 +229,7 @@ $Utilities = {
         $usage = Parse-Usage -text $commandHelpText -patternRegex $term
         $command.Usage = $usage.TrimStart($term).Trim()
     
-        $command.Options = Get-Options -text $commandHelpText -pattern "Options:"
+        $command.Options = Get-Options -text $commandHelpText -pattern "Options:" -metadata $metadata
         $command.Parameters = Parse-UsageParameters -usageText $command.Usage -commandName $command.Command
         return $command
     }
@@ -242,8 +237,8 @@ $Utilities = {
     function Read-CommandsFromHelp
     {
         [CmdletBinding()]
-        param ([hashtable]$cmdsht)
-
+        param ([hashtable]$cmdsht, [hashtable]$metadata)
+        
         foreach ($cmd in $cmdsht.Keys)
         {
             $Description = $cmdsht[$cmd]
@@ -251,49 +246,14 @@ $Utilities = {
             $commandline = "docker $cmd --help"
             [string[]]$cmdText = Invoke-Expression $commandline
 
-            CreateCommandObject -cmd $cmd -description $Description -commandHelpText $cmdText
+            CreateCommandObject -cmd $cmd -description $Description -commandHelpText $cmdText -metadata $metadata
         }
     }
 }
 
 
 
-$commandNameMap = @{
-    "attach"="Attach-DockerContainerStream"
-    #"build"="Build-DockerImage"
-    #"commit"="Create-DockerImage"
-    "cp"="Copy-DockerFiles"
-    "create"="Create-DockerContainer"
-    "diff"="Inspect-DockerFileChanges"
-    "events"="Get-DockerEvents"
-    "exec"="Run-DockerCommand"
-    "export"="Export-DockerFilesystem"
-    "history"="Show-DockerImageHistory"
-    #"images"="Get-DockerImage"
-    #"import"="Import-DockerImage"
-    "info"="Get-DockerInformation"
-    "inspect"="Inspect-DockerObject"
-    "kill"="Kill-DockerContainer"
-    #"load"="Load-DockerImage"
 
-    "image ls"="Get-DockerImage"
-    "image build"="Build-DockerImage"
-    "image inspect"="Inspect-DockerImage"
-}
-
-$ParameterAliasMap = @{
-    "dcr-image-inspect:Image"="ID;AnotherAlias"
-}
-
-$ArgumentCompleterMap = @{
-    "dcr-image-inspect:Image"="(dcr-image-ls).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-    "dcr-image-ls:Repository"="(dcr-image-ls).Repository | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-}
-
-$HelpLinkMap = @{
-    "image inspect"="https://docs.docker.com/engine/reference/commandline/image_inspect/"
-    "dcr-image-ls"="https://docs.docker.com/engine/reference/commandline/images/"
-}
 
 function GenerateCommandProxy
 {
@@ -342,7 +302,7 @@ function GenerateCommandProxy
     }
     foreach($p in $command.Parameters)
     {
-        $paramAliases = $ParameterAliasMap["$functionName`:$($p.Name)"]
+        $paramAliases = $script:metadata.ParameterAliasMap["$functionName`:$($p.Name)"]
         $paramAliasText = ""
         $paramByPropNameText = ""
         if (-not [string]::IsNullOrEmpty($paramAliases))
@@ -354,7 +314,7 @@ function GenerateCommandProxy
             $paramByPropNameText = ",ValueFromPipelineByPropertyName=`$True"
         }
 
-        $argumentCompleter = $ArgumentCompleterMap["$functionName`:$($p.Name)"]
+        $argumentCompleter = $script:metadata.ArgumentCompleterMap["$functionName`:$($p.Name)"]
         $argumentCompleterText = ""
         if (-not [string]::IsNullOrEmpty($argumentCompleter))
         {
@@ -375,7 +335,7 @@ function GenerateCommandProxy
         $HelpList.Add(".PARAMETER NativeOutput" + [Environment]::NewLine + "Return output as text instead of objects")
     }
 
-    $HelpLink = $HelpLinkMap[$functionName]
+    $HelpLink = $script:metadata.HelpLinkMap[$functionName]
     if (-not [string]::IsNullOrEmpty($HelpLink))
     {
         $HelpList.Add(".LINK" + [Environment]::NewLine + $HelpLink)
@@ -389,7 +349,7 @@ $($command.Description)
 $($HelpList | Out-String)
 #>"
 
-    $functionAlias = $commandNameMap[ $command.Command ]
+    $functionAlias = $script:metadata.CommandNameMap[ $command.Command ]
     $functionAliasText = ""
     if ($functionAlias)
     {
@@ -459,6 +419,9 @@ function New-DockerProxy
         [Parameter(Mandatory=$False)][PSObject] $Command = $null
     )
 
+    $metadataPath = join-path $PSScriptRoot 'DockerGenerator.Metadata.ps1'
+    $script:metadata = & $metadataPath
+
     if (-not $Command)
     {
         Import-Module ThreadJob
@@ -497,9 +460,9 @@ function New-DockerProxy
             if ($tmp_cmdsht.Count -ge $MaxItemCountPerfJob)
             {
                 #Write-Verbose "Tmp command count = $($tmp_cmdsht.Count)"
-                $jobs +=  Start-ThreadJob -ArgumentList @($tmp_cmdsht) -InitializationScript $Utilities -ThrottleLimit $ThrottleLimit -ScriptBlock {
-                    param ([hashtable]$cmdsht)
-                    Read-CommandsFromHelp -cmdsht $cmdsht
+                $jobs +=  Start-ThreadJob -ArgumentList @($tmp_cmdsht, $script:metadata) -InitializationScript $Utilities -ThrottleLimit $ThrottleLimit -ScriptBlock {
+                    param ([hashtable]$cmdsht, [hashtable]$metadata)
+                    Read-CommandsFromHelp -cmdsht $cmdsht -metadata $metadata
                 }
 
                 $tmp_cmdsht = @{}
@@ -509,9 +472,9 @@ function New-DockerProxy
         }
 
         #Write-Verbose "Tmp command count = $($tmp_cmdsht.Count)"
-        $jobs +=  Start-ThreadJob -ArgumentList @($tmp_cmdsht) -InitializationScript $Utilities -ThrottleLimit $ThrottleLimit -ScriptBlock {
-            param ([hashtable]$cmdsht)
-            Read-CommandsFromHelp -cmdsht $cmdsht
+        $jobs +=  Start-ThreadJob -ArgumentList @($tmp_cmdsht, $script:metadata) -InitializationScript $Utilities -ThrottleLimit $ThrottleLimit -ScriptBlock {
+            param ([hashtable]$cmdsht, [hashtable]$metadata)
+            Read-CommandsFromHelp -cmdsht $cmdsht -metadata $metadata
         }
 
         Write-Verbose "Started $($jobs.Count) parsing jobs"
