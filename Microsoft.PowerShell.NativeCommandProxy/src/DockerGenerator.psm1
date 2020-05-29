@@ -11,9 +11,9 @@ $Utilities = {
         [type]$ValueType
         [bool]$IsMandatory
         hidden [bool]$Parsed
-        hidden [string]$originalText
+        hidden [string]$OriginalText
         ParameterInfo ([string]$OriginalText, [string]$Name, [string]$TypeName, [string]$Description) {
-            $this.originalText = $OriginalText
+            $this.OriginalText = $OriginalText
             $this.Name = $Name
             $this.TypeName = $TypeName
             $this.Description = $Description
@@ -29,19 +29,19 @@ $Utilities = {
         [string]$Usage
         [ParameterInfo[]]$Options
         [ParameterInfo[]]$Parameters
-        hidden [string]$originalText
+        hidden [string[]]$OriginalText
     
         CommandBase ([string]$text ) {
             $c,$d = "$text".Trim().Split("  ", 2, [System.StringSplitOptions]::RemoveEmptyEntries) | %{"$_".Trim()}
             $this.Command = $c
             $this.Description = $d
-            $this.originalText = $text
+            $this.OriginalText = $text
         }
     
-        CommandBase ([string]$command, [string]$description, [string]$originalText ) {
+        CommandBase ([string]$command, [string]$description, [string[]]$OriginalText ) {
             $this.Command = $command
             $this.Description = $description
-            $this.originalText = $originalText
+            $this.OriginalText = $OriginalText
         }
     }
     
@@ -58,6 +58,7 @@ $Utilities = {
             $result = $dockerTypeName
             if ($dockerTypeName -eq 'filter') {$result = 'string'}
             if ($dockerTypeName -eq 'list') {$result = 'string[]'}
+            if ($dockerTypeName -eq 'strings') {$result = 'string'}
             if ($dockerTypeName -eq 'external-ca') {$result = 'string'}
             if ($dockerTypeName -eq 'duration') {$result = 'uint'}
             if ($dockerTypeName -eq 'ipNetSlice') {$result = 'string'}
@@ -67,6 +68,7 @@ $Utilities = {
             if ($dockerTypeName -eq 'command') {$result = 'string'}
             if ($dockerTypeName -eq 'secret') {$result = 'string'}
             if ($dockerTypeName -eq 'bytes') {$result = 'string'}
+            if ($dockerTypeName -eq 'ulimit') {$result = 'string'}
         }
     
         return $result
@@ -225,7 +227,7 @@ $Utilities = {
         [CmdletBinding()]
         #param ([string]$cmd, [string[]]$text)
         param ([string]$cmd, [string]$description, [string[]]$commandHelpText)
-    
+
         $command = [CommandBase]::new($cmd,$description,$commandHelpText)
     
         $term = "Usage:"
@@ -255,10 +257,11 @@ $Utilities = {
 }
 
 
+
 $commandNameMap = @{
     "attach"="Attach-DockerContainerStream"
-    "build"="Build-DockerImage"
-    "commit"="Create-DockerImage"
+    #"build"="Build-DockerImage"
+    #"commit"="Create-DockerImage"
     "cp"="Copy-DockerFiles"
     "create"="Create-DockerContainer"
     "diff"="Inspect-DockerFileChanges"
@@ -266,12 +269,15 @@ $commandNameMap = @{
     "exec"="Run-DockerCommand"
     "export"="Export-DockerFilesystem"
     "history"="Show-DockerImageHistory"
-    "images"="Get-DockerImage"
-    "import"="Import-DockerImage"
+    #"images"="Get-DockerImage"
+    #"import"="Import-DockerImage"
     "info"="Get-DockerInformation"
     "inspect"="Inspect-DockerObject"
     "kill"="Kill-DockerContainer"
-    "load"="Load-DockerImage"
+    #"load"="Load-DockerImage"
+
+    "image ls"="Get-DockerImage"
+    "image build"="Build-DockerImage"
     "image inspect"="Inspect-DockerImage"
 }
 
@@ -280,7 +286,13 @@ $ParameterAliasMap = @{
 }
 
 $ArgumentCompleterMap = @{
-    "dcr-image-inspect:Image"="(dcr-images).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+    "dcr-image-inspect:Image"="(dcr-image-ls).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+    "dcr-image-ls:Repository"="(dcr-image-ls).Repository | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+}
+
+$HelpLinkMap = @{
+    "image inspect"="https://docs.docker.com/engine/reference/commandline/image_inspect/"
+    "dcr-image-ls"="https://docs.docker.com/engine/reference/commandline/images/"
 }
 
 function GenerateCommandProxy
@@ -290,6 +302,7 @@ function GenerateCommandProxy
 
     $paramList = New-Object Collections.Generic.List[string]
     $ParamFillerList = New-Object Collections.Generic.List[string]
+    $HelpList = New-Object Collections.Generic.List[string]
     $commandSupportsFormat = $false
     $FormatFillerText = ""
     $functionName = "dcr-" + $command.Command.Replace(" ", "-")
@@ -305,6 +318,11 @@ function GenerateCommandProxy
         }
 
         $paramList.Add("[Parameter(Mandatory=`$$($p.IsMandatory))][$($p.TypeName)]`$$($p.Name)$ParamDefaultValue")
+
+        if ($p.Description)
+        {
+            $HelpList.Add(".PARAMETER $($p.Name)" + [Environment]::NewLine + $p.Description)
+        }
 
         if ($p.TypeName -eq "switch")
         {
@@ -345,12 +363,31 @@ function GenerateCommandProxy
 
         $paramList.Add("[Parameter(Mandatory=`$$($p.IsMandatory)$paramByPropNameText)]$paramAliasText$argumentCompleterText[$($p.TypeName)]`$$($p.Name)")
         $ParamFillerList.Add("if (`$PSBoundParameters['$($p.Name)']) {`$AllArgs += `$PSBoundParameters['$($p.Name)']}")
+        if ($p.Description)
+        {
+            $HelpList.Add(".PARAMETER $($p.Name)" + [Environment]::NewLine + $p.Description)
+        }
     }
 
     if ($commandSupportsFormat)
     {
         $paramList.Add("[Parameter(Mandatory=`$False)][switch]`$NativeOutput")
+        $HelpList.Add(".PARAMETER NativeOutput" + [Environment]::NewLine + "Return output as text instead of objects")
     }
+
+    $HelpLink = $HelpLinkMap[$functionName]
+    if (-not [string]::IsNullOrEmpty($HelpLink))
+    {
+        $HelpList.Add(".LINK" + [Environment]::NewLine + $HelpLink)
+    }
+
+    $helptext = "<#
+.SYNOPSIS
+$($command.Description)
+.DESCRIPTION
+$($command.Description)
+$($HelpList | Out-String)
+#>"
 
     $functionAlias = $commandNameMap[ $command.Command ]
     $functionAliasText = ""
@@ -371,7 +408,10 @@ function GenerateCommandProxy
     $cmdText = $cmdPartList -join " "
     $ParamFillerText = $ParamFillerList -join "`n"
 
-    $ftext = "function global:$functionName {
+
+    $ftext = "
+$helptext
+function global:$functionName {
 [CmdletBinding()]
 $functionAliasText
 param ($paramText)
@@ -402,7 +442,7 @@ else
     {
         $verboseText += " / $functionAlias"
     }
-    Write-Verbose "Generating function $verboseText"
+    Write-Verbose $verboseText
     Write-Verbose $ftext
     [scriptBlock]::Create($ftext).Invoke()
 }
