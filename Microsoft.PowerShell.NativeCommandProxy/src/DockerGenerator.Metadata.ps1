@@ -1,22 +1,5 @@
 return @{
     CommandNameMap = @{
-        <#"attach"="Attach-DockerContainerStream"
-        "build"="Build-DockerImage"
-        "commit"="Create-DockerImage"
-        "cp"="Copy-DockerFiles"
-        "create"="Create-DockerContainer"
-        "diff"="Inspect-DockerFileChanges"
-        "events"="Get-DockerEvents"
-        "exec"="Run-DockerCommand"
-        "export"="Export-DockerFilesystem"
-        "history"="Show-DockerImageHistory"
-        "images"="List-DockerImage"
-        "import"="Import-DockerImage"
-        "info"="Get-DockerInformation"
-        "inspect"="Inspect-DockerObject"
-        "kill"="Kill-DockerContainer"
-        "load"="Load-DockerImage"#>
-
         "config create"="New-DockerConfig"
         "config inspect"="Get-DockerConfigInfo"
         "config ls"="Get-DockerConfig"
@@ -134,7 +117,51 @@ return @{
         "volume rm"="Remove-DockerVolume"
 
         "builder prune"="Remove-DockerBuildCache"
+
+        "inspect"="Get-DockerObjectInfo"
+        "login"="Login-Dockerregistry"
+        "logout"="Logout-Dockerregistry"
+        "search"="Get-DockerHubImage"
+        "version"="Get-DockerVersion"
     }
+
+    SkipCommands = @(
+        "attach" # container attach
+        "build"  # image build
+        "commit" # container commit
+        "cp"     # container cp
+        "create" # container create
+        "diff"   # container diff
+        "events" # system events
+        "exec"   # container exec
+        "export" # container export
+        "history"# image history
+        "images" # image ls
+        "import" # image import
+        "info"   # system info
+        "kill"   # container kill
+        "load"   # image load
+        "logs"   # container logs
+        "pause"  # container pause
+        "port"   # container port
+        "ps"     # container ps
+        "pull"   # image pull
+        "push"   # image push
+        "rename" # container rename
+        "restart"# container restart
+        "rm"     # container rm
+        "rmi"    # image rm
+        "run"    # container run
+        "save"   # image save
+        "start"  # container start
+        "stats"  # container stats
+        "stop"   # container stop
+        "tag"    # image tag
+        "top"    # container top
+        "unpause"# container unpause
+        "update" # container update
+        "wait"   # container wait
+    )
 
     ParameterAliasMap = @{
         "dcr-image-inspect:Image"="ID;AnotherAlias"
@@ -164,5 +191,11 @@ return @{
         'secret' = 'string'
         'bytes' = 'string'
         'ulimit' = 'string'
+        'mount' = 'string'
+        'map' = 'string'
+        'config' = 'string'
+        'network' = 'string'
+        'pref' = 'string'
+        'port' = 'string'
     }
 }
