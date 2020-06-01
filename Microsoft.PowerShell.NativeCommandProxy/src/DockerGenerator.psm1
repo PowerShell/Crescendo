@@ -103,6 +103,10 @@ $Utilities = {
                     {
                         $OriginalName = $matches['option']
                         $Name = $script:TextInfo.ToTitleCase($OriginalName.ToLower()).Replace("-", "")
+                        if ($Name -eq "Verbose") # collision with PowerShell common parameter
+                        {
+                            $Name = "VerboseInfo"
+                        }
                         $typeName = GetPowerShellType -dockerTypeName $matches['type'] -metadata $metadata
                         $description = $matches['description']
                         if ([string]::IsNullOrEmpty($typeName)) {$typeName = "switch"}
@@ -432,7 +436,10 @@ function New-DockerProxy
 
         # Read simple commands
         Parse-Command -text $text -pattern "^Commands:" | % {
-            $cmdsht.Add($_.Command, $_.Description)
+            if (-not ($script:metadata.SkipCommands -contains $_.Command))
+            {
+                $cmdsht.Add($_.Command, $_.Description)
+            }
         }
 
         # Read management commands
@@ -441,7 +448,11 @@ function New-DockerProxy
             $mgmtCmdText = docker $mgmtCmd.Command --help
             foreach($mgmtSubCmd in Parse-Command -text $mgmtCmdText -pattern "^Commands:")
             {
-                $cmdsht.Add($mgmtCmd.Command + " " + $mgmtSubCmd.Command, $mgmtSubCmd.Description)
+                $cmdName = $mgmtCmd.Command + " " + $mgmtSubCmd.Command
+                if (-not ($script:metadata.SkipCommands -contains $cmdName))
+                {
+                    $cmdsht.Add($cmdName, $mgmtSubCmd.Description)
+                }
             }
         }
 
