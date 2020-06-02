@@ -23,3 +23,4 @@ Get-Help Inspect-DockerContainer -Online
 # tab-completion examples
 Get-DockerImage -Repository <tab-through-options>
 Inspect-DockerImage -Image <tab-through-options>
+Get-DockerContainerLogs -Container <tab-through-options>
