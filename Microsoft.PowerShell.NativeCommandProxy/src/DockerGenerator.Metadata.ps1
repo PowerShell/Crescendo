@@ -179,19 +179,19 @@ return @{
     }
 
     ArgumentCompleterMap = @{
-        "dcr-container-create:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-start:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-run:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-inspect:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-logs:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-stop:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-kill:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-container-rm:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-create:Image"="dcr-image-ls -All | % {`"'`$(`$_.Repository) | `$(`$_.Tag) | `$(`$_.Size) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-start:Container"="dcr-container-ls -All | % {`"'`$(`$_.Command) | `$(`$_.Names) | `$(`$_.Status) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-run:Image"="dcr-image-ls -All | % {`"'`$(`$_.Repository) | `$(`$_.Tag) | `$(`$_.Size) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-inspect:Container"="dcr-container-ls -All | % {`"'`$(`$_.Command) | `$(`$_.Names) | `$(`$_.Status) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-logs:Container"="dcr-container-ls -All | % {`"'`$(`$_.Command) | `$(`$_.Names) | `$(`$_.Status) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-stop:Container"="dcr-container-ls -All | % {`"'`$(`$_.Command) | `$(`$_.Names) | `$(`$_.Status) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-kill:Container"="dcr-container-ls -All | % {`"'`$(`$_.Command) | `$(`$_.Names) | `$(`$_.Status) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-container-rm:Container"="dcr-container-ls -All | % {`"'`$(`$_.Command) | `$(`$_.Names) | `$(`$_.Status) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
 
         "dcr-image-ls:Repository"="(dcr-image-ls -All).Repository | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-image-history:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-image-inspect:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-image-rm:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-image-history:Image"="dcr-image-ls -All | % {`"'`$(`$_.Repository) | `$(`$_.Tag) | `$(`$_.Size) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-image-inspect:Image"="dcr-image-ls -All | % {`"'`$(`$_.Repository) | `$(`$_.Tag) | `$(`$_.Size) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
+        "dcr-image-rm:Image"="dcr-image-ls -All | % {`"'`$(`$_.Repository) | `$(`$_.Tag) | `$(`$_.Size) | `$(`$_.CreatedAt) | `$(`$_.ID)'`"} | Where-Object { Write-Verbose `$_;Write-Verbose `$WordToComplete;`$_ -like `"'`$WordToComplete*`" }"
     }
 
     HelpLinkMap = @{

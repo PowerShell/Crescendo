@@ -309,6 +309,10 @@ function GenerateCommandProxy
             }
         }
     }
+
+    $ImageParameterProcessingText = ""
+    $ContainerParameterProcessingText = ""
+
     foreach($p in $command.Parameters)
     {
         $paramAliases = $script:metadata.ParameterAliasMap["$functionName`:$($p.Name)"]
@@ -330,8 +334,50 @@ function GenerateCommandProxy
             $argumentCompleterText = "[ArgumentCompleter({param(`$CommandName,`$ParameterName,`$WordToComplete,`$CommandAst,`$FakeBoundParameters)$argumentCompleter})]"
         }
 
+        if ($p.Name -eq 'Image') # special processing for -Image parameter for possible special tab-completion
+        {
+            $ImageParameterProcessingText = "
+`$ImageParameterValue = @()
+foreach(`$pvalue in `$PSBoundParameters['$($p.Name)'])
+{
+    if (`$pvalue.Contains('|'))
+    {
+        `$pvalues = `$pvalue.Split('|', [StringSplitOptions]::RemoveEmptyEntries)
+        `$ImageParameterValue += `$pvalues[`$pvalues.count - 1].Trim()
+    }
+    else
+    {
+        `$ImageParameterValue += `$pvalue
+    }
+}
+"
+            $ParamFillerList.Add("if (`$PSBoundParameters['$($p.Name)']) {`$AllArgs += `$ImageParameterValue}")
+        }
+        elseif ($p.Name -eq 'Container') # special processing for -Container parameter for possible special tab-completion
+        {
+            $ContainerParameterProcessingText = "
+`$ContainerParameterValue = @()
+foreach(`$pvalue in `$PSBoundParameters['$($p.Name)'])
+{
+    if (`$pvalue.Contains('|'))
+    {
+        `$pvalues = `$pvalue.Split('|', [StringSplitOptions]::RemoveEmptyEntries)
+        `$ContainerParameterValue += `$pvalues[`$pvalues.count - 1].Trim()
+    }
+    else
+    {
+        `$ContainerParameterValue += `$pvalue
+    }
+}
+"
+            $ParamFillerList.Add("if (`$PSBoundParameters['$($p.Name)']) {`$AllArgs += `$ContainerParameterValue}")
+        }
+        else
+        {
+            $ParamFillerList.Add("if (`$PSBoundParameters['$($p.Name)']) {`$AllArgs += `$PSBoundParameters['$($p.Name)']}")
+        }
+
         $paramList.Add("[Parameter(Mandatory=`$$($p.IsMandatory)$paramByPropNameText)]$paramAliasText$argumentCompleterText[$($p.TypeName)]`$$($p.Name)")
-        $ParamFillerList.Add("if (`$PSBoundParameters['$($p.Name)']) {`$AllArgs += `$PSBoundParameters['$($p.Name)']}")
         if ($p.Description)
         {
             $HelpList.Add(".PARAMETER $($p.Name)" + [Environment]::NewLine + $p.Description)
@@ -390,6 +436,8 @@ param ($paramText)
 PROCESS
 {
 `$AllArgs = @()
+$ImageParameterProcessingText
+$ContainerParameterProcessingText
 $ParamFillerText
 
 `$VerboseMsg = `"Calling: & $cmdText `" + `$(`$AllArgs -join `" `")
