@@ -155,9 +155,14 @@ $Utilities = {
                     $part = $part.Trim('[',']')
                 }
     
-                if ( $part -match "^(?<parameter>\w+)\W*" ) # for now, do not support complex param strings or choice params
+                if ( $part -match "^(?<parameter>\w+\.*)\W*" ) # for now, do not support complex param strings or choice params
                 {
                     $OriginalName = $matches['parameter']
+                    if ($OriginalName.EndsWith('...'))
+                    {
+                        $OriginalName = $OriginalName.TrimEnd('.')
+                        $typeName += "[]"
+                    }
                     $Name = $script:TextInfo.ToTitleCase($OriginalName.ToLower()).Replace("-", "")
                     $paramAlreadyExists = $false
                     foreach ($prevPi in $results) # if this is a repetiion of one of previous parameters - make previous one an array
@@ -333,10 +338,13 @@ function GenerateCommandProxy
         }
     }
 
+    $outputText = '$output'
     if ($commandSupportsFormat)
     {
         $paramList.Add("[Parameter(Mandatory=`$False)][switch]`$NativeOutput")
         $HelpList.Add(".PARAMETER NativeOutput" + [Environment]::NewLine + "Return output as text instead of objects")
+
+        $outputText = '$output | %{ $_ | ConvertFrom-Json}'
     }
 
     $HelpLink = $script:metadata.HelpLinkMap[$functionName]
@@ -391,11 +399,11 @@ Write-Verbose `$VerboseMsg
 
 if (`$NativeOutput)
 {
-    `$output
+    $outputText
 }
 else
 {
-    `$output | %{ `$_ | ConvertFrom-Json}
+    $outputText
 }
 }
 }"

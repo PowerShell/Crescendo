@@ -165,6 +165,8 @@ return @{
 
     ParameterAliasMap = @{
         "dcr-image-inspect:Image"="ID;AnotherAlias"
+        "dcr-container-run:Image"="ID"
+        "dcr-image-rm:Image"="ID"
     }
 
     ArgumentCompleterMap = @{
