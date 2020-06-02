@@ -119,13 +119,13 @@ return @{
         "builder prune"="Remove-DockerBuildCache"
 
         "inspect"="Get-DockerObjectInfo"
-        "login"="Login-Dockerregistry"
-        "logout"="Logout-Dockerregistry"
+        "login"="Login-DockerRegistry"
+        "logout"="Logout-DockerRegistry"
         "search"="Get-DockerHubImage"
         "version"="Get-DockerVersion"
     }
 
-    SkipCommands = @(
+    SkipCommands = @( # all these are aliases for other commands
         "attach" # container attach
         "build"  # image build
         "commit" # container commit
@@ -164,19 +164,58 @@ return @{
     )
 
     ParameterAliasMap = @{
-        "dcr-image-inspect:Image"="ID;AnotherAlias"
+        "dcr-container-create:Image"="ID"
+        "dcr-container-start:Container"="ID"
         "dcr-container-run:Image"="ID"
+        "dcr-container-inspect:Container"="ID"
+        "dcr-container-logs:Container"="ID"
+        "dcr-container-stop:Container"="ID"
+        "dcr-container-kill:Container"="ID"
+        "dcr-container-rm:Container"="ID"
+
+        "dcr-image-history:Image"="ID"
+        "dcr-image-inspect:Image"="ID"
         "dcr-image-rm:Image"="ID"
     }
 
     ArgumentCompleterMap = @{
-        "dcr-image-inspect:Image"="(dcr-image-ls).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
-        "dcr-image-ls:Repository"="(dcr-image-ls).Repository | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-create:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-start:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-run:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-inspect:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-logs:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-stop:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-kill:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-container-rm:Container"="(dcr-container-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+
+        "dcr-image-ls:Repository"="(dcr-image-ls -All).Repository | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-image-history:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-image-inspect:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
+        "dcr-image-rm:Image"="(dcr-image-ls -All).ID | Where-Object { `$_ -like `"`$WordToComplete*`" }"
     }
 
     HelpLinkMap = @{
-        "dcr-image-inspect"="https://docs.docker.com/engine/reference/commandline/image_inspect/"
+        "dcr-container-create"="https://docs.docker.com/engine/reference/commandline/container_create/"
+        "dcr-container-start"="https://docs.docker.com/engine/reference/commandline/container_start/"
+        "dcr-container-run"="https://docs.docker.com/engine/reference/commandline/container_run/"
+        "dcr-container-ls"="https://docs.docker.com/engine/reference/commandline/container_ls/"
+        "dcr-container-inspect"="https://docs.docker.com/engine/reference/commandline/container_inspect/"
+        "dcr-container-logs"="https://docs.docker.com/engine/reference/commandline/container_logs/"
+        "dcr-container-stop"="https://docs.docker.com/engine/reference/commandline/container_stop/"
+        "dcr-container-kill"="https://docs.docker.com/engine/reference/commandline/container_kill/"
+        "dcr-container-rm"="https://docs.docker.com/engine/reference/commandline/container_rm/"
+
+        "dcr-image-build"="https://docs.docker.com/engine/reference/commandline/image_build/"
+        "dcr-image-push"="https://docs.docker.com/engine/reference/commandline/image_push/"
         "dcr-image-ls"="https://docs.docker.com/engine/reference/commandline/images/"
+        "dcr-image-history"="https://docs.docker.com/engine/reference/commandline/image_history/"
+        "dcr-image-inspect"="https://docs.docker.com/engine/reference/commandline/image_inspect/"
+        "dcr-image-rm"="https://docs.docker.com/engine/reference/commandline/image_rm/"
+
+        "dcr-version"="https://docs.docker.com/engine/reference/commandline/version/"
+        "dcr-login"="https://docs.docker.com/engine/reference/commandline/login/"
+
+        "dcr-system-prune"="https://docs.docker.com/engine/reference/commandline/system_prune/"
     }
 
     TypeMap = @{
