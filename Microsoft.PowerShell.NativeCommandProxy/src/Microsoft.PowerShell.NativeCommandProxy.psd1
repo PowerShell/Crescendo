@@ -9,7 +9,7 @@ RootModule = 'Microsoft.PowerShell.NativeCommandProxy.psm1'
 NestedModules = @('DockerGenerator.psm1', 'KubectlGenerator.psm1')
 
 # Version number of this module.
-ModuleVersion = '1.0.0'
+ModuleVersion = '0.3.0'
 
 # ID used to uniquely identify this module
 GUID = '2dd09744-1ced-4636-a8ce-09a0bf0e566a'
@@ -22,10 +22,11 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 Description = "Module that improves user experience with native commands"
 
 # Minimum version of the Windows PowerShell engine required by this module
+# setting to V7 for the moment
 PowerShellVersion = '5.1'
 
 # Functions to export from this module
-FunctionsToExport = @('New-DockerProxy', 'New-KubectlProxy')
+FunctionsToExport = @('New-DockerProxy', 'New-KubectlProxy', 'New-ProxyCommand','New-ParameterInfo', 'New-UsageInfo', 'New-UsageInfo')
 
 HelpInfoURI = 'https://github.com/PowerShell/PowerShell'
 }
