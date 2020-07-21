@@ -49,7 +49,7 @@ class ParameterInfo {
     [string[]]$AdditionalParameterAttributes
 
     [bool] $Mandatory
-    [string] $ParameterSetName
+    [string[]] $ParameterSetName
     [string[]] $Aliases
     [int] $Position = [int]::MaxValue
     [int] $OriginalPosition
@@ -78,8 +78,11 @@ class ParameterInfo {
             $sb.AppendLine("[Alias('" + $paramAliases + "')]")
         }
 
-        $sb.Append('[Parameter(')
         $elements = @()
+        if ( $this.ParameterSetName.Count -gt 0) {
+            $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
+        }
+        $sb.Append('[Parameter(')
         if ( $this.Position -ne [int]::MaxValue ) {
             $elements += "Position=" + $this.Position
         }
@@ -152,13 +155,17 @@ class Command {
         $sb.AppendLine($this.GetParameters())
         # get the parameter map
         # this may be null if there are no parameters
+        $sb.AppendLine("BEGIN {")
+        $sb.AppendLine('    $__commandArgs = @()')
         $parameterMap = $this.GetParameterMap()
         if ( $parameterMap ) {
             $sb.AppendLine($parameterMap)
         }
+        $sb.AppendLine("}")
         # construct the command invocation
         # this must exist and should never be null
         # otherwise we won't actually be invoking anything
+        $sb.AppendLine("PROCESS {")
         $sb.AppendLine($this.GetInvocationCommand())
         # finish the function
         $sb.AppendLine("}")
@@ -166,19 +173,47 @@ class Command {
         return $sb.ToString()
     }
     [string]GetParameterMap() {
-        return [string]::Empty
+        $sb = [System.Text.StringBuilder]::new()
+        $sb.AppendLine('    $__PARAMETERMAP = @{')
+        $this.Parameters |ForEach-Object {
+            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; ParameterType = [{3}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.ParameterType))
+        }
+        $sb.AppendLine("    }")
+        return $sb.ToString()
     }
     [string]GetCommandHelp() {
         return [string]::Empty
     }
     [string]GetInvocationCommand() {
-        return [string]::Empty
+        $sb = [System.Text.StringBuilder]::new()
+        $sb.AppendLine('if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
+        $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
+        $sb.AppendLine('        if ($__PARAMETERMAP[$paramName]) {')
+        $sb.AppendLine('            if ( $param.ParameterType -eq [switch] ) { $__commandArgs += $__PARAMETERMAP[$paramName].OriginalName } ')
+        $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
+        $sb.AppendLine('            else { $__commandArgs += $__PARAMETERMAP[$paramName].OriginalName, $value }')
+        $sb.AppendLine('        }')
+        $sb.AppendLine('    }')
+        $sb.AppendLine('if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine(('    & {0} $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine("  }")
+        return $sb.ToString()
     }
     [string]GetCommandDeclaration() {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendFormat("Function {0}-{1}`n", $this.Verb, $this.Noun)
         $sb.AppendLine("{")
-        $sb.AppendFormat("[CmdletBinding({0})]", $this.SupportsShouldProcess ? 'SupportsShouldProcess=$true' : "")
+        $sb.Append("[CmdletBinding(")
+        $addlAttributes = @()
+        if ( $this.SupportsShouldProcess ) {
+            $addlAttributes += 'SupportsShouldProcess=$true'
+        }
+        if ( $this.DefaultParameterSetName ) {
+            $addlAttributes += 'DefaultParameterSetName=''{0}''' -f $this.DefaultParameterSetName
+        }
+        $sb.Append(($addlAttributes -join ','))
+        $sb.AppendLine(")]")
         return $sb.ToString()
     }
     [string]GetParameters() {
@@ -189,7 +224,7 @@ class Command {
             $params = $this.Parameters|ForEach-Object {$_.ToString()}
             $sb.AppendLine(($params -join ",`n"))
         }
-        $sb.AppendLine(")")
+        $sb.AppendLine("    )")
         return $sb.ToString()
     }
 
