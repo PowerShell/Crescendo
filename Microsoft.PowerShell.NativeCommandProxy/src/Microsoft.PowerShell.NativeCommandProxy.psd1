@@ -26,7 +26,16 @@ Description = "Module that improves user experience with native commands"
 PowerShellVersion = '5.1'
 
 # Functions to export from this module
-FunctionsToExport = @('New-DockerProxy', 'New-KubectlProxy', 'New-ProxyCommand','New-ParameterInfo', 'New-UsageInfo', 'New-UsageInfo')
+FunctionsToExport = @(
+    'New-DockerProxy',
+    'New-KubectlProxy',
+    'New-ExampleInfo',
+    'New-ProxyCommand',
+    'New-ParameterInfo',
+    'New-UsageInfo',
+    'New-UsageInfo',
+    'Import-CommandConfiguration'
+    )
 
 HelpInfoURI = 'https://github.com/PowerShell/PowerShell'
 }

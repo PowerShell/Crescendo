@@ -8,6 +8,7 @@ class UsageInfo { # used for .SYNOPSIS of the comment-based help
     [bool]$HasOptions
     hidden [string[]]$OriginalText
 
+    UsageInfo() { }
     UsageInfo([string] $usage)
     {
         $this.Usage = $usage
@@ -24,6 +25,8 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
     [string]$OriginalCommand # original native tool command
     [string]$Description
 
+    ExampleInfo() { }
+
     ExampleInfo([string]$Command, [string]$OriginalCommand, [string]$Description)
     {
         $this.Command = $Command
@@ -33,7 +36,13 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
     {
-        return $this.Command
+        $sb = [text.stringbuilder]::new()
+        $sb.AppendLine(".EXAMPLE")
+        $sb.AppendLine("PS> " + $this.Command)
+        $sb.AppendLine("")
+        $sb.AppendLine($this.Description)
+        $sb.AppendLine("Original Command: " + $this.OriginalCommand)
+        return $sb.ToString()
     }
 }
 
@@ -61,6 +70,7 @@ class ParameterInfo {
     [bool] $ValueFromPipelineByPropertyName
     [bool] $ValueFromRemainingArguments
 
+    ParameterInfo() { }
     ParameterInfo ([string]$Name, [string]$OriginalName)
     {
         $this.Name = $Name
@@ -141,6 +151,7 @@ class Command {
     [string]$OriginalText
     [string[]]$HelpLinks
 
+    Command() { }
     Command([string]$Verb, [string]$Noun)
     {
         $this.Verb = $Verb
@@ -178,7 +189,6 @@ class Command {
         # get the parameter map
         # this may be null if there are no parameters
         $sb.AppendLine("BEGIN {")
-        $sb.AppendLine('    $__commandArgs = @()')
         $parameterMap = $this.GetParameterMap()
         if ( $parameterMap ) {
             $sb.AppendLine($parameterMap)
@@ -188,6 +198,7 @@ class Command {
         # this must exist and should never be null
         # otherwise we won't actually be invoking anything
         $sb.AppendLine("PROCESS {")
+        $sb.AppendLine('    $__commandArgs = @()')
         $sb.AppendLine($this.GetInvocationCommand())
         # add the help
         $help = $this.GetCommandHelp()
@@ -324,4 +335,10 @@ function New-ProxyCommand {
         [Parameter(Position=1,Mandatory=$true)][string]$Noun
     )
     [Command]::new($Verb, $Noun)
+}
+
+function Import-CommandConfiguration([string]$file) {
+    $text = Get-Content -Read 0 $file
+    $options = [System.Text.Json.JsonSerializerOptions]::new()
+    [System.Text.Json.JsonSerializer]::Deserialize($text, [command], $options)  
 }
