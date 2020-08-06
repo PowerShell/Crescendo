@@ -70,11 +70,14 @@ class ParameterInfo {
     [bool] $ValueFromPipelineByPropertyName
     [bool] $ValueFromRemainingArguments
 
-    ParameterInfo() { }
+    ParameterInfo() {
+        $this.Position = [int]::MaxValue
+    }
     ParameterInfo ([string]$Name, [string]$OriginalName)
     {
         $this.Name = $Name
         $this.OriginalName = $OriginalName
+        $this.Position = [int]::MaxValue
     }
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
@@ -93,9 +96,7 @@ class ParameterInfo {
         }
 
         $elements = @()
-        if ( $this.ParameterSetName.Count -gt 0) {
-            $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
-        }
+        # TODO: This logic does not handle parameters in multiple sets correctly
         $sb.Append('[Parameter(')
         if ( $this.Position -ne [int]::MaxValue ) {
             $elements += "Position=" + $this.Position
@@ -109,10 +110,16 @@ class ParameterInfo {
         if ( $this.ValueFromRemainingArguments ) {
             $elements += 'ValueFromRemainingArguments=$true'
         }
+        if ( $this.ParameterSetName.Count -eq 1 ) {
+            $elements += "ParameterSetName='{0}'" -f $this.ParameterSetName
+        }
         if ($elements.Count -gt 0) {
             $sb.Append(($elements -join ","))
         }
         $sb.AppendLine(')]')
+        if ( $this.ParameterSetName.Count -gt 1) {
+            $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
+        }
         $sb.Append(('[{0}]${1}' -f $this.ParameterType, $this.Name))
         if ( $this.DefaultValue ) {
             $sb.Append(' = "' + $this.DefaultValue + '"')
@@ -174,7 +181,19 @@ class Command {
             return $this.Usage.ToString()
         }
         else {
-            return (".SYNOPSIS",(& $this.OriginalName -?)) -join "`n"
+            if ( Get-Command $this.OriginalName ) {
+                try {
+                    $nativeHelpText = & $this.OriginalName -?
+                }
+                catch {
+                    $nativeHelpText = "error running " + $this.OriginalName + " -?."
+                }
+            }
+            else {
+                $nativeHelpText = "Could not find " + $this.OriginalName + " to generate help."
+
+            }
+            return (".SYNOPSIS",$nativeHelpText) -join "`n"
         }
     }
 
@@ -215,7 +234,7 @@ class Command {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine('    $__PARAMETERMAP = @{')
         $this.Parameters |ForEach-Object {
-            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; ParameterType = [{3}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.ParameterType))
+            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; Position = '{3}'; ParameterType = [{4}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.Position, $_.ParameterType))
         }
         $sb.AppendLine("    }")
         return $sb.ToString()
@@ -260,16 +279,19 @@ class Command {
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
         $sb.AppendLine('        if ($param) {')
         $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += $value.IsPresent ? $param.OriginalName : $param.DefaultMissingValue } ')
-        $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
-        $sb.AppendLine('            else { $__commandArgs += $param.OriginalName, $value }')
+        # $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
+        $sb.AppendLine('            else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |%{$_}}')
         $sb.AppendLine('        }')
         $sb.AppendLine('    }')
+        $sb.AppendLine('    $__commandArgs = $__commandArgs|?{$_}') # strip nulls
         $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
         $sb.AppendLine('    if ( $PSBoundParameters["Verbose"]) {')
         $sb.AppendLine('         Write-Verbose -Verbose ' + $this.OriginalName)
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
-        $sb.AppendLine(('    & {0} $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
+        $sb.AppendLine(('        & "{0}" $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine("    }")
         $sb.AppendLine("  }")
         return $sb.ToString()
     }
@@ -308,7 +330,7 @@ class Command {
 function New-ParameterInfo {
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$Name,
-        [Parameter(Position=1,Mandatory=$true)][string]$OriginalName
+        [Parameter(Position=1,Mandatory=$true)][AllowEmptyString()][string]$OriginalName
     )
     [ParameterInfo]::new($Name, $OriginalName)
 }
