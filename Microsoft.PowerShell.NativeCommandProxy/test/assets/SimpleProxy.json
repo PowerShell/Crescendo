@@ -1,0 +1,6 @@
+{
+    "$schema": "../../src/NativeProxyCommand.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "Thing",
+    "OriginalName": "/bin/app"
+}
