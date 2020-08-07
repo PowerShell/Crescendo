@@ -1,0 +1,58 @@
+{
+    "$schema": "./NativeProxyCommand.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "Tar",
+    "OriginalName": "/usr/bin/tar",
+    "SupportsShouldProcess": true,
+    "Description": "Just look at the man page",
+    "Usage" : {
+        "Usage": "tar wrapper"
+    },
+    "HelpLinks": [
+        "link1",
+        "link2"
+    ],
+    "Parameters": [
+        {
+            "Name": "Show",
+            "OriginalName": "-v",
+            "ParameterType": "switch"
+        },
+        {
+            "Name":"Archive",
+            "Position": 0,
+            "OriginalName": "-f",
+            "ParameterType": "string",
+            "ValueFromPipeline": true,
+            "OriginalPosition": 0
+        },
+        {
+            "Name": "List",
+            "OriginalName": "-t",
+            "ParameterSetName": ["list"],
+            "ParameterType": "switch",
+            "Description": "List the contents of an archive"
+        },
+        {
+            "Name": "Extract",
+            "OriginalName": "-x",
+            "ParameterType": "switch",
+            "ParameterSetName": ["extract"]
+        },
+        {
+            "Name": "New",
+            "OriginalName": "-c",
+            "ParameterSetName": ["Create"],
+            "ParameterType": "switch"
+        },
+        {
+            "Name": "Files",
+            "ParameterSetName": ["Create"],
+            "OriginalName": "",
+            "OriginalPosition": 1,
+            "ParameterType": "string[]"
+        }
+
+    ]
+
+}

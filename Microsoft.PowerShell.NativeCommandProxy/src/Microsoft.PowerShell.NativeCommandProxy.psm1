@@ -8,6 +8,7 @@ class UsageInfo { # used for .SYNOPSIS of the comment-based help
     [bool]$HasOptions
     hidden [string[]]$OriginalText
 
+    UsageInfo() { }
     UsageInfo([string] $usage)
     {
         $this.Usage = $usage
@@ -15,7 +16,7 @@ class UsageInfo { # used for .SYNOPSIS of the comment-based help
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
     {
-        return $this.Usage
+        return ((".SYNOPSIS",$this.Usage) -join "`n")
     }
 }
 
@@ -23,6 +24,8 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
     [string]$Command # ps-command
     [string]$OriginalCommand # original native tool command
     [string]$Description
+
+    ExampleInfo() { }
 
     ExampleInfo([string]$Command, [string]$OriginalCommand, [string]$Description)
     {
@@ -33,9 +36,16 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
     {
-        return $this.Command
+        $sb = [text.stringbuilder]::new()
+        $sb.AppendLine(".EXAMPLE")
+        $sb.AppendLine("PS> " + $this.Command)
+        $sb.AppendLine("")
+        $sb.AppendLine($this.Description)
+        $sb.AppendLine("Original Command: " + $this.OriginalCommand)
+        return $sb.ToString()
     }
 }
+
 
 class ParameterInfo {
     [string]$Name # PS-proxy name
@@ -44,6 +54,9 @@ class ParameterInfo {
     [string]$OriginalText
     [string]$Description
     [object]$DefaultValue
+    # some parameters are -param or +param which can be represented with a switch parameter
+    # so we need way to provide for this
+    [object]$DefaultMissingValue
     [string]$ParameterType = 'object' # PS type
     
     [string[]]$AdditionalParameterAttributes
@@ -57,10 +70,14 @@ class ParameterInfo {
     [bool] $ValueFromPipelineByPropertyName
     [bool] $ValueFromRemainingArguments
 
+    ParameterInfo() {
+        $this.Position = [int]::MaxValue
+    }
     ParameterInfo ([string]$Name, [string]$OriginalName)
     {
         $this.Name = $Name
         $this.OriginalName = $OriginalName
+        $this.Position = [int]::MaxValue
     }
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
@@ -79,9 +96,7 @@ class ParameterInfo {
         }
 
         $elements = @()
-        if ( $this.ParameterSetName.Count -gt 0) {
-            $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
-        }
+        # TODO: This logic does not handle parameters in multiple sets correctly
         $sb.Append('[Parameter(')
         if ( $this.Position -ne [int]::MaxValue ) {
             $elements += "Position=" + $this.Position
@@ -95,10 +110,16 @@ class ParameterInfo {
         if ( $this.ValueFromRemainingArguments ) {
             $elements += 'ValueFromRemainingArguments=$true'
         }
+        if ( $this.ParameterSetName.Count -eq 1 ) {
+            $elements += "ParameterSetName='{0}'" -f $this.ParameterSetName
+        }
         if ($elements.Count -gt 0) {
             $sb.Append(($elements -join ","))
         }
         $sb.AppendLine(')]')
+        if ( $this.ParameterSetName.Count -gt 1) {
+            $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
+        }
         $sb.Append(('[{0}]${1}' -f $this.ParameterType, $this.Name))
         if ( $this.DefaultValue ) {
             $sb.Append(' = "' + $this.DefaultValue + '"')
@@ -109,7 +130,12 @@ class ParameterInfo {
 
     [string]GetParameterHelp()
     {
-        return [string]::Empty;
+        $parameterSb = [System.Text.StringBuilder]::new()
+        $null = $parameterSb.Append(".PARAMETER ")
+        $null = $parameterSb.AppendLine($this.Name)
+        $null = $parameterSb.AppendLine($this.Description)
+        $null = $parameterSb.AppendLine()
+        return $parameterSb.ToString()
     }
 }
 
@@ -132,6 +158,7 @@ class Command {
     [string]$OriginalText
     [string[]]$HelpLinks
 
+    Command() { }
     Command([string]$Verb, [string]$Noun)
     {
         $this.Verb = $Verb
@@ -140,14 +167,39 @@ class Command {
         $this.Examples = [List[ExampleInfo]]::new()
     }
 
+    [string]GetDescription() {
+        if ( $this.Description ) {
+            return (".DESCRIPTION",$this.Description -join "`n")
+        }
+        else {
+            return (".DESCRIPTION",("See help for {0}" -f $this.OriginalName))
+        }
+    }
+
+    [string]GetSynopsis() {
+        if ( $this.Description ) {
+            return $this.Usage.ToString()
+        }
+        else {
+            if ( Get-Command $this.OriginalName ) {
+                try {
+                    $nativeHelpText = & $this.OriginalName -?
+                }
+                catch {
+                    $nativeHelpText = "error running " + $this.OriginalName + " -?."
+                }
+            }
+            else {
+                $nativeHelpText = "Could not find " + $this.OriginalName + " to generate help."
+
+            }
+            return (".SYNOPSIS",$nativeHelpText) -join "`n"
+        }
+    }
+
     [string]ToString() #  this is to be replaced with actual proxy-generation code
     {
         $sb = [System.Text.StringBuilder]::new()
-        # get the help
-        $help = $this.GetCommandHelp()
-        if ( $help ) {
-            $sb.AppendLine($help)
-        }
         # get the command declaration
         $sb.AppendLine($this.GetCommandDeclaration())
         # get the parameters
@@ -156,7 +208,6 @@ class Command {
         # get the parameter map
         # this may be null if there are no parameters
         $sb.AppendLine("BEGIN {")
-        $sb.AppendLine('    $__commandArgs = @()')
         $parameterMap = $this.GetParameterMap()
         if ( $parameterMap ) {
             $sb.AppendLine($parameterMap)
@@ -166,7 +217,14 @@ class Command {
         # this must exist and should never be null
         # otherwise we won't actually be invoking anything
         $sb.AppendLine("PROCESS {")
+        $sb.AppendLine('    $__commandArgs = @()')
         $sb.AppendLine($this.GetInvocationCommand())
+        # add the help
+        $help = $this.GetCommandHelp()
+        if ( $help ) {
+            $sb.AppendLine($help)
+        }
+
         # finish the function
         $sb.AppendLine("}")
         # return $this.Verb + "-" + $this.Noun
@@ -176,27 +234,64 @@ class Command {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine('    $__PARAMETERMAP = @{')
         $this.Parameters |ForEach-Object {
-            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; ParameterType = [{3}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.ParameterType))
+            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; Position = '{3}'; ParameterType = [{4}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.Position, $_.ParameterType))
         }
         $sb.AppendLine("    }")
         return $sb.ToString()
     }
     [string]GetCommandHelp() {
-        return [string]::Empty
+        $helpSb = [System.Text.StringBuilder]::new()
+        $helpSb.AppendLine("<#")
+        $helpSb.AppendLine($this.GetSynopsis())
+        $helpSb.AppendLine()
+        $helpSb.AppendLine($this.GetDescription())
+        $helpSb.AppendLine()
+        if ( $this.Parameters.Count -gt 0 ) {
+            foreach ( $parameter in $this.Parameters) {
+                $helpSb.AppendLine($parameter.GetParameterHelp())
+            }
+            $helpSb.AppendLine();
+        }
+        if ( $this.Examples.Count -gt 0 ) {
+            foreach ( $example in $this.Examples ) {
+                $helpSb.AppendLine($example.ToString())
+                $helpSb.AppendLine()
+            }
+        }
+        if ( $this.HelpLinks.Count -gt 0 ) {
+            $helpSB.AppendLine(".LINK");
+            foreach ( $link in $this.HelpLinks ) {
+                $helpSB.AppendLine($link.ToString())
+            }
+            $helpSb.AppendLine()
+        }
+        $helpSb.Append("#>")
+        return $helpSb.ToString()
     }
+
     [string]GetInvocationCommand() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendLine('if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
+        $sb.AppendLine('    $__boundparms = $PSBoundParameters') # debugging assistance
         $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
         $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
-        $sb.AppendLine('        if ($__PARAMETERMAP[$paramName]) {')
-        $sb.AppendLine('            if ( $param.ParameterType -eq [switch] ) { $__commandArgs += $__PARAMETERMAP[$paramName].OriginalName } ')
-        $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
-        $sb.AppendLine('            else { $__commandArgs += $__PARAMETERMAP[$paramName].OriginalName, $value }')
+        $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
+        $sb.AppendLine('        if ($param) {')
+        $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += $value.IsPresent ? $param.OriginalName : $param.DefaultMissingValue } ')
+        # $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
+        $sb.AppendLine('            else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |%{$_}}')
         $sb.AppendLine('        }')
         $sb.AppendLine('    }')
-        $sb.AppendLine('if ($PSBoundParameters["Debug"]){wait-debugger}')
-        $sb.AppendLine(('    & {0} $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine('    $__commandArgs = $__commandArgs|?{$_}') # strip nulls
+        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    if ( $PSBoundParameters["Verbose"]) {')
+        $sb.AppendLine('         Write-Verbose -Verbose ' + $this.OriginalName)
+        $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
+        $sb.AppendLine('    }')
+        $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
+        $sb.AppendLine(('        & "{0}" $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine("    }")
         $sb.AppendLine("  }")
         return $sb.ToString()
     }
@@ -235,7 +330,7 @@ class Command {
 function New-ParameterInfo {
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$Name,
-        [Parameter(Position=1,Mandatory=$true)][string]$OriginalName
+        [Parameter(Position=1,Mandatory=$true)][AllowEmptyString()][string]$OriginalName
     )
     [ParameterInfo]::new($Name, $OriginalName)
 }
@@ -262,4 +357,10 @@ function New-ProxyCommand {
         [Parameter(Position=1,Mandatory=$true)][string]$Noun
     )
     [Command]::new($Verb, $Noun)
+}
+
+function Import-CommandConfiguration([string]$file) {
+    $text = Get-Content -Read 0 $file
+    $options = [System.Text.Json.JsonSerializerOptions]::new()
+    [System.Text.Json.JsonSerializer]::Deserialize($text, [command], $options)  
 }
