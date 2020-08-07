@@ -10,6 +10,28 @@
       "type": [
         "string"
       ],
+      "enum": [
+        "Add","Approve","Assert",
+        "Backup","Block","Build",
+        "Checkpoint","Clear","Close","Compare","Complete","Compress","Confirm","Connect","Convert","ConvertFrom","ConvertTo","Copy",
+        "Debug","Deny","Deploy","Disable","Disconnect","Dismount",
+        "Edit","Enable","Enter","Exit","Expand","Export",
+        "Find","Format",
+        "Get","Grant","Group",
+        "Hide",
+        "Import","Initialize","Install","Invoke",
+        "Join",
+        "Limit","Lock",
+        "Measure","Merge","Mount","Move",
+        "New",
+        "Open","Optimize","Out",
+        "Ping","Pop","Protect","Publish","Push",
+        "Read","Receive","Redo","Register","Remove","Rename","Repair","Request","Reset","Resize","Resolve","Restart","Restore","Resume","Revoke",
+        "Save","Search","Select","Send","Set","Show","Skip","Split","Start","Step","Stop","Submit","Suspend","Switch","Sync",
+        "Test","Trace",
+        "Unblock","Undo","Uninstall","Unlock","Unprotect","Unpublish","Unregister","Update","Use",
+        "Wait","Watch","Write"
+      ],
       "description" : "The verb of the cmdlet"
     },
     "Noun": {
