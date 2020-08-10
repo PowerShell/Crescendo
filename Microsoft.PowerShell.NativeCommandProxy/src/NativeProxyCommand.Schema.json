@@ -48,6 +48,27 @@
       ],
       "description" : "The native command to be called by the proxy."
     },
+
+    "OutputHandlers": {
+      "required": false,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ParameterSetName": {
+            "required": true,
+            "type": "string"
+          },
+          "Handler": {
+            "required": true,
+            "type": "string"
+          }
+        }
+      }
+    },
+
+
+
     "OriginalCommandElements": {
       "required": false,
       "type": [
