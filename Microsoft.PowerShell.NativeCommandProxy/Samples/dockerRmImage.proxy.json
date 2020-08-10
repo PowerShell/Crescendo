@@ -1,0 +1,19 @@
+{
+    "$schema": "../src/NativeProxyCommand.Schema.json",
+    "Verb": "Remove",
+    "Noun": "DockerImage",
+    "OriginalName": "docker",
+    "SupportsShouldProcess": true,
+    "OriginalCommandElements": [
+        "image",
+        "rm"
+    ],
+    "Parameters": [
+        {
+            "Name": "ID",
+            "OriginalName": "",
+            "Mandatory": true,
+            "ValueFromPipelineByPropertyName": true
+        }
+    ]
+}

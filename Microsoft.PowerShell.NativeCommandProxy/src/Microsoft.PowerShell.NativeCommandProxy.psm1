@@ -139,6 +139,12 @@ class ParameterInfo {
     }
 }
 
+class OutputHandler {
+    [string]$ParameterSetName
+    [string]$Handler # This is a scriptblock which does the conversion to an object
+    OutputHandler() { }
+}
+
 class Command {
     [string]$Verb # PS-proxy name verb
     [string]$Noun # PS-proxy name noun
@@ -157,6 +163,8 @@ class Command {
     [List[ExampleInfo]]$Examples
     [string]$OriginalText
     [string[]]$HelpLinks
+
+    [OutputHandler[]]$OutputHandlers
 
     Command() { }
     Command([string]$Verb, [string]$Noun)
@@ -212,12 +220,33 @@ class Command {
         if ( $parameterMap ) {
             $sb.AppendLine($parameterMap)
         }
+        # Provide for the scriptblocks which handle the output
+        if ( $this.OutputHandlers ) {
+            $sb.AppendLine('    $__outputHandlers = @{')
+            $this.OutputHandlers|Foreach-Object {
+                $s = '{0} = {{ {1} }}' -f $_.ParameterSetName, $_.Handler 
+                $sb.AppendLine($s)
+            }
+            $sb.AppendLine('}')
+        }
+        else {
+            $sb.AppendLine('    $__outputHandlers = @{ Default = { $args[0] } }')
+        }
         $sb.AppendLine("}")
         # construct the command invocation
         # this must exist and should never be null
         # otherwise we won't actually be invoking anything
         $sb.AppendLine("PROCESS {")
-        $sb.AppendLine('    $__commandArgs = @()')
+        if ( $this.OriginalCommandElements.Count -ne 0 ) {
+            $sb.AppendLine('    $__commandArgs = @(')
+            $this.OriginalCommandElements | Foreach-Object {
+                $sb.AppendLine('        "{0}"' -f $_)
+            }
+            $sb.AppendLine('    )')
+        }
+        else {
+            $sb.AppendLine('    $__commandArgs = @()')
+        }
         $sb.AppendLine($this.GetInvocationCommand())
         # add the help
         $help = $this.GetCommandHelp()
@@ -232,6 +261,9 @@ class Command {
     }
     [string]GetParameterMap() {
         $sb = [System.Text.StringBuilder]::new()
+        if ( $this.Parameters.Count -eq 0 ) {
+            return '    $__PARAMETERMAP = @{}'
+        }
         $sb.AppendLine('    $__PARAMETERMAP = @{')
         $this.Parameters |ForEach-Object {
             $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; Position = '{3}'; ParameterType = [{4}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.Position, $_.ParameterType))
@@ -290,7 +322,12 @@ class Command {
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
         $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
-        $sb.AppendLine(('        & "{0}" $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine(('        $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine('    $__handler = $__outputHandlers[$PSCmdlet.ParameterSetName]')
+        $sb.AppendLine('    if (! $__handler ) {')
+        $sb.AppendLine('        $__handler = $__outputHandlers["Default"]')
+        $sb.AppendLine('    }')
+        $sb.AppendLine('    & $__handler $result')
         $sb.AppendLine("    }")
         $sb.AppendLine("  }")
         return $sb.ToString()
