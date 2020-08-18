@@ -1,5 +1,5 @@
 {
-    "$schema": "./NativeProxyCommand.Schema.json",
+    "$schema": "../src/NativeProxyCommand.Schema.json",
     "Verb": "Invoke",
     "Noun": "Tar",
     "OriginalName": "/usr/bin/tar",

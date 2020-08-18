@@ -69,6 +69,7 @@ class ParameterInfo {
     [bool] $ValueFromPipeline
     [bool] $ValueFromPipelineByPropertyName
     [bool] $ValueFromRemainingArguments
+    [bool] $NoGap # this means that we need to construct the parameter as "foo=bar"
 
     ParameterInfo() {
         $this.Position = [int]::MaxValue
@@ -106,6 +107,12 @@ class ParameterInfo {
         }
         if ( $this.ValueFromPipelineByPropertyName ) {
             $elements += 'ValueFromPipelineByPropertyName=$true'
+        }
+        if ( $this.ValueFromRemainingArguments ) {
+            $elements += 'ValueFromRemainingArguments=$true'
+        }
+        if ( $this.Mandatory ) {
+            $elements += 'Mandatory=$true'
         }
         if ( $this.ValueFromRemainingArguments ) {
             $elements += 'ValueFromRemainingArguments=$true'
@@ -266,7 +273,7 @@ class Command {
         }
         $sb.AppendLine('    $__PARAMETERMAP = @{')
         $this.Parameters |ForEach-Object {
-            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; Position = '{3}'; ParameterType = [{4}] }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.Position, $_.ParameterType))
+            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; Position = '{3}'; ParameterType = [{4}]; NoGap = `${5} }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.Position, $_.ParameterType, $_.NoGap))
         }
         $sb.AppendLine("    }")
         return $sb.ToString()
@@ -310,15 +317,16 @@ class Command {
         $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
         $sb.AppendLine('        if ($param) {')
-        $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += $value.IsPresent ? $param.OriginalName : $param.DefaultMissingValue } ')
+        $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += $value.IsPresent ? $param.OriginalName : $param.DefaultMissingValue }')
         # $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
-        $sb.AppendLine('            else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |%{$_}}')
+        $sb.AppendLine('            elseif ( $param.NoGap ) { $__commandArgs += "{0}""{1}""" -f $param.OriginalName, $value }')
+        $sb.AppendLine('            else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |Foreach-Object {$_}}')
         $sb.AppendLine('        }')
         $sb.AppendLine('    }')
-        $sb.AppendLine('    $__commandArgs = $__commandArgs|?{$_}') # strip nulls
+        $sb.AppendLine('    $__commandArgs = $__commandArgs|Where-Object {$_}') # strip nulls
         $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
         $sb.AppendLine('    if ( $PSBoundParameters["Verbose"]) {')
-        $sb.AppendLine('         Write-Verbose -Verbose ' + $this.OriginalName)
+        $sb.AppendLine('         Write-Verbose -Verbose -Message ' + $this.OriginalName)
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
         $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
@@ -397,7 +405,11 @@ function New-ProxyCommand {
 }
 
 function Import-CommandConfiguration([string]$file) {
-    $text = Get-Content -Read 0 $file
+    # $text = Get-Content -Read 0 $file
     $options = [System.Text.Json.JsonSerializerOptions]::new()
-    [System.Text.Json.JsonSerializer]::Deserialize($text, [command], $options)  
+    # this dance is to support multiple configurations in a single file
+    # The deserializer doesn't seem to support creating [command[]]
+    Get-Content $file | ConvertFrom-Json | ConvertTo-Json | Foreach-Object {
+        [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)  
+    }
 }

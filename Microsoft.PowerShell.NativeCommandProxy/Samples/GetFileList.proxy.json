@@ -1,0 +1,10 @@
+{
+    "$schema": "../src/NativeProxyCommand.Schema.json",
+    "Verb": "Get",
+    "Noun":"FileList",
+    "OriginalName": "/bin/ls",
+    "Parameters": [
+        {"Name": "Path","OriginalName": "", "OriginalPosition": 1},
+        {"Name": "Detail","OriginalName": "-l","ParameterType": "switch"}
+    ]
+}

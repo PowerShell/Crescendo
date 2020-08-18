@@ -1,0 +1,21 @@
+{
+    "$schema": "../src/NativeProxyCommand.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "DD",
+    "OriginalName": "/bin/dd",
+    "SupportsShouldProcess": true,
+    "Parameters": [
+        {
+            "Name": "Input",
+            "OriginalName": "if=",
+            "NoGap": true,
+            "ParameterType": "string"
+        },
+        {
+            "Name": "Output",
+            "OriginalName": "of=",
+            "NoGap": true,
+            "ParameterType": "string"
+        }
+    ]
+}
