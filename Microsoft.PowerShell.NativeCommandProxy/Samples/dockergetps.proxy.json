@@ -11,7 +11,7 @@
     "OutputHandlers": [
         {
         "ParameterSetName": "Default",
-        "Handler": "$args[0] | convertfrom-json | Add-Member -TypeName DockerPs -PassThru"
+        "Handler": "$args[0] | convertfrom-json | Add-Member -TypeName DockerProcess -PassThru"
         }
     ]
 

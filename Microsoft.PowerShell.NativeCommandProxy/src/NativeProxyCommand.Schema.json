@@ -272,6 +272,10 @@
             "required": false,
             "type": "boolean"
           },
+          "NoGap": {
+            "required":false,
+            "type": "boolean"
+          },
           "ValueFromPipelineByPropertyName": {
             "required": false,
             "type": "boolean"
