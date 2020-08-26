@@ -409,7 +409,13 @@ function Import-CommandConfiguration([string]$file) {
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
-    Get-Content $file | ConvertFrom-Json | ConvertTo-Json | Foreach-Object {
+    Get-Content $file | ConvertFrom-Json -depth 10| ConvertTo-Json -depth 10| Foreach-Object {
         [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)  
     }
 }
+
+function Export-Schema() {
+    $sGen = [Newtonsoft.Json.Schema.JsonSchemaGenerator]::new()
+    $sGen.Generate([command])
+}
+
