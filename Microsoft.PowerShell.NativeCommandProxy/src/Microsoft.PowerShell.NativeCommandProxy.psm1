@@ -3,20 +3,20 @@
 # =========================================================================
 using namespace System.Collections.Generic
 class UsageInfo { # used for .SYNOPSIS of the comment-based help
-    [string]$Usage
+    [string]$Synopsis
     [bool]$SupportsFlags
     [bool]$HasOptions
     hidden [string[]]$OriginalText
 
     UsageInfo() { }
-    UsageInfo([string] $usage)
+    UsageInfo([string] $synopsis)
     {
-        $this.Usage = $usage
+        $this.Synopsis = $synopsis
     }
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
     {
-        return ((".SYNOPSIS",$this.Usage) -join "`n")
+        return ((".SYNOPSIS",$this.synopsis) -join "`n")
     }
 }
 
@@ -193,7 +193,7 @@ class Command {
 
     [string]GetSynopsis() {
         if ( $this.Description ) {
-            return $this.Usage.ToString()
+            return ([string]$this.Usage)
         }
         else {
             if ( Get-Command $this.OriginalName ) {
