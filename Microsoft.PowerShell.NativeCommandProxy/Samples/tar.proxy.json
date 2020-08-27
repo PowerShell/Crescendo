@@ -6,7 +6,7 @@
     "SupportsShouldProcess": true,
     "Description": "Just look at the man page",
     "Usage" : {
-        "Usage": "tar wrapper"
+        "Synopsis": "tar wrapper"
     },
     "HelpLinks": [
         "link1",
