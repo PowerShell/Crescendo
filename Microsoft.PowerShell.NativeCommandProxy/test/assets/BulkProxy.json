@@ -1,0 +1,13 @@
+{
+    "$schema": "../../src/NativeProxyCommand.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "StreamProxy",
+    "OriginalName": "New-StreamOutput",
+    "OutputHandlers": [
+        {
+            "ParameterSetName": "Default",
+            "StreamOutput": false,
+            "Handler": "$args[0] | %{$_.otime = [datetime]::now; $_}"
+        }
+    ]
+}

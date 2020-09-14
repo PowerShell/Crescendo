@@ -12,7 +12,8 @@
     "OutputHandlers": [
         {
         "ParameterSetName": "Default",
-        "Handler": "$args[0] | convertfrom-json | Add-Member -TypeName DockerImage -PassThru"
+        "Handler": "$input | convertfrom-json | add-member -typename DockerImage -PassThru",
+        "StreamOutput": true
         }
     ]
 }
