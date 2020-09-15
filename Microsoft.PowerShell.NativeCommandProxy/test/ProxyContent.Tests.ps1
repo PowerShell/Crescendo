@@ -84,6 +84,5 @@ Describe "The help content for the proxy function is correct" {
             $observed = Get-Content -read 0 TESTDRIVE:/output/proxyoutput.txt
             $expected | Should -Be $observed
         }
-
     }
 }
