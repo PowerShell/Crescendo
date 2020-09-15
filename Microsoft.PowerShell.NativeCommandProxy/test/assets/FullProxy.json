@@ -1,0 +1,61 @@
+{
+    "$schema": "../../src/NativeProxyCommand.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "Thing",
+    "OriginalName": "originalCommand",
+    "Usage": {
+        "Synopsis": "The synopsis"
+    },
+    "Description": "This is the description for the proxy",
+    "Examples" : [
+        {
+           "Command" : "invoke-thing -parameter1 abc",
+           "Description": "First example description",
+           "OriginalCommand": "The first original example" 
+        },
+        {
+           "Command" : "invoke-thing -parameter2 def",
+           "Description": "Second example description",
+           "OriginalCommand": "The second original example" 
+        }
+    ],
+    "HelpLinks": [
+        "link1",
+        "link2"
+    ],
+    "Aliases": [
+        "alias1",
+        "alias2"
+    ],
+    "DefaultParameterSetName": "pset1",
+    "Parameters": [
+
+        {
+            "Name": "Parameter1",
+            "OriginalName": "--parameter1",
+            "Description": "param1 description",
+            "Mandatory": true,
+            "ParameterSetName": [ "pset1" ],
+            "Aliases": [ "a1" ],
+            "ParameterType": "string",
+            "AdditionalParameterAttributes": [
+                "[ValidateSet('one','two')]",
+                "[ValidateLength(1,10)]"
+            ]
+        },
+        {
+            "Name": "Parameter2",
+            "OriginalName": "--parameter2",
+            "Description": "param2 description",
+            "Mandatory": true,
+            "ParameterSetName": [ "pset2" ],
+            "Aliases": [ "a2" ],
+            "ParameterType": "string",
+            "AdditionalParameterAttributes": [
+                "[ValidateSet('one','two')]",
+                "[ValidateLength(1,10)]"
+            ]
+        }
+
+    ]
+}

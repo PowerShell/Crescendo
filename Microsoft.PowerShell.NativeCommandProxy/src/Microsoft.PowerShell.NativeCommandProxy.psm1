@@ -3,20 +3,20 @@
 # =========================================================================
 using namespace System.Collections.Generic
 class UsageInfo { # used for .SYNOPSIS of the comment-based help
-    [string]$Usage
+    [string]$Synopsis
     [bool]$SupportsFlags
     [bool]$HasOptions
     hidden [string[]]$OriginalText
 
     UsageInfo() { }
-    UsageInfo([string] $usage)
+    UsageInfo([string] $synopsis)
     {
-        $this.Usage = $usage
+        $this.Synopsis = $synopsis
     }
 
     [string]ToString() #  this is to be replaced with actual proxy-generation code
     {
-        return ((".SYNOPSIS",$this.Usage) -join "`n")
+        return ((".SYNOPSIS",$this.synopsis) -join "`n")
     }
 }
 
@@ -149,6 +149,7 @@ class ParameterInfo {
 class OutputHandler {
     [string]$ParameterSetName
     [string]$Handler # This is a scriptblock which does the conversion to an object
+    [bool]$StreamOutput # this indicates whether the output should be streamed to the handler
     OutputHandler() { }
 }
 
@@ -163,6 +164,7 @@ class Command {
     [string] $DefaultParameterSetName
     [bool] $SupportsShouldProcess
     [bool] $SupportsTransactions
+    [bool] $NoInvocation # certain scenarios want to use the proxy as a front end. When true, the proxy will return the arguments only.
 
     [string]$Description
     [UsageInfo]$Usage
@@ -193,7 +195,7 @@ class Command {
 
     [string]GetSynopsis() {
         if ( $this.Description ) {
-            return $this.Usage.ToString()
+            return ([string]$this.Usage)
         }
         else {
             if ( Get-Command $this.OriginalName ) {
@@ -231,13 +233,13 @@ class Command {
         if ( $this.OutputHandlers ) {
             $sb.AppendLine('    $__outputHandlers = @{')
             $this.OutputHandlers|Foreach-Object {
-                $s = '{0} = {{ {1} }}' -f $_.ParameterSetName, $_.Handler 
+                $s = '        {0} = @{{ StreamOutput = ${2}; Handler = {{ {1} }} }}' -f $_.ParameterSetName, $_.Handler, $_.StreamOutput
                 $sb.AppendLine($s)
             }
-            $sb.AppendLine('}')
+            $sb.AppendLine('    }')
         }
         else {
-            $sb.AppendLine('    $__outputHandlers = @{ Default = { $args[0] } }')
+            $sb.AppendLine('    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input } } }')
         }
         $sb.AppendLine("}")
         # construct the command invocation
@@ -310,9 +312,9 @@ class Command {
 
     [string]GetInvocationCommand() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
-        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
         $sb.AppendLine('    $__boundparms = $PSBoundParameters') # debugging assistance
+        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
+        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
         $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
         $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
@@ -324,20 +326,31 @@ class Command {
         $sb.AppendLine('        }')
         $sb.AppendLine('    }')
         $sb.AppendLine('    $__commandArgs = $__commandArgs|Where-Object {$_}') # strip nulls
+        if ( $this.NoInvocation ) {
+        $sb.AppendLine('    return $__commandArgs')
+        }
+        else {
         $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
         $sb.AppendLine('    if ( $PSBoundParameters["Verbose"]) {')
         $sb.AppendLine('         Write-Verbose -Verbose -Message ' + $this.OriginalName)
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
-        $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
-        $sb.AppendLine(('        $result = & "{0}" $__commandArgs' -f $this.OriginalName))
-        $sb.AppendLine('    $__handler = $__outputHandlers[$PSCmdlet.ParameterSetName]')
-        $sb.AppendLine('    if (! $__handler ) {')
-        $sb.AppendLine('        $__handler = $__outputHandlers["Default"]')
+        $sb.AppendLine('    $__handlerInfo = $__outputHandlers[$PSCmdlet.ParameterSetName]')
+        $sb.AppendLine('    if (! $__handlerInfo ) {')
+        $sb.AppendLine('        $__handlerInfo = $__outputHandlers["Default"] # Guaranteed to be present') 
         $sb.AppendLine('    }')
-        $sb.AppendLine('    & $__handler $result')
+        $sb.AppendLine('    $__handler = $__handlerInfo.Handler')
+        $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
+        $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
+       $sb.AppendLine(('            & "{0}" $__commandArgs | & $__handler' -f $this.OriginalName))
+        $sb.AppendLine('        }')
+        $sb.AppendLine('        else {')
+       $sb.AppendLine(('            $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine('            & $__handler $result')
+        $sb.AppendLine('        }')
         $sb.AppendLine("    }")
-        $sb.AppendLine("  }")
+        }
+        $sb.AppendLine("  } # end PROCESS") # always present
         return $sb.ToString()
     }
     [string]GetCommandDeclaration() {
