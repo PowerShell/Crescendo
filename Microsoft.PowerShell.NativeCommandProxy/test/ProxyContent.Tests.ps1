@@ -60,6 +60,29 @@ Describe "The help content for the proxy function is correct" {
             param ( [string]$name, [string]$value, [string]$expectedValue )
             $value | Should -Be $expectedValue
         }
+    }
 
+    Context "Testing proxy operation" {
+        BeforeAll {
+            Set-Content -Path TESTDRIVE:/file1 -Value "This is a test"
+            Set-Content -Path TESTDRIVE:/file2 -Value "This is another test"
+            New-Item -Type Directory -Path TESTDRIVE:/output
+            Set-Content -Path TESTDRIVE:/output/proxyoutput.txt -Value "dummy output" # set dummy content so the lists are the same
+            If ( $IsWindows ) {
+                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/DirProxy.json").ToString()
+                cmd /c dir $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
+            }
+            else {
+                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/Ls.Proxy.json").ToString()
+                /bin/ls -l $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
+            }
+            Invoke-FileListProxy -Detail -Path TESTDRIVE:/ > TESTDRIVE:/output/proxyoutput.txt
+        }
+
+        It "the proxy should produce the same results as the native app" {
+            $expected = Get-Content -read 0 TESTDRIVE:/output/nativeoutput.txt
+            $observed = Get-Content -read 0 TESTDRIVE:/output/proxyoutput.txt
+            $expected | Should -Be $observed
+        }
     }
 }

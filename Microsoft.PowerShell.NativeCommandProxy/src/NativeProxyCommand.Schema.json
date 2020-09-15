@@ -57,11 +57,18 @@
         "properties": {
           "ParameterSetName": {
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "The name of the parameter set which will use the handler"
           },
           "Handler": {
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "This is the code which converts the output to objects"
+          },
+          "StreamOutput": {
+            "required": false,
+            "type": "boolean",
+            "description": "When used, output will be piped as a stream to the output handler."
           }
         }
       }
@@ -342,6 +349,11 @@
           "null"
         ]
       }
+    },
+    "NoInvocation": {
+      "type":"boolean",
+      "required": false,
+      "description": "This option returns the arguments which would be sent to the native executable. If used, the native application will not be invoked."
     }
   },
   "required" : ["Verb","Noun","OriginalName"],
