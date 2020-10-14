@@ -76,7 +76,7 @@ Describe "The help content for the proxy function is correct" {
                 Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/Ls.Proxy.json").ToString()
                 /bin/ls -l $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
-            Invoke-FileListProxy -Detail -Path TESTDRIVE:/ > TESTDRIVE:/output/proxyoutput.txt
+            Invoke-FileListProxy -Detail -Path $TESTDRIVE > TESTDRIVE:/output/proxyoutput.txt
         }
 
         It "the proxy should produce the same results as the native app" {
