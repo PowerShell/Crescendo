@@ -58,7 +58,7 @@ class ParameterInfo {
     # so we need way to provide for this
     [object]$DefaultMissingValue
     [string]$ParameterType = 'object' # PS type
-    
+
     [string[]]$AdditionalParameterAttributes
 
     [bool] $Mandatory
@@ -156,7 +156,7 @@ class OutputHandler {
 class Command {
     [string]$Verb # PS-proxy name verb
     [string]$Noun # PS-proxy name noun
-    
+
     [string]$OriginalName # e.g. "cubectl get user" -> "cubectl"
     [string[]]$OriginalCommandElements # e.g. "cubectl get user" -> "get", "user"
 
@@ -337,7 +337,7 @@ class Command {
         $sb.AppendLine('    }')
         $sb.AppendLine('    $__handlerInfo = $__outputHandlers[$PSCmdlet.ParameterSetName]')
         $sb.AppendLine('    if (! $__handlerInfo ) {')
-        $sb.AppendLine('        $__handlerInfo = $__outputHandlers["Default"] # Guaranteed to be present') 
+        $sb.AppendLine('        $__handlerInfo = $__outputHandlers["Default"] # Guaranteed to be present')
         $sb.AppendLine('    }')
         $sb.AppendLine('    $__handler = $__handlerInfo.Handler')
         $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
@@ -386,6 +386,7 @@ class Command {
 
 # proxy functions to create the classes since you can't access the classes outside the module
 function New-ParameterInfo {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$Name,
         [Parameter(Position=1,Mandatory=$true)][AllowEmptyString()][string]$OriginalName
@@ -394,6 +395,7 @@ function New-ParameterInfo {
 }
 
 function New-UsageInfo {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$usage
         )
@@ -401,6 +403,7 @@ function New-UsageInfo {
 }
 
 function New-ExampleInfo {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$command,
         [Parameter(Position=1,Mandatory=$true)][string]$originalCommand,
@@ -410,6 +413,7 @@ function New-ExampleInfo {
 }
 
 function New-ProxyCommand {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$Verb,
         [Parameter(Position=1,Mandatory=$true)][string]$Noun
@@ -423,7 +427,7 @@ function Import-CommandConfiguration([string]$file) {
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
     Get-Content $file | ConvertFrom-Json -depth 10| ConvertTo-Json -depth 10| Foreach-Object {
-        [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)  
+        [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
     }
 }
 
