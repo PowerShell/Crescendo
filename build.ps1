@@ -22,21 +22,21 @@ if (-not $test -and -not $build -and -not $publish) {
 [bool]$verboseValue = $PSBoundParameters['Verbose'].IsPresent ? $PSBoundParameters['Verbose'].ToBool() : $false
 
 $FileManifest = @(
-    @{ SRC = "${SampleRoot}"; NAME = "GetFileList.proxy.json"         ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dd.proxy.json"                  ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockerRmImage.proxy.json"       ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockergetimage.proxy.json"      ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockergetps.proxy.json"         ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockerinspectimage.proxy.json"  ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "ifconfig.proxy.json"            ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "ls.proxy.json"                  ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "tar.proxy.json"                 ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "who.proxy.json"                 ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${HelpRoot}";   NAME = "about_NativeCommandProxy.md"    ; DEST = "OUTDIR/help/${Lang}" }
-    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                   ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "NativeCommandProxy.md"          ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                   ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "NativeProxyCommand.Schema.json" ; DEST = "OUTDIR" }
+    @{ SRC = "${SampleRoot}"; NAME = "GetFileList.proxy.json"         ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dd.proxy.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockerRmImage.proxy.json"       ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockergetimage.proxy.json"      ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockergetps.proxy.json"         ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockerinspectimage.proxy.json"  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "ifconfig.proxy.json"            ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "ls.proxy.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "tar.proxy.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "who.proxy.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${HelpRoot}";   NAME = "about_NativeCommandProxy.md"    ; SIGN = $false ; DEST = "OUTDIR/help/${Lang}" }
+    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                   ; SIGN = $false ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "NativeCommandProxy.md"          ; SIGN = $false ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                   ; SIGN = $false ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "NativeProxyCommand.Schema.json" ; SIGN = $false ; DEST = "OUTDIR" }
 )
 
 if ($build) {
@@ -49,7 +49,7 @@ if ($publish) {
         $null = New-Item -ItemType Directory $PubDir -Force
     }
     foreach ($file in $FileManifest) {
-        if ($signed) {
+        if ($signed -and $file.SIGN) {
             $src = Join-Path -Path $PSScriptRoot -AdditionalChildPath $file.NAME -ChildPath signed
         }
         else {
@@ -62,7 +62,7 @@ if ($publish) {
         if (-not (Test-Path $targetDir)) {
             $null = New-Item -ItemType Directory $targetDir -Force
         }
-        Copy-Item -Path $src -destination $targetDir
+        Copy-Item -Path $src -destination $targetDir -Verbose:$verboseValue
     }
 }
 
