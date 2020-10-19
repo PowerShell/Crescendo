@@ -1,0 +1,23 @@
+parameters:
+  jobName: release
+  imageName: windows-2019
+  displayName: Release
+
+jobs:
+- job: ${{ parameters.jobName }}
+  pool:
+    vmImage: ${{ parameters.imageName }}
+  displayName: ${{ parameters.displayName }}
+  steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download artifacts'
+    inputs:
+      buildType: current
+      downloadType: single
+      artifactName: NuPkg
+      downloadPath: '$(System.ArtifactsDirectory)'
+  - task: NuGetToolInstaller@1
+    displayName: 'Install NuGet'
+  - pwsh: |
+        nuget push $(System.ArtifactsDirectory)\nupkg\*.nupkg -ApiKey $(NuGetApiKey) -Source https://www.powershellgallery.com/api/v2/package/ -NonInteractive
+    displayName: Publish Package

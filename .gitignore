@@ -1,0 +1,6 @@
+/out/
+/signed/
+.DS_Store
+binskim.log
+binskim-results.xml
+*.pester.xml
