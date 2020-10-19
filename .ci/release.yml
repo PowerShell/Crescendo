@@ -19,5 +19,5 @@ jobs:
   - task: NuGetToolInstaller@1
     displayName: 'Install NuGet'
   - pwsh: |
-        nuget push $(System.ArtifactsDirectory)\nupkg\*.nupkg -ApiKey $(NuGetApiKey) -Source https://www.powershellgallery.com/api/v2/package/ -NonInteractive
+        Write-Verbose -Verbose "nuget push $(System.ArtifactsDirectory)\nupkg\*.nupkg -ApiKey $(NuGetApiKey) -Source https://www.powershellgallery.com/api/v2/package/ -NonInteractive"
     displayName: Publish Package

@@ -1,5 +1,5 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
-param ([switch]$test, [switch]$build, [switch]$publish, [switch]$sign)
+param ([switch]$test, [switch]$build, [switch]$publish, [switch]$signed)
 
 $Name = "Microsoft.PowerShell.NativeCommandProxy"
 $Lang = "en-US"
@@ -11,31 +11,32 @@ $SampleRoot = "${ModRoot}/Samples"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
 $Version = $ManifestData.ModuleVersion
-$PubRoot = "${PSScriptRoot}/out/${Name}"
-$PubDir  = "${PubRoot}/${Version}"
+$PubRoot  = "${PSScriptRoot}/out/${Name}"
+$SignRoot = "${PSScriptRoot}/signed"
+$PubDir   = "${PubRoot}/${Version}"
 
-if ( -not $test -and -not $build -and -not $publish -and -not $sign ) {
-    throw "must use 'build', 'test', 'publish', or 'sign'"
+if (-not $test -and -not $build -and -not $publish) {
+    throw "must use 'build', 'test', 'publish'"
 }
 
 [bool]$verboseValue = $PSBoundParameters['Verbose'].IsPresent ? $PSBoundParameters['Verbose'].ToBool() : $false
 
 $FileManifest = @(
-    @{ SRC = "${SampleRoot}/GetFileList.proxy.json"         ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/dd.proxy.json"                  ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/dockerRmImage.proxy.json"       ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/dockergetimage.proxy.json"      ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/dockergetps.proxy.json"         ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/dockerinspectimage.proxy.json"  ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/ifconfig.proxy.json"            ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/ls.proxy.json"                  ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/tar.proxy.json"                 ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}/who.proxy.json"                 ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${HelpRoot}/about_NativeCommandProxy.md"      ; DEST = "OUTDIR/help/${Lang}" }
-    @{ SRC = "${SrcRoot}/${Name}.psm1"                      ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}/NativeCommandProxy.md"             ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}/${Name}.psd1"                      ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}/NativeProxyCommand.Schema.json"    ; DEST = "OUTDIR" }
+    @{ SRC = "${SampleRoot}"; NAME = "GetFileList.proxy.json"         ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dd.proxy.json"                  ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockerRmImage.proxy.json"       ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockergetimage.proxy.json"      ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockergetps.proxy.json"         ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockerinspectimage.proxy.json"  ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "ifconfig.proxy.json"            ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "ls.proxy.json"                  ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "tar.proxy.json"                 ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "who.proxy.json"                 ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${HelpRoot}";   NAME = "about_NativeCommandProxy.md"    ; DEST = "OUTDIR/help/${Lang}" }
+    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                   ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "NativeCommandProxy.md"          ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                   ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "NativeProxyCommand.Schema.json" ; DEST = "OUTDIR" }
 )
 
 if ($build) {
@@ -48,10 +49,15 @@ if ($publish) {
         $null = New-Item -ItemType Directory $PubDir -Force
     }
     foreach ($file in $FileManifest) {
-        $src = $file.SRC
+        if ($signed) {
+            $src = Join-Path -Path $PSScriptRoot -AdditionalChildPath $file.NAME -ChildPath signed
+        }
+        else {
+            $src = Join-Path -Path $file.SRC -ChildPath $file.NAME
+        }
         $targetDir = $file.DEST -creplace "OUTDIR","$PubDir"
-        if (-not (Test-Path $file.SRC)) {
-            throw ("file '" + $file.SRC)
+        if (-not (Test-Path $src)) {
+            throw ("file '" + $src + "' not found")
         }
         if (-not (Test-Path $targetDir)) {
             $null = New-Item -ItemType Directory $targetDir -Force
