@@ -2,7 +2,7 @@
   "TestPath": "Microsoft.PowerShell.NativeCommandProxy/test",
   "BuildOutputPath": "out",
   "SourcePath": "Microsoft.PowerShell.NativeCommandProxy/src",
-  "ModuleName": "NativeCommandProxy",
+  "ModuleName": "Microsoft.PowerShell.NativeCommandProxy",
   "HelpPath": "Microsoft.PowerShell.NativeCommandProxy/help",
   "SignedOutputPath": "signed",
   "Culture": "en-US"
