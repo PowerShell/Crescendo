@@ -11,7 +11,8 @@ $SampleRoot = "${ModRoot}/Samples"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
 $Version = $ManifestData.ModuleVersion
-$PubRoot  = "${PSScriptRoot}/out/${Name}"
+$PubBase  = "${PSScriptRoot}/out"
+$PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed"
 $PubDir   = "${PubRoot}/${Version}"
 
@@ -64,6 +65,13 @@ if ($publish) {
         }
         Copy-Item -Path $src -destination $targetDir -Verbose:$verboseValue
     }
+    # now constuct a nupkg by registering a local repository and calling publish module
+    $repoName = [guid]::newGuid().ToString("N")
+    Register-PSRepository -Name $repoName -SourceLocation ${PubBase} -InstallationPolicy Trusted
+    Publish-Module -Path $PubDir -Repository $repoName
+    Unregister-PSRepository -Name $repoName
+
+    
 }
 
 if ($test) {
