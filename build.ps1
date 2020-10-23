@@ -70,8 +70,9 @@ if ($publish) {
     Register-PSRepository -Name $repoName -SourceLocation ${PubBase} -InstallationPolicy Trusted
     Publish-Module -Path $PubDir -Repository $repoName
     Unregister-PSRepository -Name $repoName
+    Get-ChildItem $PubBase | Out-String
     $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
-    $nupkgPath = Join-Path $PubDir $nupkgName
+    $nupkgPath = Join-Path $PubBase $nupkgName
     if ($env:TF_BUILD) {
         # In Azure DevOps
         Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"
