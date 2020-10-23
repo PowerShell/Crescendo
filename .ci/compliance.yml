@@ -50,18 +50,18 @@ steps:
   displayName: 'Publish Security Analysis Logs to Build Artifacts'
   continueOnError: true
 
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
-  displayName: 'TSA upload to Codebase: PSNativeCommandProxy_2020 Stamp: Azure'
-  inputs:
-    codeBaseName: PSNativeCommandProxy_2020
-    tsaVersion: TsaV2
-    uploadFortifySCA: false
-    uploadFxCop: false
-    uploadModernCop: false
-    uploadPREfast: false
-    uploadRoslyn: false
-    uploadTSLint: false
-    uploadAPIScan: false
+#- task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+#  displayName: 'TSA upload to Codebase: PSNativeCommandProxy_2020 Stamp: Azure'
+#  inputs:
+#    codeBaseName: PSNativeCommandProxy_2020
+#    tsaVersion: TsaV2
+#    uploadFortifySCA: false
+#    uploadFxCop: false
+#    uploadModernCop: false
+#    uploadPREfast: false
+#    uploadRoslyn: false
+#    uploadTSLint: false
+#    uploadAPIScan: false
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
   displayName: 'Create Security Analysis Report'
