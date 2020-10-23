@@ -51,9 +51,9 @@ steps:
   continueOnError: true
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
-  displayName: 'TSA upload to Codebase: PSNativeCommandProxy2020 Stamp: Azure'
+  displayName: 'TSA upload to Codebase: PSNativeCommandProxy_2020 Stamp: Azure'
   inputs:
-    codeBaseName: PSNativeCommandProxy2020
+    codeBaseName: PSNativeCommandProxy_2020
     tsaVersion: TsaV2
     uploadFortifySCA: false
     uploadFxCop: false
