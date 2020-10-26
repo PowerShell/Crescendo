@@ -73,7 +73,7 @@ Describe "The help content for the proxy function is correct" {
                 cmd /c dir $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
             else {
-                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/Ls.Proxy.json").ToString()
+                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/ls.proxy.json").ToString()
                 /bin/ls -l $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
             Invoke-FileListProxy -Detail -Path $TESTDRIVE > TESTDRIVE:/output/proxyoutput.txt
