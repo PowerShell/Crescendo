@@ -69,7 +69,7 @@ Describe "The help content for the proxy function is correct" {
             New-Item -Type Directory -Path TESTDRIVE:/output
             Set-Content -Path TESTDRIVE:/output/proxyoutput.txt -Value "dummy output" # set dummy content so the lists are the same
             If ( $IsWindows ) {
-                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/DirProxy.json").ToString()
+                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/Dir.Proxy.json").ToString()
                 cmd /c dir $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
             else {

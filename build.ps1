@@ -82,6 +82,11 @@ if ($publish) {
 }
 
 if ($test) {
+    # be sure to not get pester 5
+    if ( Get-Module Pester ) {
+        Get-Module Pester | Where-Object { $_.Version -gt "4.9.9" } | Remove-Module
+    }
+    Import-Module -Force -Name Pester -MaximumVersion 4.9.9
 
     Import-Module -force "${PSScriptRoot}/Microsoft.PowerShell.NativeCommandProxy/src/Microsoft.PowerShell.NativeCommandProxy.psd1"
     Push-Location "${PSScriptRoot}/Microsoft.PowerShell.NativeCommandProxy/test"
