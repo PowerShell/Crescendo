@@ -28,7 +28,7 @@ Describe "Unit tests for NativeCommandProxy" {
     }
 
     Context "Proxy function content" {
-        It "correctly creates the proxy function code" {
+        It "correctly creates the proxy function code" -skip:$IsWindows {
             $pc = New-ProxyCommand -Verb $verb -Noun $noun
             $pc.OriginalName = "/bin/ls"
             $s = $pc.ToString()
@@ -36,7 +36,7 @@ Describe "Unit tests for NativeCommandProxy" {
             $s | Should -Be $expectedResult
         }
 
-        It "correctly creates the proxy function code with a parameter" {
+        It "correctly creates the proxy function code with a parameter" -skip:$IsWindows {
             $pc = New-ProxyCommand -Verb $verb -Noun $noun
             $pc.OriginalName = "/bin/ls"
             $pc.Parameters.Add((New-ParameterInfo -Name "pName" -OriginalName "--OriginalName"))

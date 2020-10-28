@@ -1,0 +1,100 @@
+name: Build-$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:.rr)
+trigger:
+  # Batch merge builds together while a merge build is running
+  batch: true
+  branches:
+    include:
+    - master
+pr:
+  branches:
+    include:
+    - master
+
+stages:
+- stage: Build
+  displayName: Build Native Command Proxy Package
+  jobs:
+  - job: BuildPkg
+    displayName: Build Package
+    pool:
+      vmImage: windows-2019
+    steps:
+    - pwsh: |
+        Install-module Pester -Force -MaximumVersion 4.99
+      displayName: Install dependencies - Pester
+      timeoutInMinutes: 10
+
+    - pwsh: |
+        Install-Module -Name "platyPS" -Force
+      displayName: Install dependencies - PlatyPS
+      timeoutInMinutes: 10
+
+    - pwsh: |
+        Install-Module -Name "PSScriptAnalyzer" -RequiredVersion 1.19.1 -Force
+      displayName: Install PSScriptAnalyzer
+      timeoutInMinutes: 10
+
+    - pwsh: |
+        Install-Module -Name PSPackageProject -Force
+      displayName: Install PSPackageProject module
+      timeoutInMinutes: 10
+
+    - pwsh: |
+        $(Build.SourcesDirectory)/build.ps1 -Build
+      displayName: Build
+
+    - pwsh: |
+        #Write-Verbose "BUILD_OUTPUT_PATH- $env:BUILD_OUTPUT_PATH" -Verbose
+        #Write-Verbose "SIGNED_OUTPUT_PATH- $env:SIGNED_OUTPUT_PATH" -Verbose
+        #Copy-Item $env:BUILD_OUTPUT_PATH $env:SIGNED_OUTPUT_PATH -Recurse -Force
+        Write-Verbose -Verbose "Not signing yet"
+      displayName: Build Signing Placeholder
+
+    - pwsh: |
+        $(Build.SourcesDirectory)/build.ps1 -Publish -Signed
+      displayName: Publish
+      timeoutInMinutes: 10
+
+    - pwsh: |
+        Copy-Item $(Build.SourcesDirectory)/out/*.nupkg $(System.ArtifactsDirectory) -Verbose
+      displayName: Copy nupgk to artifacts
+      timeoutInMinutes: 10
+
+- stage: Compliance
+  displayName: Compliance
+  dependsOn: Build
+  jobs:
+  - job: ComplianceJob
+    pool:
+      name: Package ES CodeHub Lab E
+    steps:
+    - template: compliance.yml
+
+- stage: Test
+  displayName: Test Package
+  jobs:
+  - template: test.yml
+    parameters:
+      jobName: TestPkgWin
+      displayName: PowerShell Core on Windows
+      imageName: windows-2019
+
+  - template: test.yml
+    parameters:
+      jobName: TestPkgUbuntu16
+      displayName: PowerShell Core on Ubuntu 16.04
+      imageName: ubuntu-16.04
+
+  - template: test.yml
+    parameters:
+      jobName: TestPkgWinMacOS
+      displayName: PowerShell Core on macOS
+      imageName: macOS-10.14
+
+- stage: Release
+  displayName: Release Package
+  # add `succeeded(),` to the and statement
+  condition: and( eq(variables['Build.Reason'], 'Manual'), eq(variables['Publish'], 'Yes'))
+  jobs:
+  - template: release.yml
+
