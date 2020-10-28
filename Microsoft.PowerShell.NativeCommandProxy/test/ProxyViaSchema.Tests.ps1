@@ -43,6 +43,5 @@ Describe "Create proxy from Schema" {
             $observed = $exportAst.CommandElements.Elements.Value
             $observed | Should -Be $functionNames
         }
-        
     }
 }
