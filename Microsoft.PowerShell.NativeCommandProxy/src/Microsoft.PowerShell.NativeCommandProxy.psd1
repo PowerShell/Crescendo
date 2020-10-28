@@ -6,10 +6,9 @@
 
 # Script module or binary module file associated with this manifest.
 RootModule = 'Microsoft.PowerShell.NativeCommandProxy.psm1'
-NestedModules = @('DockerGenerator.psm1', 'KubectlGenerator.psm1')
 
 # Version number of this module.
-ModuleVersion = '0.3.0'
+ModuleVersion = '0.3.1'
 
 # ID used to uniquely identify this module
 GUID = '2dd09744-1ced-4636-a8ce-09a0bf0e566a'
@@ -27,12 +26,9 @@ PowerShellVersion = '5.1'
 
 # Functions to export from this module
 FunctionsToExport = @(
-    'New-DockerProxy',
-    'New-KubectlProxy',
     'New-ExampleInfo',
     'New-ProxyCommand',
     'New-ParameterInfo',
-    'New-UsageInfo',
     'New-UsageInfo',
     'Import-CommandConfiguration',
     'Export-Schema'
