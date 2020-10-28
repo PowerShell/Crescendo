@@ -31,7 +31,8 @@ FunctionsToExport = @(
     'New-ParameterInfo',
     'New-UsageInfo',
     'Import-CommandConfiguration',
-    'Export-Schema'
+    'Export-Schema',
+    'Export-ProxyModule'
     )
 
 HelpInfoURI = 'https://github.com/PowerShell/PowerShell'
