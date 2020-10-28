@@ -10,6 +10,13 @@ pr:
     include:
     - master
 
+resources:
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
+
 stages:
 - stage: Build
   displayName: Build Native Command Proxy Package
@@ -66,9 +73,11 @@ stages:
   jobs:
   - job: ComplianceJob
     pool:
-      name: Package ES CodeHub Lab E
+      vmImage: Windows-latest
     steps:
-    - template: compliance.yml
+    - checkout: self
+    - checkout: ComplianceRepo
+    - template: ci-compliance.yml@ComplianceRepo
 
 - stage: Test
   displayName: Test Package
