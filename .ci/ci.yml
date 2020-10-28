@@ -77,7 +77,7 @@ stages:
     steps:
     - checkout: self
     - checkout: ComplianceRepo
-    - template: ci-compliance.yml
+    - template: ci-compliance.yml@ComplianceRepo
 
 - stage: Test
   displayName: Test Package
