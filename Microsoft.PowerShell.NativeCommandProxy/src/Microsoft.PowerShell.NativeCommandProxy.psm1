@@ -436,3 +436,37 @@ function Export-Schema() {
     $sGen.Generate([command])
 }
 
+function Export-ProxyModule
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param (
+        [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][string[]]$ConfigurationFile,
+        [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
+        [Parameter()][switch]$Force
+        )
+    BEGIN {
+        [array]$proxyCollection = @()
+        if ($ModuleName -notmatch "\.psm1$") {
+            $ModuleName += ".psm1"
+        }
+        if ((Test-Path $ModuleName) -and -not $Force) {
+            throw "$ModuleName already exists"
+        }
+        "# Module created by Microsoft.PowerShell.NativeCommandProxy" > $ModuleName
+    }
+    PROCESS {
+        $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
+        foreach($file in $resolvedConfigurationPaths) {
+            Write-Verbose "Adding $file to proxy collection"
+            $proxyCollection += Import-CommandConfiguration $file
+        }
+    }
+    END {
+        [string[]]$cmdletName = @()
+        foreach($proxy in $proxyCollection) {
+            $cmdletName += "{0}-{1}" -f $proxy.Verb,$proxy.Noun
+            $proxy.ToString() >> $ModuleName
+        }
+        "Export-ModuleMember -Function $($cmdletName -join ', ')" >> $ModuleName
+    }
+}
