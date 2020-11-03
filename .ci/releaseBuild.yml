@@ -1,0 +1,135 @@
+name: NativeCommandProxy-Release-$(Build.BuildId)
+trigger: none
+
+pr:
+  branches:
+    include:
+    - master
+    - release*
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+
+resources:
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
+    ref: FixTemplateCondition
+
+stages:
+- stage: Build
+  displayName: Build
+  pool:
+    name: Package ES CodeHub Lab E
+  jobs:
+  - job: Build_Job
+    displayName: Build Microsoft.PowerShell.NativeCommandProxy
+    variables:
+    - group: ESRP
+    steps:
+    - checkout: self
+
+    - pwsh: |
+        ./build.ps1 -Publish
+      displayName: Execute build
+
+    - pwsh: |
+        $signSrcPath = "$(Build.SourcesDirectory)\out"
+        # Set signing src path variable
+        $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        $signOutPath = "$(Build.SourcesDirectory)\signed"
+        $null = New-Item -ItemType Directory -Path $signOutPath
+        # Set signing out path variable
+        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        # Set path variable for guardian codesign validation
+        $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        $nugetSrcPath = "$(System.ArtifactsDirectory)/nuget"
+        $null = New-Item -ItemType Directory -Path $nugetSrcPath
+        # Set signing src path variable
+        $vstsCommandString = "vso[task.setvariable variable=nugetSrcPath]${nugetSrcPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        $nugetOutPath = "$(System.ArtifactsDirectory)\nuget\signed"
+        $null = New-Item -ItemType Directory -Path $nugetOutPath
+        # Set signing out path variable
+        $vstsCommandString = "vso[task.setvariable variable=nugetOutPath]${nugetOutPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+      displayName: Setup variables for signing
+
+    - checkout: ComplianceRepo
+
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        # the folder which contains the binaries to sign
+        buildOutputPath: $(signSrcPath)
+        # the location to put the signed output
+        signOutputPath: $(signOutPath)
+        # the certificate ID to use
+        certificateId: "400"
+        # the file pattern to use, comma separated
+        pattern: '*.psm1','*.psd1'
+
+    - pwsh: |
+        ./build -package
+      displayName: package build
+
+    - publish: "$(signSrcPath)"
+      artifact: build
+      displayName: Publish build
+
+- stage: compliance
+  displayName: Compliance
+  dependsOn: Build
+  jobs:
+  - job: Compliance_Job
+    pool:
+      name: Package ES CodeHub Lab E
+    steps:
+    - checkout: self
+    - checkout: ComplianceRepo
+    - download: current
+      artifact: build
+
+    - pwsh: |
+        Get-ChildItem -Path "$(Pipeline.Workspace)\build" -Recurse
+      displayName: Capture downloaded artifacts
+
+    - template: script-module-compliance.yml@ComplianceRepo
+      parameters:
+        # component-governance
+        sourceScanPath: '$(Build.SourcesDirectory)\Microsoft.PowerShell.NativeCommandProxy'
+        # credscan
+        suppressionsFile: ''
+        # TermCheck
+        optionsRulesDBPath: ''
+        optionsFTPath: ''
+        # tsa-upload
+        codeBaseName: 'PSNativeCommandProxy_2020'
+        # selections
+        APIScan: false # set to false when not using Windows APIs.
+
+#- template: template/publish.yml
+#  parameters:
+#    stageName: AzArtifactsFeed
+#    environmentName:
+#    feedCredential:
+
+#- template: template/publish.yml
+#  parameters:
+#    stageName: NuGet
+#    environmentName: PSMarkdownRenderNuGetApproval
+#    feedCredential: NugetOrgPush
