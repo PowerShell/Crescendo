@@ -70,7 +70,7 @@ stages:
         # the certificate ID to use
         certificateId: "400"
         # the file pattern to use, comma separated
-        pattern: '*.psm1,*.psd1'
+        pattern: '*.psm1'
 
     - pwsh: |
 
