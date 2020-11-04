@@ -58,7 +58,7 @@ stages:
       displayName: Build Signing Placeholder
 
     - pwsh: |
-        $(Build.SourcesDirectory)/build.ps1 -Publish -Signed
+        $(Build.SourcesDirectory)/build.ps1 -Publish -Package
       displayName: Publish
       timeoutInMinutes: 10
 
