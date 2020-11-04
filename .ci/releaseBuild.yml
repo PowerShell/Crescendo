@@ -45,7 +45,7 @@ stages:
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
-        $signOutPath = "$(Build.SourcesDirectory/PSNativeCommandProxy2020/signed"
+        $signOutPath = "$(Build.SourcesDirectory)/PSNativeCommandProxy2020/signed"
         $null = New-Item -ItemType Directory -Path $signOutPath
         # Set signing out path variable
         $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
@@ -73,7 +73,9 @@ stages:
         pattern: '*.psm1,,*.psd1'
 
     - pwsh: |
+
         ./build -package
+        Get-ChildItem -recurse -file | Out-String | Write-Verbose -Verbose
       displayName: package build
 
     - publish: "$(signSrcPath)"
