@@ -68,7 +68,7 @@ stages:
         # the location to put the signed output
         signOutputPath: $(signOutPath)
         # the certificate ID to use
-        certificateId: "400"
+        certificateId: "CP-230012"
         # the file pattern to use, comma separated
         pattern: '*.psm1'
 
