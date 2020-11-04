@@ -33,6 +33,7 @@ stages:
     - checkout: self
 
     - pwsh: |
+        Set-Location "$(Build.SourcesDirectory)"
         ./build.ps1 -Publish
       displayName: Execute build
 
@@ -55,19 +56,6 @@ stages:
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
-        $nugetSrcPath = "$(System.ArtifactsDirectory)/nuget"
-        $null = New-Item -ItemType Directory -Path $nugetSrcPath
-        # Set signing src path variable
-        $vstsCommandString = "vso[task.setvariable variable=nugetSrcPath]${nugetSrcPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-        $nugetOutPath = "$(System.ArtifactsDirectory)\nuget\signed"
-        $null = New-Item -ItemType Directory -Path $nugetOutPath
-        # Set signing out path variable
-        $vstsCommandString = "vso[task.setvariable variable=nugetOutPath]${nugetOutPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
       displayName: Setup variables for signing
 
     - checkout: ComplianceRepo
