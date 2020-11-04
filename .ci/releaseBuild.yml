@@ -33,19 +33,19 @@ stages:
     - checkout: self
 
     - pwsh: |
-        Set-Location "$(Build.SourcesDirectory)"
+        Set-Location "$(Build.SourcesDirectory)/PSNativeCommandProxy2020"
         Get-ChildItem | Out-String | Write-Verbose -Verbose
         ./build.ps1 -Publish
       displayName: Execute build
 
     - pwsh: |
-        $signSrcPath = "$(Build.SourcesDirectory)\out"
+        $signSrcPath = "$(Build.SourcesDirectory)/PSNativeCommandProxy2020/out"
         # Set signing src path variable
         $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
-        $signOutPath = "$(Build.SourcesDirectory)\signed"
+        $signOutPath = "$(Build.SourcesDirectory/PSNativeCommandProxy2020/signed"
         $null = New-Item -ItemType Directory -Path $signOutPath
         # Set signing out path variable
         $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
@@ -100,7 +100,7 @@ stages:
     - template: script-module-compliance.yml@ComplianceRepo
       parameters:
         # component-governance
-        sourceScanPath: '$(Build.SourcesDirectory)\Microsoft.PowerShell.NativeCommandProxy'
+        sourceScanPath: '$(Build.SourcesDirectory)/PSNativeCommandProxy2020/Microsoft.PowerShell.NativeCommandProxy'
         # credscan
         suppressionsFile: ''
         # TermCheck
