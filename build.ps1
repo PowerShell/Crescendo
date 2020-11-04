@@ -13,7 +13,7 @@ $ManifestData = Import-PowerShellDataFile -path $ManifestPath
 $Version = $ManifestData.ModuleVersion
 $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
-$SignRoot = "${PSScriptRoot}/signed"
+$SignRoot = "${PSScriptRoot}/signed/${Name}"
 $PubDir   = "${PubRoot}/${Version}"
 
 if (-not $test -and -not $build -and -not $publish -and -not $package) {
@@ -48,17 +48,24 @@ if ($build) {
 # so the nupkg can be used to publish to the PSGallery
 function Package-Module
 {
-    if ( -not (test-path $PubDir)) {
+    if ( $signed ) {
+        $packageRoot = $SignRoot
+    }
+    else {
+        $packageRoot = $PubRoot
+    }
+    
+    if ( -not (test-path $packageRoot)) {
         throw "'$PubDir' does not exist"
     }
     # now constuct a nupkg by registering a local repository and calling publish module
     $repoName = [guid]::newGuid().ToString("N")
-    Register-PSRepository -Name $repoName -SourceLocation ${PubBase} -InstallationPolicy Trusted
-    Publish-Module -Path $PubDir -Repository $repoName
+    Register-PSRepository -Name $repoName -SourceLocation ${packageRoot} -InstallationPolicy Trusted
+    Publish-Module -Path $packageRoot -Repository $repoName
     Unregister-PSRepository -Name $repoName
-    Get-ChildItem $PubBase | Out-String
+    Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose
     $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
-    $nupkgPath = Join-Path $PubBase $nupkgName
+    $nupkgPath = Join-Path $packageRoot $nupkgName
     if ($env:TF_BUILD) {
         # In Azure DevOps
         Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"

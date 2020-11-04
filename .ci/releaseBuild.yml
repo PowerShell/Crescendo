@@ -35,7 +35,7 @@ stages:
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/PSNativeCommandProxy2020"
         ./build.ps1 -Publish
-        Get-ChildItem -Recurse -File| Out-String | Write-Verbose -Verbose
+        Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose
       displayName: Execute build
 
     - pwsh: |
@@ -70,12 +70,12 @@ stages:
         # the certificate ID to use
         certificateId: "CP-230012"
         # the file pattern to use, comma separated
-        pattern: '*.psm1'
+        pattern: '*.psm1,*.psd1'
 
     - pwsh: |
-
-        ./build -package
-        Get-ChildItem -recurse -file | Out-String | Write-Verbose -Verbose
+        Set-Location "$(Build.SourcesDirectory)/PSNativeCommandProxy2020"
+        ./build -package -signed
+        Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
       displayName: package build
 
     - publish: "$(signSrcPath)"
