@@ -17,7 +17,7 @@ resources:
     type: github
     endpoint: ComplianceGHRepo
     name: PowerShell/compliance
-    ref: FixTemplateCondition
+    ref: master
 
 stages:
 - stage: Build
