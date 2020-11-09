@@ -8,7 +8,7 @@
 RootModule = 'Microsoft.PowerShell.NativeCommandProxy.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.1'
+ModuleVersion = '0.3.2'
 
 # ID used to uniquely identify this module
 GUID = '2dd09744-1ced-4636-a8ce-09a0bf0e566a'
@@ -20,9 +20,9 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 # Description of the functionality provided by this module
 Description = "Module that improves user experience with native commands"
 
-# Minimum version of the Windows PowerShell engine required by this module
-# setting to V7 for the moment
-PowerShellVersion = '5.1'
+# Minimum version of the Windows PowerShell engine required by this module is version 7
+# the resultant module may be run on PowerShell 5.1
+PowerShellVersion = '7.0'
 
 # Functions to export from this module
 FunctionsToExport = @(
