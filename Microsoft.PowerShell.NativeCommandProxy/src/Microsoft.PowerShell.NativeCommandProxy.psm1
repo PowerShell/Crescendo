@@ -422,7 +422,59 @@ function New-ProxyCommand {
 }
 
 function Import-CommandConfiguration([string]$file) {
-    # $text = Get-Content -Read 0 $file
+<#
+.SYNOPSIS
+
+Import a native command proxy json file.
+
+.DESCRIPTION
+
+This cmdlet exports an object which can be converted into a function which acts as a native command proxy.
+The resultant object may then be used to call a native command which can participate in the PowerShell pipeline.
+The ToString method of the output object will return a string which may be used to create a function which calls the native command.
+Microsoft Windows, Linux, and MacOS can run the generated proxy, if the command is on all of the platform.
+
+.PARAMETER File
+
+The json file which represents the command proxy.
+
+.EXAMPLE
+
+PS> Import-CommandConfiguration ifconfig.proxy.json
+
+Verb                    : Invoke
+Noun                    : ifconfig
+OriginalName            : ifconfig
+OriginalCommandElements : 
+Aliases                 : 
+DefaultParameterSetName : 
+SupportsShouldProcess   : False
+SupportsTransactions    : False
+NoInvocation            : False
+Description             : This is a description of the proxy
+Usage                   : .SYNOPSIS
+                          Run invoke-ifconfig
+Parameters              : {[Parameter()]
+                          [string]$Interface = ""}
+Examples                : 
+OriginalText            : 
+HelpLinks               : 
+OutputHandlers          : 
+
+.NOTES
+
+The object returned by Import-CommandConfiguration is converted through the ToString method.
+Generally, you should use the Export-ProxyModule function which creates a PowerShell .psm1 file.
+
+.OUTPUTS
+
+A Command object
+
+.LINK
+
+Export-ProxyModule
+
+#>
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
@@ -438,6 +490,56 @@ function Export-Schema() {
 
 function Export-ProxyModule
 {
+<#
+.SYNOPSIS
+
+Creates a module from NativeCommandProxy json configuration files
+
+.DESCRIPTION
+
+This cmdlet exports an object which can be converted into a function which acts as a native command proxy.
+The resultant module file should be executable down to version 5.1 of PowerShell.
+
+
+.PARAMETER ConfigurationFile
+
+This is a list of json files which represent the proxies for the module
+
+.PARAMETER ModuleName
+
+The name of the module file you wish to create.
+You can omit the trailing .psm1
+
+.PARAMETER Force
+
+By default, if Export-ProxyModule finds an already created module, it will not overwrite the existing file.
+Use -Force to overwrite the existing file, or remove it prior to running Export-ProxyModule.
+
+.EXAMPLE
+
+PS> Export-ProxyModule -ModuleName netsh -ConfigurationFile netsh*.json
+PS> Import-Module ./netsh.psm1
+
+.EXAMPLE
+
+PS> Export-ProxyModule netsh netsh*.json -force
+
+.NOTES
+
+Internally, this function calls the Import-CommandConfiguration cmdlet which returns a command object.
+All files provided in the -ConfigurationFile parameter are then used to create each individual proxy function.
+Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultan module is 
+imported, the module has all the command proxies available.
+
+.OUTPUTS
+
+None
+
+.LINK
+
+Import-CommandConfiguration
+
+#>
     [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][string[]]$ConfigurationFile,
