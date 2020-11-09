@@ -6,7 +6,7 @@ $Lang = "en-US"
 $ModRoot = "${PSScriptRoot}/${Name}"
 $SrcRoot = "${ModRoot}/src"
 $HelpRoot = "${ModRoot}/help/${Lang}"
-$TstRoot = "${ModRoot}/test"
+$TestRoot = "${ModRoot}/test"
 $SampleRoot = "${ModRoot}/Samples"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
@@ -15,6 +15,7 @@ $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $PubDir   = "${PubRoot}/${Version}"
+$PubHelp  = "${PubDir}/${Lang}"
 
 if (-not $test -and -not $build -and -not $publish -and -not $package) {
     throw "must use 'build', 'test', 'publish', 'package'"
@@ -33,9 +34,7 @@ $FileManifest = @(
     @{ SRC = "${SampleRoot}"; NAME = "ls.proxy.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
     @{ SRC = "${SampleRoot}"; NAME = "tar.proxy.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
     @{ SRC = "${SampleRoot}"; NAME = "who.proxy.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${HelpRoot}";   NAME = "about_NativeCommandProxy.md"    ; SIGN = $false ; DEST = "OUTDIR/help/${Lang}" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                   ; SIGN = $true  ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "NativeCommandProxy.md"          ; SIGN = $false ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                   ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "NativeProxyCommand.Schema.json" ; SIGN = $false ; DEST = "OUTDIR" }
 )
@@ -46,15 +45,17 @@ if ($build) {
 
 # this takes the files for the module and publishes them to a created, local repository
 # so the nupkg can be used to publish to the PSGallery
-function Package-Module
+function Export-Module
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "")]
+    param()
     if ( $signed ) {
         $packageRoot = $SignRoot
     }
     else {
         $packageRoot = $PubRoot
     }
-    
+
     if ( -not (test-path $packageRoot)) {
         throw "'$PubDir' does not exist"
     }
@@ -92,11 +93,15 @@ if ($publish) {
             $null = New-Item -ItemType Directory $targetDir -Force
         }
         Copy-Item -Path $src -destination $targetDir -Verbose:$verboseValue
+
+
     }
+    # Create about topic file
+    $null = New-ExternalHelp -Output ${PubHelp} -Path "${HelpRoot}/about_NativeCommandProxy.md"
 }
 
 if ($package) {
-    Package-Module
+    Export-Module
 }
 
 if ($test) {
@@ -107,7 +112,7 @@ if ($test) {
     Import-Module -Force -Name Pester -MaximumVersion 4.9.9
 
     Import-Module -force "${PSScriptRoot}/Microsoft.PowerShell.NativeCommandProxy/src/Microsoft.PowerShell.NativeCommandProxy.psd1"
-    Push-Location "${PSScriptRoot}/Microsoft.PowerShell.NativeCommandProxy/test"
+    Push-Location "${TestRoot}"
     try {
         $result = Invoke-Pester -PassThru
         if (0 -ne $result.FailedCount) {

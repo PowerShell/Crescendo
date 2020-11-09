@@ -445,9 +445,9 @@ PS> Import-CommandConfiguration ifconfig.proxy.json
 Verb                    : Invoke
 Noun                    : ifconfig
 OriginalName            : ifconfig
-OriginalCommandElements : 
-Aliases                 : 
-DefaultParameterSetName : 
+OriginalCommandElements :
+Aliases                 :
+DefaultParameterSetName :
 SupportsShouldProcess   : False
 SupportsTransactions    : False
 NoInvocation            : False
@@ -456,10 +456,10 @@ Usage                   : .SYNOPSIS
                           Run invoke-ifconfig
 Parameters              : {[Parameter()]
                           [string]$Interface = ""}
-Examples                : 
-OriginalText            : 
-HelpLinks               : 
-OutputHandlers          : 
+Examples                :
+OriginalText            :
+HelpLinks               :
+OutputHandlers          :
 
 .NOTES
 
@@ -528,7 +528,7 @@ PS> Export-ProxyModule netsh netsh*.json -force
 
 Internally, this function calls the Import-CommandConfiguration cmdlet which returns a command object.
 All files provided in the -ConfigurationFile parameter are then used to create each individual proxy function.
-Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultan module is 
+Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultan module is
 imported, the module has all the command proxies available.
 
 .OUTPUTS
