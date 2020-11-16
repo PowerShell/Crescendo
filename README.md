@@ -5,8 +5,8 @@ it would be an improved experience if the native command could participate
 in the PowerShell pipeline and take advantage of the parameter behaviors
 that are part of PowerShell.
 
-The native command proxy module provides a novel way to create proxy functions
-to invoke native commands via `JSON` configuration files.
+The native command proxy module is an experiment to provide a novel way to create proxy functions
+for invoking native commands by using a `JSON` configuration file.
 
 The Native Command Proxy (NCP) Module provides a way to more easily for native commands to
 participate in the PowerShell pipeline by facilitating parameter handling,
