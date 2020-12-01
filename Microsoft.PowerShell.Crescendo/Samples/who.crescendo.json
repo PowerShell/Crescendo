@@ -1,0 +1,19 @@
+{
+    "$schema" : "./Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "who",
+    "OriginalName":"/usr/bin/who",
+    "Parameters": [
+        {
+            "Name":"BootTime",
+            "OriginalName": "-b",
+            "ParameterType": "switch"
+        },
+        {
+            "Name": "quiet",
+            "OriginalName": "-q",
+            "ParameterType": "switch"
+        }
+
+    ]
+}
