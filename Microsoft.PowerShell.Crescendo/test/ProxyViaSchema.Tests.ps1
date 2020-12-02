@@ -17,7 +17,7 @@ Describe "Create proxy from Schema" {
     Context "Create a proxy module from a collection of json files" {
         BeforeAll {
             $modulePath = "${TestDrive}/ProxyModule.psm1"
-            Export-ProxyModule -ModuleName $modulePath -ConfigurationFile $proxies
+            Export-CrescendoModule -ModuleName $modulePath -ConfigurationFile $proxies
             $Parser = [System.Management.Automation.Language.Parser]
             $tokens = $errors = $null
             $ast = $Parser::ParseFile($modulePath, [ref]$tokens, [ref]$errors)
