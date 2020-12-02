@@ -19,7 +19,7 @@ resources:
 
 stages:
 - stage: Build
-  displayName: Build Native Command Proxy Package
+  displayName: Build Crescendo Package
   jobs:
   - job: BuildPkg
     displayName: Build Package
