@@ -1,4 +1,4 @@
-Describe "Create proxy from Schema" {
+Describe "Create proxy from Schema" -tags CI {
     BeforeAll {
         $proxies = Get-ChildItem "${PSScriptRoot}/../Samples" -Filter *.json
         $testCases = $proxies | ForEach-Object { @{ Path = $_.FullName; Name = $_.BaseName } }

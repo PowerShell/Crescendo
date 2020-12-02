@@ -1,4 +1,4 @@
-Describe "The help content for the proxy function is correct" {
+Describe "The help content for the proxy function is correct" -tags CI {
     BeforeAll {
         invoke-expression (Import-CommandConfiguration assets/FullProxy.json).ToString()
         $commandInfo = Get-Command invoke-thing

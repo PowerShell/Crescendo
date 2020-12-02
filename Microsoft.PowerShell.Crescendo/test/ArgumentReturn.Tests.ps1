@@ -1,7 +1,7 @@
 $ArgProxyFile1 = "$PSScriptRoot/assets/ArgProxy.noParam1.json"
 $ArgProxyFile2 = "$PSScriptRoot/assets/ArgProxy.noParam2.json"
 $ArgProxyFile3 = "$PSScriptRoot/assets/ArgProxy.withParam.json"
-Describe "Will return just argument array when configured" {
+Describe "Will return just argument array when configured" -tags CI {
     BeforeAll {
         $proxy1 = Import-CommandConfiguration $ArgProxyFile1
         $proxy2 = Import-CommandConfiguration $ArgProxyFile2

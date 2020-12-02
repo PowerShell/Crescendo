@@ -1,6 +1,6 @@
 using Module Pester
 using module ../src/Microsoft.PowerShell.Crescendo.psd1
-Describe "Configuration based tests" {
+Describe "Configuration based tests" -tags CI {
     BeforeAll {
         $proxyObject = Import-CommandConfiguration assets/SimpleProxy.json
     }

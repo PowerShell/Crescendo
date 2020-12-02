@@ -1,14 +1,14 @@
-function New-StreamOutput {
-    1..3 | foreach-object { [pscustomobject]@{ Value = $_; cTime = [datetime]::Now; oTime = [datetime]::new(0)}; Start-Sleep 2 }
-}
 
 $streamProxyFile = "$PSScriptRoot/assets/StreamProxy.json"
 $bulkProxyFile = "$PSScriptRoot/assets/BulkProxy.json"
 
-Describe "The framework respects the streamoutput setting (these tests take a while)" {
+Describe "The framework respects the streamoutput setting (these tests take a while)" -tags CI {
     BeforeAll {
         $streamProxy = Import-CommandConfiguration $streamProxyFile
         $bulkProxy = Import-CommandConfiguration $bulkProxyFile
+        function New-StreamOutput {
+            1..3 | foreach-object { [pscustomobject]@{ Value = $_; cTime = [datetime]::Now; oTime = [datetime]::new(0)}; Start-Sleep 2 }
+        }
     }
     It "will stream when the handler is set for streaming" {
         Invoke-Expression $streamProxy

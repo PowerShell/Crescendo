@@ -1,4 +1,4 @@
-Describe "Unit tests for Microsoft.PowerShell.Crescendo" {
+Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
 
     BeforeAll {
         $moduleName = "Microsoft.PowerShell.Crescendo"
