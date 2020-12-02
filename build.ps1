@@ -109,9 +109,9 @@ if ($test) {
     if ( Get-Module Pester ) {
         Get-Module Pester | Where-Object { $_.Version -gt "4.9.9" } | Remove-Module
     }
-    Import-Module -Force -Name Pester -MaximumVersion 4.9.9
+    Import-Module -Force -Name Pester -MaximumVersion 4.99
 
-    Import-Module -force "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.psd1"
+    Import-Module -force "${PubRoot}"
     Push-Location "${TestRoot}"
     try {
         $result = Invoke-Pester -PassThru

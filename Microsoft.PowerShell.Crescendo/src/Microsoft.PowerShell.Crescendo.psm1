@@ -197,10 +197,11 @@ class Command {
         if ( $this.Description ) {
             return ([string]$this.Usage)
         }
-        else {
-            if ( Get-Command $this.OriginalName ) {
+        else { # try running the command with -?
+            if ( Get-Command $this.OriginalName -ErrorAction ignore ) {
                 try {
-                    $nativeHelpText = & $this.OriginalName -?
+                    $origOutput = & $this.OriginalName -? 2>&1
+                    $nativeHelpText = $origOutput -join "`n"
                 }
                 catch {
                     $nativeHelpText = "error running " + $this.OriginalName + " -?."

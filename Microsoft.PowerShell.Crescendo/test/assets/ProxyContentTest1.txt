@@ -46,9 +46,10 @@ PROCESS {
 
 <#
 .SYNOPSIS
+this is usage
 
-
-.DESCRIPTION See help for /bin/ls
+.DESCRIPTION
+this is a description
 
 #>
 }

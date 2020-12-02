@@ -28,17 +28,21 @@ Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
     }
 
     Context "Proxy function content" {
-        It "correctly creates the proxy function code" -skip:$IsWindows {
+        It "correctly creates the proxy function code" {
             $pc = New-CrescendoCommand -Verb $verb -Noun $noun
             $pc.OriginalName = "/bin/ls"
+            $pc.Description = "this is a description"
+            $pc.Usage = "this is usage" # this allows for creating a synopsis because of the default constructor for usage
             $s = $pc.ToString()
             $expectedResult = (Get-Content "${PSScriptRoot}/assets/ProxyContentTest1.txt") -join "`n"
             $s | Should -Be $expectedResult
         }
 
-        It "correctly creates the proxy function code with a parameter" -skip:$IsWindows {
+        It "correctly creates the proxy function code with a parameter" {
             $pc = New-CrescendoCommand -Verb $verb -Noun $noun
             $pc.OriginalName = "/bin/ls"
+            $pc.Description = "this is a description"
+            $pc.Usage = "this is usage" # this allows for creating a synopsis because of the default constructor for usage
             $pc.Parameters.Add((New-ParameterInfo -Name "pName" -OriginalName "--OriginalName"))
             $s = $pc.ToString()
             $expectedResult = (Get-Content "$PSScriptRoot/assets/ProxyContentTest2.txt") -join "`n"
