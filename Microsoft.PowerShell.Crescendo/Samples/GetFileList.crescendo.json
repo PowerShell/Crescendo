@@ -1,0 +1,10 @@
+{
+    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Get",
+    "Noun":"FileList",
+    "OriginalName": "/bin/ls",
+    "Parameters": [
+        {"Name": "Path","OriginalName": "", "OriginalPosition": 1, "Position": 0, "DefaultValue": "." },
+        {"Name": "Detail","OriginalName": "-l","ParameterType": "switch"}
+    ]
+}

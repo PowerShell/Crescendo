@@ -1,7 +1,7 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param ([switch]$test, [switch]$build, [switch]$publish, [switch]$signed, [switch]$package)
 
-$Name = "Microsoft.PowerShell.NativeCommandProxy"
+$Name = "Microsoft.PowerShell.Crescendo"
 $Lang = "en-US"
 $ModRoot = "${PSScriptRoot}/${Name}"
 $SrcRoot = "${ModRoot}/src"
@@ -24,19 +24,19 @@ if (-not $test -and -not $build -and -not $publish -and -not $package) {
 [bool]$verboseValue = $PSBoundParameters['Verbose'].IsPresent ? $PSBoundParameters['Verbose'].ToBool() : $false
 
 $FileManifest = @(
-    @{ SRC = "${SampleRoot}"; NAME = "GetFileList.proxy.json"         ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dd.proxy.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockerRmImage.proxy.json"       ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockergetimage.proxy.json"      ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockergetps.proxy.json"         ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "dockerinspectimage.proxy.json"  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "ifconfig.proxy.json"            ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "ls.proxy.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "tar.proxy.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SampleRoot}"; NAME = "who.proxy.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
-    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                   ; SIGN = $true  ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                   ; SIGN = $true  ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "NativeProxyCommand.Schema.json" ; SIGN = $false ; DEST = "OUTDIR" }
+    @{ SRC = "${SampleRoot}"; NAME = "GetFileList.Crescendo.json"         ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dd.Crescendo.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockerRmImage.Crescendo.json"       ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockergetimage.Crescendo.json"      ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockergetps.Crescendo.json"         ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "dockerinspectimage.Crescendo.json"  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "ifconfig.Crescendo.json"            ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "ls.Crescendo.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "tar.Crescendo.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SampleRoot}"; NAME = "who.Crescendo.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
+    @{ SRC = "${SrcRoot}";    NAME = "Microsoft.PowerShell.Crescendo.Schema.json" ; SIGN = $false ; DEST = "OUTDIR" }
 )
 
 if ($build) {
@@ -97,7 +97,7 @@ if ($publish) {
 
     }
     # Create about topic file
-    $null = New-ExternalHelp -Output ${PubHelp} -Path "${HelpRoot}/about_NativeCommandProxy.md"
+    $null = New-ExternalHelp -Output ${PubHelp} -Path "${HelpRoot}/about_Crescendo.md"
 }
 
 if ($package) {
@@ -109,9 +109,9 @@ if ($test) {
     if ( Get-Module Pester ) {
         Get-Module Pester | Where-Object { $_.Version -gt "4.9.9" } | Remove-Module
     }
-    Import-Module -Force -Name Pester -MaximumVersion 4.9.9
+    Import-Module -Force -Name Pester -MaximumVersion 4.99
 
-    Import-Module -force "${PSScriptRoot}/Microsoft.PowerShell.NativeCommandProxy/src/Microsoft.PowerShell.NativeCommandProxy.psd1"
+    Import-Module -force "${PubRoot}"
     Push-Location "${TestRoot}"
     try {
         $result = Invoke-Pester -PassThru

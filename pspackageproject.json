@@ -1,9 +1,9 @@
 {
-  "TestPath": "Microsoft.PowerShell.NativeCommandProxy/test",
+  "TestPath": "Microsoft.PowerShell.Crescendo/test",
   "BuildOutputPath": "out",
-  "SourcePath": "Microsoft.PowerShell.NativeCommandProxy/src",
-  "ModuleName": "Microsoft.PowerShell.NativeCommandProxy",
-  "HelpPath": "Microsoft.PowerShell.NativeCommandProxy/help",
+  "SourcePath": "Microsoft.PowerShell.Crescendo/src",
+  "ModuleName": "Microsoft.PowerShell.Crescendo",
+  "HelpPath": "Microsoft.PowerShell.Crescendo/help",
   "SignedOutputPath": "signed",
   "Culture": "en-US"
 }

@@ -1,4 +1,5 @@
-name: NativeCommandProxy-Release-$(Build.BuildId)
+# NativveCommandProxy still has presence here as that's what it's called in the release build
+name: Crescendo-Release-$(Build.BuildId)
 trigger: none
 
 pr:
@@ -26,7 +27,7 @@ stages:
     name: Package ES CodeHub Lab E
   jobs:
   - job: Build_Job
-    displayName: Build Microsoft.PowerShell.NativeCommandProxy
+    displayName: Build Microsoft.PowerShell.Crescendo
     variables:
     - group: ESRP
     steps:
@@ -102,7 +103,7 @@ stages:
     - template: script-module-compliance.yml@ComplianceRepo
       parameters:
         # component-governance
-        sourceScanPath: '$(Build.SourcesDirectory)/PSNativeCommandProxy2020/Microsoft.PowerShell.NativeCommandProxy'
+        sourceScanPath: '$(Build.SourcesDirectory)/PSNativeCommandProxy2020/Microsoft.PowerShell.Crescendo'
         # credscan
         suppressionsFile: ''
         # TermCheck

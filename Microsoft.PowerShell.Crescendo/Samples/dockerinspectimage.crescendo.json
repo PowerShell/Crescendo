@@ -1,0 +1,26 @@
+{
+    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Get",
+    "Noun": "DockerImageDetail",
+    "OriginalName": "docker",
+    "OriginalCommandElements": [
+        "image",
+        "inspect",
+        "--format",
+        "{{json .}}"
+    ],
+    "Parameters": [
+        {
+            "Name": "Id",
+            "OriginalName": "",
+            "Mandatory": true,
+            "ValueFromPipelineByPropertyName": true
+        }
+    ],
+    "OutputHandlers": [
+        {
+        "ParameterSetName": "Default",
+        "Handler": "$args[0] | convertfrom-json | Add-Member -TypeName DockerImageDetail -PassThru"
+        }
+    ]
+}

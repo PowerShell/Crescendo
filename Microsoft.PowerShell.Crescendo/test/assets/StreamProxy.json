@@ -1,0 +1,13 @@
+{
+    "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "StreamProxy",
+    "OriginalName": "New-StreamOutput",
+    "OutputHandlers": [
+        {
+            "ParameterSetName": "Default",
+            "StreamOutput": true,
+            "Handler": "PROCESS { $_.oTime = [datetime]::now; $_}"
+        }
+    ]
+}

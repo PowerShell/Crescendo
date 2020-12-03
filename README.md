@@ -1,14 +1,14 @@
-# NativeCommandProxy
+# PowerShell Crescendo
 
 PowerShell is capable of invoking native applications like any shell. However,
 it would be an improved experience if the native command could participate
 in the PowerShell pipeline and take advantage of the parameter behaviors
 that are part of PowerShell.
 
-The native command proxy module is an experiment to provide a novel way to create proxy functions
-for invoking native commands by using a `JSON` configuration file.
+The Crescendo module is an experiment to provide a novel way to create functions
+which invoke native commands by using a `JSON` configuration file.
 
-The Native Command Proxy (NCP) Module provides a way to more easily for native commands to
+The Microsoft.PowerShell.Crescendo module provides a way to more easily for native commands to
 participate in the PowerShell pipeline by facilitating parameter handling,
 converting native output into objects, and calling the native executable.
 This module provides a way to create a small bit of json,
@@ -16,7 +16,7 @@ which can then be used to create a function which calls the native command.
 
 A schema is provided as part of the module which may be used for authoring.
 
-The native command proxy module allows you to define parameters which can
+The Crescendo module allows you to define parameters which can
 be used by the native command. You can add attributes to the parameters
 to have the proxies take advantage of the PowerShell pipeline and value
 validation.
