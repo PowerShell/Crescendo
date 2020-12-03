@@ -1,0 +1,36 @@
+{
+    "$schema" : "./Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb" : "Invoke",
+    "Noun": "ls",
+    "OriginalName": "/bin/ls",
+    "Parameters": [
+        {
+            "Name": "Path",
+            "OriginalName": "",
+            "Position": 0,
+            "OriginalPosition": 10,
+            "DefaultValue": "."
+
+        },
+        {
+            "Name" : "Detail",
+            "OriginalName" : "-l",
+            "ParameterType" : "switch"
+        },
+        {
+            "Name": "Item",
+            "OriginalName": "-d",
+            "ParameterType": "switch"
+        },
+        {
+            "Name": "OmitGroup",
+            "OriginalName": "-g",
+            "ParameterType": "switch"
+        },
+        {
+            "Name": "OmitUser",
+            "OriginalName": "-o",
+            "ParameterType": "switch"
+        }
+    ]
+}

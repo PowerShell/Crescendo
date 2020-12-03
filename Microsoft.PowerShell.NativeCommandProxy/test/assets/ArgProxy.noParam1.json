@@ -1,7 +1,0 @@
-{
-    "$schema": "../../src/NativeProxyCommand.Schema.json",
-    "Verb": "Invoke",
-    "Noun": "ArgReturn",
-    "OriginalName": "boop",
-    "NoInvocation": true
-}

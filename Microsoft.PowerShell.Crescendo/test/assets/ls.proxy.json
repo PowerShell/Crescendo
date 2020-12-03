@@ -1,0 +1,21 @@
+{
+    "$schema" : "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb" : "Invoke",
+    "Noun": "filelistproxy",
+    "OriginalName": "/bin/ls",
+    "Parameters": [
+        {
+            "Name": "Path",
+            "OriginalName": "",
+            "Position": 0,
+            "OriginalPosition": 10,
+            "DefaultValue": "."
+
+        },
+        {
+            "Name" : "Detail",
+            "OriginalName" : "-l",
+            "ParameterType" : "switch"
+        }
+    ]
+}
