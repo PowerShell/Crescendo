@@ -1,18 +1,9 @@
 Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
 
     BeforeAll {
-        #$moduleName = "Microsoft.PowerShell.Crescendo"
-        #$moduleManifest = "${moduleName}.psd1"
         $noun = "Crescendo"
         $verb = 'Get'
-        #$modulePath = [System.Io.Path]::combine($PSScriptRoot,"..","src","Microsoft.PowerShell.Crescendo.psd1")
-        #$moduleManifestPath = (Resolve-Path $modulePath).Path
-        #import-module $moduleManifestPath
     }
-
-    #AfterAll {
-    #    Remove-Module $moduleName
-    #}
 
     It "is possible to create a command object" {
         $pc = New-CrescendoCommand -Verb $verb -Noun $noun
@@ -28,7 +19,7 @@ Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
     }
 
     Context "Proxy function content" {
-        It "correctly creates the proxy function code" {
+        It "correctly creates the proxy function code" -skip:${IsWindows} {
             $pc = New-CrescendoCommand -Verb $verb -Noun $noun
             $pc.OriginalName = "/bin/ls"
             $pc.Description = "this is a description"
@@ -38,7 +29,7 @@ Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
             $s | Should -Be $expectedResult
         }
 
-        It "correctly creates the proxy function code with a parameter" {
+        It "correctly creates the proxy function code with a parameter" -skip:${IsWindows} {
             $pc = New-CrescendoCommand -Verb $verb -Noun $noun
             $pc.OriginalName = "/bin/ls"
             $pc.Description = "this is a description"
