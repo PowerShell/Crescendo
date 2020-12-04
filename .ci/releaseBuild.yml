@@ -103,7 +103,7 @@ stages:
     - template: script-module-compliance.yml@ComplianceRepo
       parameters:
         # component-governance
-        sourceScanPath: '$(Build.SourcesDirectory)/Crescendo/src/Microsoft.PowerShell.Crescendo'
+        sourceScanPath: '$(Build.SourcesDirectory)/Crescendo/Microsoft.PowerShell.Crescendo/src'
         # credscan
         suppressionsFile: ''
         # TermCheck
