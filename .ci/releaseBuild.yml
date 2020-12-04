@@ -34,19 +34,19 @@ stages:
     - checkout: self
 
     - pwsh: |
-        Set-Location "$(Build.SourcesDirectory)/PSNativeCommandProxy2020"
+        Set-Location "$(Build.SourcesDirectory)/Crescendo"
         ./build.ps1 -Publish
         Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose
       displayName: Execute build
 
     - pwsh: |
-        $signSrcPath = "$(Build.SourcesDirectory)/PSNativeCommandProxy2020/out"
+        $signSrcPath = "$(Build.SourcesDirectory)/Crescendo/out"
         # Set signing src path variable
         $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
-        $signOutPath = "$(Build.SourcesDirectory)/PSNativeCommandProxy2020/signed"
+        $signOutPath = "$(Build.SourcesDirectory)/Crescendo/signed"
         $null = New-Item -ItemType Directory -Path $signOutPath
         # Set signing out path variable
         $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
@@ -74,7 +74,7 @@ stages:
         pattern: '*.psm1,*.psd1'
 
     - pwsh: |
-        Set-Location "$(Build.SourcesDirectory)/PSNativeCommandProxy2020"
+        Set-Location "$(Build.SourcesDirectory)/Crescendo"
         ./build -package -signed
         Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
       displayName: package build
@@ -103,7 +103,7 @@ stages:
     - template: script-module-compliance.yml@ComplianceRepo
       parameters:
         # component-governance
-        sourceScanPath: '$(Build.SourcesDirectory)/PSNativeCommandProxy2020/Microsoft.PowerShell.Crescendo'
+        sourceScanPath: '$(Build.SourcesDirectory)/Crescendo/src/Microsoft.PowerShell.Crescendo'
         # credscan
         suppressionsFile: ''
         # TermCheck
