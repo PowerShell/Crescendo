@@ -10,20 +10,21 @@ for native commands via `JSON` configuration files.
 ### LONG DESCRIPTION
 
 PowerShell is capable of invoking native applications like any shell. However,
-it would be an improved experience if the native command could participate
+it would improve the experience if the native command could participate
 in the PowerShell pipeline and take advantage of the parameter behaviors
 that are part of PowerShell.
 
-The PowerShell Crescendo (NCP) Module provides a way to more easily
-participate in the PowerShell pipeline by facilitating parameter handling,
-converting native output into objects, and calling the native executable.
+The PowerShell Crescendo module provides a way to more easily
+take advantage of the PowerShell pipeline by
+invoking the native executable, facilitating parameter handling,
+and converting text output into objects.
 
 #### JSON Configuration
 
 The PowerShell Crescendo module provides a way to create a small bit of json,
-which can then be used to create a function which calls the native command.
+which is then used to create a function which calls the native command.
 
-A schema is provided as part of the module which may be used for authoring.
+An annotated schema is provided as part of the module which can improve the authoring process.
 
 #### Parameter handling
 
