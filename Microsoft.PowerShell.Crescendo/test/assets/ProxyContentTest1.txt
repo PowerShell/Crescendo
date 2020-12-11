@@ -17,7 +17,7 @@ PROCESS {
         $value = $PSBoundParameters[$paramName]
         $param = $__PARAMETERMAP[$paramName]
         if ($param) {
-            if ( $value -is [switch] ) { $__commandArgs += $value.IsPresent ? $param.OriginalName : $param.DefaultMissingValue }
+            if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }
             elseif ( $param.NoGap ) { $__commandArgs += "{0}""{1}""" -f $param.OriginalName, $value }
             else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |Foreach-Object {$_}}
         }

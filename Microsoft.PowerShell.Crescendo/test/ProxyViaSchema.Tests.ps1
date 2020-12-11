@@ -44,4 +44,18 @@ Describe "Create proxy from Schema" -tags CI {
             $observed | Should -Be $functionNames
         }
     }
+    Context "Proxies are parsable on Windows PowerShell" {
+        BeforeAll {
+            $modulePath = "${TestDrive}/ProxyModule.psm1"
+            Export-CrescendoModule -ModuleName $modulePath -ConfigurationFile $proxies
+        }
+
+        It "PowerShell 5 can parse the module" -skip:$(!$IsWindows) {
+            $str = '$t = $e = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(''' + $modulePath + ''',[ref]$t,[ref]$e)
+            $e'
+            $result = powershell.exe -c $str
+            $result | Should -BeNullOrEmpty
+        }
+    }
 }
