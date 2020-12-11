@@ -51,11 +51,11 @@ Describe "Create proxy from Schema" -tags CI {
         }
 
         It "PowerShell 5 can parse the module" -skip:$(!$IsWindows) {
-            $result = powershell.exe -c '
-            $t = $e = $null
+            $str = '$t = $e = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseFile(''' + $modulePath + ''',[ref]$t,[ref]$e)
-            $e.Count'
-            $result | Should -Be 0
+            $e'
+            $result = powershell.exe -c $str
+            $result | Should -BeNullOrEmpty
         }
     }
 }
