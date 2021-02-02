@@ -34,6 +34,4 @@ FunctionsToExport = @(
     'Export-Schema',
     'Export-CrescendoModule'
     )
-
-HelpInfoURI = 'https://github.com/PowerShell/PowerShell'
 }
