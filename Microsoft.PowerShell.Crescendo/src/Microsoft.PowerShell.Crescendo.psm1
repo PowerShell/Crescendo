@@ -234,6 +234,7 @@ class Command {
         if ( $this.OutputHandlers ) {
             $sb.AppendLine('    $__outputHandlers = @{')
             $this.OutputHandlers|Foreach-Object {
+                Test-Handler -String  $_.Handler -ParameterSetName $_.ParameterSetName
                 $s = '        {0} = @{{ StreamOutput = ${2}; Handler = {{ {1} }} }}' -f $_.ParameterSetName, $_.Handler, $_.StreamOutput
                 $sb.AppendLine($s)
             }
@@ -384,6 +385,18 @@ class Command {
 
 }
 # =========================================================================
+
+function Test-Handler{
+    Param(
+        $String,
+        $ParameterSetName
+        )
+    $token = $errors = $null
+    [System.Management.Automation.Language.Parser]::ParseInput($String, [ref]$token, [ref]$errors) | Out-Null
+    if($errors){
+        throw "Error in parsing Handler for $ParameterSetName ParameterSetName: $String"
+    }
+}
 
 # functions to create the classes since you can't access the classes outside the module
 function New-ParameterInfo {
