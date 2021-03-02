@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License
 # this contains code common for all generators
 # OM VERSION 1.2
 # =========================================================================
@@ -234,6 +236,7 @@ class Command {
         if ( $this.OutputHandlers ) {
             $sb.AppendLine('    $__outputHandlers = @{')
             $this.OutputHandlers|Foreach-Object {
+
                 $s = '        {0} = @{{ StreamOutput = ${2}; Handler = {{ {1} }} }}' -f $_.ParameterSetName, $_.Handler, $_.StreamOutput
                 $sb.AppendLine($s)
             }
@@ -385,6 +388,16 @@ class Command {
 }
 # =========================================================================
 
+# function to test whether there is a parser error in the output handler
+function Test-Handler {
+    param (
+        [Parameter(Mandatory=$true)][string]$script,
+        [Parameter(Mandatory=$true)][ref]$parserErrors
+    )
+    $null = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$null, $parserErrors)
+    (0 -eq $parserErrors.Value.Count)
+}
+
 # functions to create the classes since you can't access the classes outside the module
 function New-ParameterInfo {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
@@ -422,7 +435,10 @@ function New-CrescendoCommand {
     [Command]::new($Verb, $Noun)
 }
 
-function Import-CommandConfiguration([string]$file) {
+function Import-CommandConfiguration
+{
+[CmdletBinding()]
+param ([Parameter(Position=0,Mandatory=$true)][string]$file)
 <#
 .SYNOPSIS
 
@@ -480,7 +496,23 @@ Export-CrescendoModule
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
     Get-Content $file | ConvertFrom-Json -depth 10| ConvertTo-Json -depth 10| Foreach-Object {
-        [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
+        $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
+
+        # Validate the output handlers in the configuration
+        foreach ( $handler in $configuration.OutputHandlers ) {
+            $parserErrors = $null
+            if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
+                $eArgs = @{
+                    Message = "OutputHandler Error in '{0}-{1}' for ParameterSet '{2}'" -f $configuration.Verb, $configuration.Noun, $handler.ParameterSetName 
+                    Category = "ParserError"
+                    TargetObject = $parserErrors
+                    ErrorID = "Import-CommandConfiguration:OutputHandler"
+                }
+                write-error @eArgs
+            }
+        }
+        # emit the configuration even if there was an error
+        $configuration
     }
 }
 
