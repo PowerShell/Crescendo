@@ -1,7 +1,7 @@
 {
     "$schema": "../../src/Microsoft.Powershell.Crescendo.Schema.json",
     "Verb": "Invoke",
-    "Noun": "StreamProxy",
+    "Noun": "StreamProxy1",
     "OriginalName": "New-StreamOutput",
     "OutputHandlers": [
         {
