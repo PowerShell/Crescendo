@@ -1,0 +1,27 @@
+<Configuration>
+   <ViewDefinitions>
+   <View>
+    <Name>CommandTable</Name>
+    <ViewSelectedBy>
+     <TypeName>Command</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+     <TableHeaders>
+      <TableColumnHeader><Label>FunctionName</Label></TableColumnHeader>
+      <TableColumnHeader><Label>OriginalName</Label></TableColumnHeader>
+      <TableColumnHeader><Label>Description</Label></TableColumnHeader>
+     </TableHeaders>
+     <TableRowEntries>
+      <TableRowEntry>
+       <TableColumnItems>
+        <TableColumnItem><PropertyName>FunctionName</PropertyName></TableColumnItem>
+        <TableColumnItem><PropertyName>OriginalName</PropertyName></TableColumnItem>
+        <TableColumnItem><PropertyName>Description</PropertyName></TableColumnItem>
+       </TableColumnItems>
+      </TableRowEntry>
+     </TableRowEntries>
+    </TableControl>
+   </View>
+
+   </ViewDefinitions>
+</Configuration>

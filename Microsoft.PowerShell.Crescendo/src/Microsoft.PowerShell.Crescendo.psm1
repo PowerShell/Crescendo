@@ -272,6 +272,7 @@ class Command {
         # return $this.Verb + "-" + $this.Noun
         return $sb.ToString()
     }
+
     [string]GetParameterMap() {
         $sb = [System.Text.StringBuilder]::new()
         if ( $this.Parameters.Count -eq 0 ) {
@@ -359,7 +360,7 @@ class Command {
     }
     [string]GetCommandDeclaration() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendFormat("Function {0}-{1}`n", $this.Verb, $this.Noun)
+        $sb.AppendFormat("Function {0}`n", $this.FunctionName)
         $sb.AppendLine("{")
         $sb.Append("[CmdletBinding(")
         $addlAttributes = @()
@@ -503,7 +504,7 @@ Export-CrescendoModule
             $parserErrors = $null
             if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
                 $eArgs = @{
-                    Message = "OutputHandler Error in '{0}-{1}' for ParameterSet '{2}'" -f $configuration.Verb, $configuration.Noun, $handler.ParameterSetName
+                    Message = "OutputHandler Error in '{0}' for ParameterSet '{1}'" -f $configuration.FunctionName, $handler.ParameterSetName 
                     Category = "ParserError"
                     TargetObject = $parserErrors
                     ErrorID = "Import-CommandConfiguration:OutputHandler"
@@ -597,11 +598,23 @@ Import-CommandConfiguration
         }
     }
     END {
-        [string[]]$cmdletName = @()
+        [string[]]$cmdletNames = @()
+        [string[]]$aliases = @()
+        [string[]]$SetAlias = @()
         foreach($proxy in $crescendoCollection) {
-            $cmdletName += "{0}-{1}" -f $proxy.Verb,$proxy.Noun
+            $cmdletNames += $proxy.FunctionName
+            if ( $proxy.Aliases ) {
+                # we need the aliases without value for the psd1
+                $proxy.Aliases.ForEach({$aliases += $_})
+                # the actual set-alias command will be emited before the export-modulemember
+                $proxy.Aliases.ForEach({$SetAlias += "Set-Alias -Name '{0}' -Value '{1}'" -f $_,$proxy.FunctionName})
+            }
             $proxy.ToString() >> $ModuleName
         }
-        "Export-ModuleMember -Function $($cmdletName -join ', ')" >> $ModuleName
+        $SetAlias >> $ModuleName
+        "Export-ModuleMember -Function $($cmdletNames -join ', ')" >> $ModuleName
+        if ( $aliases.Count -gt 0 ) {
+            "Export-ModuleMember -Alias $($aliases -join ', ')" >> $ModuleName
+        }
     }
 }
