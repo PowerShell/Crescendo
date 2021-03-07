@@ -234,6 +234,17 @@ class Command {
         }
         # Provide for the scriptblocks which handle the output
         if ( $this.OutputHandlers ) {
+            $sb.AppendLine("if(-Not (Test-Path -Path $($this.OriginalName)))")
+            $sb.AppendLine("{")
+            $sb.AppendLine('  $ErrArgs = @{')
+            $sb.AppendLine("        Message = 'The file $($this.OriginalName) is not available in the system which is required for this module to execute. Make sure the executable is present at the designated location'")
+            $sb.AppendLine("        Category = 'ObjectNotFound'")
+            $sb.AppendLine("        TargetObject = '$($this.OriginalName)'")
+            $sb.AppendLine("        ErrorID = 'FileNotFoundException'")
+            $sb.AppendLine("  }")
+            $sb.AppendLine("  Write-Error @ErrArgs")
+            $sb.AppendLine("}")
+
             $sb.AppendLine('    $__outputHandlers = @{')
             $this.OutputHandlers|Foreach-Object {
 
