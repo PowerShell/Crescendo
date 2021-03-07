@@ -232,10 +232,10 @@ class Command {
         if ( $parameterMap ) {
             $sb.AppendLine($parameterMap)
         }
-        $sb.AppendLine("if(-Not (Test-Path -Path $($this.OriginalName)))")
-        $sb.AppendLine("{")
-        $sb.AppendLine("  Throw 'The file $($this.OriginalName) is not available in the system which is required for this module to execute. Make sure the executable is present at the designated location'")
-        $sb.AppendLine("}")
+        $sb.AppendLine("    if(-Not (Test-Path -Path $($this.OriginalName)))")
+        $sb.AppendLine("    {")
+        $sb.AppendLine("      Throw 'The file $($this.OriginalName) is not available in the system which is required for this module to execute. Make sure the executable is present at the designated location'")
+        $sb.AppendLine("    }`n")
         # Provide for the scriptblocks which handle the output
         if ( $this.OutputHandlers ) {
                        $sb.AppendLine('    $__outputHandlers = @{')
