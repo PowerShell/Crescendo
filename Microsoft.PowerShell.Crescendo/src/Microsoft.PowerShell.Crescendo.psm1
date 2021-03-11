@@ -237,7 +237,7 @@ class Command {
             $sb.AppendLine('    $__outputHandlers = @{')
             $this.OutputHandlers|Foreach-Object {
 
-                $s = '        {0} = @{{ StreamOutput = ${2}; Handler = {{ {1} }} }}' -f $_.ParameterSetName, $_.Handler, $_.StreamOutput
+                $s = '        {0} = @{{ StreamOutput = ${2}; Handler = "{1}" }}' -f $_.ParameterSetName, $_.Handler, $_.StreamOutput
                 $sb.AppendLine($s)
             }
             $sb.AppendLine('    }')
@@ -391,10 +391,10 @@ class Command {
 # function to test whether there is a parser error in the output handler
 function Test-Handler {
     param (
-        [Parameter(Mandatory=$true)][string]$script,
+        [Parameter(Mandatory=$true)][string]$ScriptPath,
         [Parameter(Mandatory=$true)][ref]$parserErrors
     )
-    $null = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$null, $parserErrors)
+    $null = [System.Management.Automation.Language.Parser]::ParseFile($ScriptPath, [ref]$null, $parserErrors)
     (0 -eq $parserErrors.Value.Count)
 }
 
@@ -501,7 +501,7 @@ Export-CrescendoModule
         # Validate the output handlers in the configuration
         foreach ( $handler in $configuration.OutputHandlers ) {
             $parserErrors = $null
-            if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
+            if ( -not (Test-Handler -ScriptPath $handler.Handler -ParserErrors ([ref]$parserErrors))) {
                 $eArgs = @{
                     Message = "OutputHandler Error in '{0}-{1}' for ParameterSet '{2}'" -f $configuration.Verb, $configuration.Noun, $handler.ParameterSetName 
                     Category = "ParserError"
