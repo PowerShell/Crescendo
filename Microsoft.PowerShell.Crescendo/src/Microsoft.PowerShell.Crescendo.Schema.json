@@ -64,7 +64,7 @@
           "Handler": {
             "required": true,
             "type": "string",
-            "description": "This is the code which converts the output to objects"
+            "description": "This is the path to the script which converts the output to objects"
           },
           "StreamOutput": {
             "required": false,
