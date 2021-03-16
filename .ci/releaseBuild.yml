@@ -34,7 +34,7 @@ stages:
     - checkout: self
 
     - pwsh: |
-        if (-not (Get-Module -ListAvailable PlatyPS)) { Install-Module PlatyPS }
+        if (-not (Get-Module -ListAvailable PlatyPS)) { Install-Module -Force -Name PlatyPS }
       displayName: Install PlatyPS
 
     - pwsh: |
