@@ -446,10 +446,10 @@ Import a PowerShell Crescendo json file.
 
 .DESCRIPTION
 
-This cmdlet exports an object which can be converted into a function which acts as a proxy for the platform specific command.
-The resultant object may then be used to call a native command which can participate in the PowerShell pipeline.
-The ToString method of the output object will return a string which may be used to create a function which calls the native command.
-Microsoft Windows, Linux, and MacOS can run the generated function, if the command is on all of the platform.
+This cmdlet exports an object that can be converted into a function that acts as a proxy for the platform specific command.
+The resultant object may then be used to call a native command that can participate in the PowerShell pipeline.
+The ToString method of the output object returns a string that can be used to create a function that calls the native command.
+Microsoft Windows, Linux, and macOS can run the generated function, if the native command is on all of the platform.
 
 .PARAMETER File
 
@@ -481,7 +481,7 @@ OutputHandlers          :
 .NOTES
 
 The object returned by Import-CommandConfiguration is converted through the ToString method.
-Generally, you should use the Export-CrescendoModule function which creates a PowerShell .psm1 file.
+Generally, you should use the Export-CrescendoModule function, which creates a PowerShell .psm1 file.
 
 .OUTPUTS
 
@@ -503,7 +503,7 @@ Export-CrescendoModule
             $parserErrors = $null
             if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
                 $eArgs = @{
-                    Message = "OutputHandler Error in '{0}-{1}' for ParameterSet '{2}'" -f $configuration.Verb, $configuration.Noun, $handler.ParameterSetName 
+                    Message = "OutputHandler Error in '{0}-{1}' for ParameterSet '{2}'" -f $configuration.Verb, $configuration.Noun, $handler.ParameterSetName
                     Category = "ParserError"
                     TargetObject = $parserErrors
                     ErrorID = "Import-CommandConfiguration:OutputHandler"
@@ -526,22 +526,22 @@ function Export-CrescendoModule
 <#
 .SYNOPSIS
 
-Creates a module from PowerShell Crescendo json configuration files
+Creates a module from PowerShell Crescendo JSON configuration files
 
 .DESCRIPTION
 
-This cmdlet exports an object which can be converted into a function which acts as a proxy for a platform specific command.
+This cmdlet exports an object that can be converted into a function that acts as a proxy for a platform specific command.
 The resultant module file should be executable down to version 5.1 of PowerShell.
 
 
 .PARAMETER ConfigurationFile
 
-This is a list of json files which represent the proxies for the module
+This is a list of JSON files that represent the proxies for the module
 
 .PARAMETER ModuleName
 
 The name of the module file you wish to create.
-You can omit the trailing .psm1
+You can omit the trailing .psm1.
 
 .PARAMETER Force
 
@@ -559,9 +559,9 @@ PS> Export-CrescendoModule netsh netsh*.json -force
 
 .NOTES
 
-Internally, this function calls the Import-CommandConfiguration cmdlet which returns a command object.
+Internally, this function calls the Import-CommandConfiguration cmdlet that returns a command object.
 All files provided in the -ConfigurationFile parameter are then used to create each individual function.
-Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultan module is
+Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultant module is
 imported, the module has all the command proxies available.
 
 .OUTPUTS
@@ -575,7 +575,7 @@ Import-CommandConfiguration
 #>
     [CmdletBinding(SupportsShouldProcess=$true)]
     param (
-        [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][string[]]$ConfigurationFile,
+        [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
         [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
         [Parameter()][switch]$Force
         )
