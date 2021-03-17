@@ -75,7 +75,7 @@ Describe "The help content for the proxy function is correct" -tags CI {
                 cmd /c dir $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
             else {
-                $configuration = (Import-CommandConfiguration "$PSScriptRoot/assets/ls.Proxy.json")
+                $configuration = (Import-CommandConfiguration "$PSScriptRoot/assets/ls.proxy.json")
                 $commandName = $configuration.FunctionName
                 Invoke-Expression $configuration.ToString()
                 /bin/ls -l $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
