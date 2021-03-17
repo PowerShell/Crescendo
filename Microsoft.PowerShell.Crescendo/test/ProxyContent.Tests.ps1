@@ -1,12 +1,12 @@
 Describe "The help content for the proxy function is correct" -tags CI {
     BeforeAll {
         invoke-expression (Import-CommandConfiguration assets/FullProxy.json).ToString()
-        $commandInfo = Get-Command invoke-thing
-        $helpInfo = Get-Help -Full Invoke-Thing
+        $commandInfo = Get-Command invoke-thing1
+        $helpInfo = Get-Help -Full Invoke-Thing1
         $proxyData = Get-Content "${PSScriptRoot}/assets/FullProxy.json" | ConvertFrom-Json        
     }
     AfterAll {
-        remove-item function:"invoke-thing"
+        remove-item function:"invoke-thing1"
     }
     
     Context "The help content is correct" {
@@ -15,7 +15,7 @@ Describe "The help content for the proxy function is correct" -tags CI {
             $helpInfo.Name | Should -BeExactly $name
         }
         It "The syntax statement is correct" {
-            [string]$syntax = (Get-Command Invoke-Thing -Syntax).Trim()
+            [string]$syntax = (Get-Command Invoke-Thing1 -Syntax).Trim()
             [string]$helpSyntax = ($helpInfo.Syntax | out-string).trim()
             $helpSyntax | Should -Be $syntax
         }
@@ -40,7 +40,7 @@ Describe "The help content for the proxy function is correct" -tags CI {
     Context "The command info data" {
         BeforeAll {
             $testCases = @(
-                @{ Name = "Name"; value = $commandInfo.Name; expectedValue = "Invoke-Thing" }   
+                @{ Name = "Name"; value = $commandInfo.Name; expectedValue = "Invoke-Thing1" }   
                 @{ Name = "Verb"; value = $commandInfo.Verb; expectedValue = $proxyData.Verb }
                 @{ Name = "Noun"; value = $commandInfo.Noun; expectedValue = $proxyData.Noun }
                 @{ Name = "Parameter1Name"; value = $commandinfo.parameters['Parameter1'].Name; expectedValue = $proxyData.Parameters[0].Name }
@@ -69,14 +69,18 @@ Describe "The help content for the proxy function is correct" -tags CI {
             New-Item -Type Directory -Path TESTDRIVE:/output
             Set-Content -Path TESTDRIVE:/output/proxyoutput.txt -Value "dummy output" # set dummy content so the lists are the same
             If ( $IsWindows ) {
-                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/Dir.Proxy.json").ToString()
+                $configuration = (Import-CommandConfiguration "$PSScriptRoot/assets/Dir.Proxy.json")
+                $commandName = $configuration.FunctionName
+                Invoke-Expression $configuration.ToString()
                 cmd /c dir $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
             else {
-                Invoke-Expression (Import-CommandConfiguration "$PSScriptRoot/assets/ls.proxy.json").ToString()
+                $configuration = (Import-CommandConfiguration "$PSScriptRoot/assets/ls.proxy.json")
+                $commandName = $configuration.FunctionName
+                Invoke-Expression $configuration.ToString()
                 /bin/ls -l $TESTDRIVE > $TESTDRIVE/output/nativeoutput.txt
             }
-            Invoke-FileListProxy -Detail -Path $TESTDRIVE > TESTDRIVE:/output/proxyoutput.txt
+            & $commandName -Detail -Path $TESTDRIVE > TESTDRIVE:/output/proxyoutput.txt
         }
 
         It "the proxy should produce the same results as the native app" {
