@@ -20,6 +20,9 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 # Description of the functionality provided by this module
 Description = "Module that improves user experience with native commands"
 
+# Link to updateable help
+HelpInfoUri = 'https://aka.ms/ps-modules-help'
+
 # Minimum version of the Windows PowerShell engine required by this module is version 7
 # the resultant module may be run on PowerShell 5.1
 PowerShellVersion = '7.0'
