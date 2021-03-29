@@ -2,11 +2,7 @@
 name: Crescendo-Release-$(Build.BuildId)
 trigger: none
 
-pr:
-  branches:
-    include:
-    - master
-    - release*
+pr: none
 
 variables:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1

@@ -4,6 +4,9 @@
     "Noun": "ifconfig",
     "Description": "This is a description of the proxy",
     "OriginalName": "ifconfig",
+    "Aliases": [
+        "Get-NetworkConfiguration"
+    ],
     "Usage": {
         "Synopsis": "Run invoke-ifconfig"
     },

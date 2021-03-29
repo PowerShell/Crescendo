@@ -1,7 +1,7 @@
 {
     "$schema" : "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
     "Verb" : "Invoke",
-    "Noun": "filelistproxy",
+    "Noun": "filelistproxy2",
     "OriginalName": "/bin/ls",
     "Parameters": [
         {

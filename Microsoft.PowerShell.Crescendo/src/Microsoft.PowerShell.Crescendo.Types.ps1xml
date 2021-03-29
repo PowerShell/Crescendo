@@ -1,0 +1,13 @@
+<Types>
+<Type>
+  <Name>Command</Name>
+  <Members>
+    <ScriptProperty>
+      <Name>FunctionName</Name>
+      <GetScriptBlock>
+        "{0}-{1}" -f $this.Verb,$this.Noun
+      </GetScriptBlock>
+    </ScriptProperty>
+  </Members>
+</Type>
+</Types>

@@ -7,7 +7,7 @@ Describe "Configuration based tests" -tags CI {
     }
     It "Can correctly populate the properties of the proxy command" {
         $proxyObject.Verb | Should -Be Invoke
-        $proxyObject.Noun | Should -Be "thing"
+        $proxyObject.Noun | Should -Be "thing2"
         $proxyObject.OriginalName | Should -Be "/bin/app"
     }
 }

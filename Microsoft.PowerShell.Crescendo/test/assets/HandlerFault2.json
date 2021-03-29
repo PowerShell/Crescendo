@@ -1,7 +1,7 @@
 {
     "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
     "Verb": "Test",
-    "Noun": "HandlerError",
+    "Noun": "HandlerError2",
     "OriginalName": "doesnotexist",
     "OutputHandlers": [
         {

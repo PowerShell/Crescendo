@@ -23,6 +23,10 @@ Description = "Module that improves user experience with native commands"
 # Link to updateable help
 HelpInfoUri = 'https://aka.ms/ps-modules-help'
 
+# Types and Formats to process
+TypesToProcess = 'Microsoft.PowerShell.Crescendo.Types.ps1xml'
+FormatsToProcess = 'Microsoft.PowerShell.Crescendo.Format.ps1xml'
+
 # Minimum version of the Windows PowerShell engine required by this module is version 7
 # the resultant module may be run on PowerShell 5.1
 PowerShellVersion = '7.0'

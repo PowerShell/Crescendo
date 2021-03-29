@@ -1,0 +1,11 @@
+{
+    "$schema": "../../src/Microsoft.Powershell.Crescendo.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "GetDate",
+    "OriginalName": "get-date",
+    "NoInvocation": false,
+    "Aliases": [
+        "Get-DD",
+        "Get-DD2"
+    ]
+}
