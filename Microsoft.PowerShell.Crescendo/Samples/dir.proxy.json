@@ -1,0 +1,39 @@
+{
+    "$schema" : "../src/Microsoft.Powershell.Crescendo.Schema.json",
+    "Verb" : "Invoke",
+    "Noun": "filelistproxy1",
+    "Platform": [ "Windows" ],
+    "Aliases": [
+        "idir"
+    ],
+    "OriginalName": "cmd",
+    "OriginalCommandElements": ["/c","dir"],
+    "Usage": {
+        "Synopsis": "Just run it"
+    },
+    "Elevation": {
+        "Command": "WinElevate",
+        "Arguments": [
+            {
+                "Name": "",
+                "OriginalName": "-credential",
+                "DefaultValue": "$(get-secret admin)"
+            }
+        ]
+    },
+    "Description": "Just run it",
+    "Parameters": [
+        {
+            "Name": "Path",
+            "OriginalName": "",
+            "Position": 0,
+            "OriginalPosition": 10,
+            "DefaultValue": "."
+        },
+        {
+            "Name" : "IncludeOwner",
+            "OriginalName" : "/O",
+            "ParameterType" : "switch"
+        }
+    ]
+}
