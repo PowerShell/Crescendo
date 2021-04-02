@@ -49,7 +49,7 @@ Describe "Create proxy from Schema" -tags CI {
     }
     Context "Proxies are parsable on Windows PowerShell" {
         BeforeAll {
-            $modulePath = "${TestDrive}/ProxyModule.psd1"
+            $modulePath = "${TestDrive}/ProxyModule.psm1"
             Export-CrescendoModule -ModuleName $modulePath -ConfigurationFile $proxies
         }
 
