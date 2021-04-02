@@ -2,7 +2,7 @@ Describe "Aliases are created and work correctly" -Tag CI {
     BeforeAll {
         $modName = [guid]::NewGuid()
         Export-CrescendoModule -ModuleName "${TESTDRIVE}/${modName}" -ConfigurationFile "${PSScriptRoot}/assets/Alias.Proxy.json"
-        $aliasModule = Import-Module -Name "${TESTDRIVE}/${modName}.psm1" -PassThru
+        $aliasModule = Import-Module -Name "${TESTDRIVE}/${modName}.psd1" -PassThru
     }
     AfterAll {
         Remove-Module ${aliasModule}

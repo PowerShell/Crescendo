@@ -11,6 +11,11 @@ Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
         $pc.Noun | Should -BeExactly $noun
     }
 
+    It "should have the proper platform information" {
+        $pc = New-CrescendoCommand -Verb $verb -Noun $noun
+        $pc.Platform | Should -BeExactly "Windows","Linux","MacOS"
+    }
+
     It "is possible to create add a parameter to a command object" {
         $pc = New-CrescendoCommand -Verb $verb -Noun $noun
         $pc.Parameters.Add((New-ParameterInfo -Name "pName" -OriginalName "--OriginalName"))
