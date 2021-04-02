@@ -1,10 +1,96 @@
 {
+  "definitions": {
+    "parameter": {
+      "properties": {
+        "ParameterType": {
+          "type": "string",
+          "required": true,
+          "description": "This the type of the parameter. It should represent an actual type."
+        },
+        "Position": {
+          "type": "integer",
+          "required": false,
+          "description": "The position of the parameter."
+        },
+        "Name": {
+          "type": "string",
+          "required": true
+        },
+        "OriginalName": {
+          "type": "string",
+          "required": true
+        },
+        "OriginalText": {
+          "type": "string",
+          "required": false
+        },
+        "Description": {
+          "type": "string",
+          "required": false
+        },
+        "DefaultValue": {
+          "type": "string",
+          "required": false
+        },
+        "DefaultMissingValue": {
+          "type": "string",
+          "required": false
+        },
+        "AdditionalParameterAttributes": {
+          "type": "array",
+          "required": false,
+          "items": {
+            "type": "string"
+          }
+        },
+        "Mandatory": {
+          "type": "boolean",
+          "required": false
+        },
+        "ParameterSetName": {
+          "type": "array",
+          "required": false,
+          "description": "The names of the parameter set for this parameter",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Aliases": {
+          "type": "array",
+          "required": false,
+          "items": {
+            "type": "string"
+          }
+        },
+        "OriginalPosition": {
+          "type": "integer",
+          "required": false
+        },
+        "ValueFromPipeline": {
+          "type": "boolean",
+          "required": false
+        },
+        "NoGap": {
+          "type": "boolean",
+          "required": false
+        },
+        "ValueFromPipelineByPropertyName": {
+          "type": "boolean",
+          "required": false
+        },
+        "ValueFromRemainingArguments": {
+          "type": "boolean",
+          "required": false
+        }
+      }
+    }
+  },
   "title": "JSON schema for Powershell Crescendo files",
   "type": "object",
   "properties": {
     "$schema": {
-      "required":true,
-      "type": ["string"]
+      "required": true,
+      "type": "string"
     },
     "Verb": {
       "required": true,
@@ -35,12 +121,43 @@
       ],
       "description" : "The verb of the cmdlet"
     },
+    "Elevation": {
+      "required": false,
+      "type": "object",
+      "description": "When privilege elevation is required to run the command. Provide ElevationCommand and optional arguments.",
+      "properties": {
+        "Command": {
+          "required": true,
+          "type": "string",
+          "description": "The command which performs the elevation. Windows elevation may be done with the built-in function Invoke-WindowsNativeAppWithElevation."
+        },
+        "Arguments": {
+          "required": false,
+          "type": "array",
+          "items": { "$ref": "#/definitions/parameter" },
+          "description": "Additional arguments required by the elevation command."
+        }
+      }
+
+    },
     "Noun": {
       "required": true,
       "type": [
         "string"
       ],
       "description" : "The noun of the cmdlet"
+    },
+    "Platform": {
+      "type": "array",
+      "required": false,
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [ "Windows", "Linux", "MacOS" ]
+      },
+      "description" : "The platform where the function will run, this may be 'Windows','Linux', or 'MacOS' in any combination. The default is all three values."
     },
     "OriginalName": {
       "required": true,
@@ -74,8 +191,6 @@
         }
       }
     },
-
-
 
     "OriginalCommandElements": {
       "required": false,
