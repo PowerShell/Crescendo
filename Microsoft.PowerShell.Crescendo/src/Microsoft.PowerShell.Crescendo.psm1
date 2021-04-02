@@ -85,6 +85,9 @@ class ParameterInfo {
 
     [string]ToString() #  this is to be replaced with actual generation code
     {
+        if ($this.Name -eq [string]::Empty) {
+            return $null
+        }
         $sb = [System.Text.StringBuilder]::new()
         if ( $this.AdditionalParameterAttributes )
         {
@@ -98,37 +101,39 @@ class ParameterInfo {
             $sb.AppendLine("[Alias('" + $paramAliases + "')]")
         }
 
-        $elements = @()
         # TODO: This logic does not handle parameters in multiple sets correctly
-        $sb.Append('[Parameter(')
-        if ( $this.Position -ne [int]::MaxValue ) {
-            $elements += "Position=" + $this.Position
+
+        $elements = @()
+        if ( $this.ParameterSetName.Count -eq 0) {
+            $sb.Append('[Parameter(')
+            if ( $this.Position -ne [int]::MaxValue ) { $elements += "Position=" + $this.Position }
+            if ( $this.ValueFromPipeline ) { $elements += 'ValueFromPipeline=$true' }
+            if ( $this.ValueFromPipelineByPropertyName ) { $elements += 'ValueFromPipelineByPropertyName=$true' }
+            if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
+            if ( $this.Mandatory ) { $elements += 'Mandatory=$true' }
+            if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
+            if ($elements.Count -gt 0) { $sb.Append(($elements -join ",")) }
+            $sb.AppendLine(')]')
         }
-        if ( $this.ValueFromPipeline ) {
-            $elements += 'ValueFromPipeline=$true'
+        else {
+            foreach($parameterSetName in $this.ParameterSetName) {
+                $sb.Append('[Parameter(')
+                if ( $this.Position -ne [int]::MaxValue ) { $elements += "Position=" + $this.Position }
+                if ( $this.ValueFromPipeline ) { $elements += 'ValueFromPipeline=$true' }
+                if ( $this.ValueFromPipelineByPropertyName ) { $elements += 'ValueFromPipelineByPropertyName=$true' }
+                if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
+                if ( $this.Mandatory ) { $elements += 'Mandatory=$true' }
+                if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
+                $elements += "ParameterSetName='{0}'" -f $parameterSetName
+                if ($elements.Count -gt 0) { $sb.Append(($elements -join ",")) }
+                $sb.AppendLine(')]')
+                $elements = @()
+            }
         }
-        if ( $this.ValueFromPipelineByPropertyName ) {
-            $elements += 'ValueFromPipelineByPropertyName=$true'
-        }
-        if ( $this.ValueFromRemainingArguments ) {
-            $elements += 'ValueFromRemainingArguments=$true'
-        }
-        if ( $this.Mandatory ) {
-            $elements += 'Mandatory=$true'
-        }
-        if ( $this.ValueFromRemainingArguments ) {
-            $elements += 'ValueFromRemainingArguments=$true'
-        }
-        if ( $this.ParameterSetName.Count -eq 1 ) {
-            $elements += "ParameterSetName='{0}'" -f $this.ParameterSetName
-        }
-        if ($elements.Count -gt 0) {
-            $sb.Append(($elements -join ","))
-        }
-        $sb.AppendLine(')]')
-        if ( $this.ParameterSetName.Count -gt 1) {
-            $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
-        }
+
+        #if ( $this.ParameterSetName.Count -gt 1) {
+        #    $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
+        #}
         $sb.Append(('[{0}]${1}' -f $this.ParameterType, $this.Name))
         if ( $this.DefaultValue ) {
             $sb.Append(' = "' + $this.DefaultValue + '"')
@@ -155,12 +160,21 @@ class OutputHandler {
     OutputHandler() { }
 }
 
+class Elevation {
+    [string]$Command
+    [List[ParameterInfo]]$Arguments
+}
+
 class Command {
     [string]$Verb # PS-function name verb
     [string]$Noun # PS-function name noun
 
+
     [string]$OriginalName # e.g. "cubectl get user" -> "cubectl"
     [string[]]$OriginalCommandElements # e.g. "cubectl get user" -> "get", "user"
+    [string[]]$Platform # can be any (or all) of "Windows","Linux","MacOS"
+
+    [Elevation]$Elevation
 
     [string[]] $Aliases
     [string] $DefaultParameterSetName
@@ -177,13 +191,16 @@ class Command {
 
     [OutputHandler[]]$OutputHandlers
 
-    Command() { }
+    Command() {
+        $this.Platform = "Windows","Linux","MacOS"
+    }
     Command([string]$Verb, [string]$Noun)
     {
         $this.Verb = $Verb
         $this.Noun = $Noun
         $this.Parameters = [List[ParameterInfo]]::new()
         $this.Examples = [List[ExampleInfo]]::new()
+        $this.Platform = "Windows","Linux","MacOS"
     }
 
     [string]GetDescription() {
@@ -347,10 +364,22 @@ class Command {
         $sb.AppendLine('    $__handler = $__handlerInfo.Handler')
         $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
-       $sb.AppendLine(('            & "{0}" $__commandArgs | & $__handler' -f $this.OriginalName))
+        if ( $this.Elevation.Command ) {
+            $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
+            $sb.AppendLine(('            & "{0}" {1} "{2}" $__commandArgs | & $__handler' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+        }
+        else {
+            $sb.AppendLine(('            & "{0}" $__commandArgs | & $__handler' -f $this.OriginalName))
+        }
         $sb.AppendLine('        }')
         $sb.AppendLine('        else {')
-       $sb.AppendLine(('            $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+        if ( $this.Elevation.Command ) {
+            $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
+            $sb.AppendLine(('            $result = & "{0}" {1} "{2}" $__commandArgs' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+        }
+        else {
+            $sb.AppendLine(('            $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+        }
         $sb.AppendLine('            & $__handler $result')
         $sb.AppendLine('        }')
         $sb.AppendLine("    }")
@@ -498,23 +527,57 @@ Export-CrescendoModule
     # The deserializer doesn't seem to support creating [command[]]
     Get-Content $file | ConvertFrom-Json -depth 10| ConvertTo-Json -depth 10| Foreach-Object {
         $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
-
-        # Validate the output handlers in the configuration
-        foreach ( $handler in $configuration.OutputHandlers ) {
-            $parserErrors = $null
-            if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
-                $eArgs = @{
-                    Message = "OutputHandler Error in '{0}' for ParameterSet '{1}'" -f $configuration.FunctionName, $handler.ParameterSetName 
-                    Category = "ParserError"
-                    TargetObject = $parserErrors
-                    ErrorID = "Import-CommandConfiguration:OutputHandler"
-                }
-                write-error @eArgs
-            }
+        $errs = $null
+        if (!(Test-Configuration -configuration $configuration -errors ([ref]$errs))) {
+            $errs | %{ Write-Error -ErrorRecord $_ }
         }
+
         # emit the configuration even if there was an error
         $configuration
     }
+}
+
+function Test-Configuration 
+{
+    param ([Command]$Configuration, [ref]$errors)
+
+    $configErrors = @()
+    $configurationOK = $true
+
+    # Validate the Platform types
+    $allowedPlatforms = "Windows","Linux","MacOS"
+    foreach($platform in $Configuration.Platform) {
+        if ($allowedPlatforms -notcontains $platform) {
+            $configurationOK = $false
+            $e = [System.Management.Automation.ErrorRecord]::new(
+                [Exception]::new("Platform '$platform' is not allowed. Use 'Windows', 'Linux', or 'MacOS'"),
+                "ParserError",
+                "InvalidArgument",
+                "Import-CommandConfiguration:Platform")
+            $configErrors += $e
+        }
+    }
+
+    # Validate the output handlers in the configuration
+    foreach ( $handler in $configuration.OutputHandlers ) {
+        $parserErrors = $null
+        if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
+            $configurationOK = $false
+            $exceptionMessage = "OutputHandler Error in '{0}' for ParameterSet '{1}'" -f $configuration.FunctionName, $handler.ParameterSetName
+            $e = [System.Management.Automation.ErrorRecord]::new(
+                ([Exception]::new($exceptionMessage)),
+                "Import-CommandConfiguration:OutputHandler",
+                "ParserError",
+                $parserErrors)
+            $configErrors += $e
+        }
+    }
+    if ($configErrors.Count -gt 0) {
+        $errors.Value = $configErrors
+    }
+
+    return $configurationOK
+
 }
 
 function Export-Schema() {
@@ -601,7 +664,11 @@ Import-CommandConfiguration
         [string[]]$cmdletNames = @()
         [string[]]$aliases = @()
         [string[]]$SetAlias = @()
+        [bool]$IncludeWindowsElevationHelper = $false
         foreach($proxy in $crescendoCollection) {
+            if ($proxy.Elevation.Command -eq "Invoke-WindowsNativeAppWithElevation") {
+                $IncludeWindowsElevationHelper = $true
+            }
             $cmdletNames += $proxy.FunctionName
             if ( $proxy.Aliases ) {
                 # we need the aliases without value for the psd1
@@ -612,9 +679,122 @@ Import-CommandConfiguration
             $proxy.ToString() >> $ModuleName
         }
         $SetAlias >> $ModuleName
-        "Export-ModuleMember -Function $($cmdletNames -join ', ')" >> $ModuleName
-        if ( $aliases.Count -gt 0 ) {
-            "Export-ModuleMember -Alias $($aliases -join ', ')" >> $ModuleName
+
+        # include the windows helper if it has been included
+        if ($IncludeWindowsElevationHelper) {
+            (Get-Content function:Invoke-WindowsNativeAppWithElevation).Ast.Extent.Text >> $ModuleName
+        }
+
+        $ModuleManifestArguments = @{
+            Path = $ModuleName -Replace "psm1$","psd1"
+            RootModule = [io.path]::GetFileName(${ModuleName})
+            Tags = "CrescendoBuilt"
+            PowerShellVersion = "5.1.0"
+            CmdletsToExport = @()
+            AliasesToExport = @()
+            VariablesToExport = @()
+            FunctionsToExport = @()
+        }
+        if ( $cmdletNames ) {
+            $ModuleManifestArguments['FunctionsToExport'] = $cmdletNames
+        }
+        if ( $aliases ) {
+            $ModuleManifestArguments['AliasesToExport'] = $aliases
+        }
+
+        New-ModuleManifest @ModuleManifestArguments
+
+        #"Export-ModuleMember -Function $($cmdletNames -join ', ')" >> $ModuleName
+        #if ( $aliases.Count -gt 0 ) {
+        #    "Export-ModuleMember -Alias $($aliases -join ', ')" >> $ModuleName
+        #}
+    }
+}
+
+# This is an elevation function for Windows which may be distributed with a crescendo module
+function Invoke-WindowsNativeAppWithElevation
+{
+    [CmdletBinding(DefaultParameterSetName="username")]
+    param (
+        [Parameter(Position=0,Mandatory=$true)][string]$command,
+        [Parameter(ParameterSetName="credential")][PSCredential]$Credential,
+        [Parameter(ParameterSetName="username")][string]$User = "Administrator",
+        [Parameter(ValueFromRemainingArguments=$true)][string[]]$cArguments
+    )
+
+    $app = "cmd.exe"
+    $nargs = @("/c","cd","/d","%CD%","&&")
+    $nargs += $command
+    if ( $cArguments.count ) {
+        $nargs += $cArguments
+    }
+    $__OUTPUT = Join-Path ([io.Path]::GetTempPath()) "CrescendoOutput.txt"
+    $__ERROR  = Join-Path ([io.Path]::GetTempPath()) "CrescendoError.txt"
+    if ( $Credential ) {
+        $cred = $Credential
+    }
+    else {
+        $cred = Get-Credential $User
+    }
+
+    $spArgs = @{
+        Credential = $cred
+        File = $app
+        ArgumentList = $nargs
+        RedirectStandardOutput = $__OUTPUT
+        RedirectStandardError = $__ERROR
+        WindowStyle = "Minimized"
+        PassThru = $True
+        ErrorAction = "Stop"
+    }
+    $timeout = 10000
+    $sleepTime = 500
+    $totalSleep = 0
+    try {
+        $p = start-process @spArgs
+        while(!$p.HasExited) {
+            Start-Sleep -mill $sleepTime
+            $totalSleep += $sleepTime
+            if ( $totalSleep -gt $timeout )
+            {
+                throw "'$(cArguments -join " ")' has timed out"
+            }
         }
     }
+    catch {
+        # should we report error output?
+        # It's most likely that there will be none if the process can't be started
+        # or other issue with start-process. We catch actual error output from the
+        # elevated command below.
+        if ( Test-Path $__OUTPUT ) { Remove-Item $__OUTPUT }
+        if ( Test-Path $__ERROR ) { Remove-Item $__ERROR }
+        $msg = "Error running '{0} {1}'" -f $command,($cArguments -join " ")
+        throw "$msg`n$_"
+    }
+
+    try {
+        if ( test-path $__OUTPUT ) {
+            $output = Get-Content $__OUTPUT
+        }
+        if ( test-path $__ERROR ) {
+            $errorText = (Get-Content $__ERROR) -join "`n"
+        }
+    }
+    finally {
+        if ( $errorText ) {
+            $exception = [System.Exception]::new($errorText)
+            $errorRecord = [system.management.automation.errorrecord]::new(
+                $exception,
+                "CrescendoElevationFailure",
+                "InvalidOperation",
+                ("{0} {1}" -f $command,($cArguments -join " "))
+                )
+            # errors emitted during the application are not fatal
+            Write-Error $errorRecord
+        }
+        if ( Test-Path $__OUTPUT ) { Remove-Item $__OUTPUT }
+        if ( Test-Path $__ERROR ) { Remove-Item $__ERROR }
+    }
+    # return the output to the caller
+    $output
 }
