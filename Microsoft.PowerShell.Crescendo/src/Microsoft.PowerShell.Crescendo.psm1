@@ -529,7 +529,7 @@ Export-CrescendoModule
         $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
         $errs = $null
         if (!(Test-Configuration -configuration $configuration -errors ([ref]$errs))) {
-            $errs | %{ Write-Error -ErrorRecord $_ }
+            $errs | Foreach-Object { Write-Error -ErrorRecord $_ }
         }
 
         # emit the configuration even if there was an error
