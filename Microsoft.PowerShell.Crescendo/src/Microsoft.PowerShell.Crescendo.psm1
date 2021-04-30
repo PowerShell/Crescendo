@@ -270,7 +270,7 @@ class Command {
         if ( $this.OriginalCommandElements.Count -ne 0 ) {
             $sb.AppendLine('    $__commandArgs = @(')
             $this.OriginalCommandElements | Foreach-Object {
-                $sb.AppendLine('        "{0}"' -f $_)
+                $sb.AppendLine('        ''{0}''' -f $_)
             }
             $sb.AppendLine('    )')
         }
@@ -387,10 +387,15 @@ class Command {
         $sb.AppendLine("  } # end PROCESS") # always present
         return $sb.ToString()
     }
+    [string]GetCrescendoAttribute()
+    {
+        return('[PowerShellCustomFunctionAttribute(RequiresElevation=${0})]' -f (($null -eq $this.Elevation.Command) ? $false : $true))
+    }
     [string]GetCommandDeclaration() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendFormat("Function {0}`n", $this.FunctionName)
+        $sb.AppendFormat("function {0}`n", $this.FunctionName)
         $sb.AppendLine("{")
+        $sb.AppendLine($this.GetCrescendoAttribute())
         $sb.Append("[CmdletBinding(")
         $addlAttributes = @()
         if ( $this.SupportsShouldProcess ) {
@@ -651,7 +656,18 @@ Import-CommandConfiguration
         if ((Test-Path $ModuleName) -and -not $Force) {
             throw "$ModuleName already exists"
         }
+        # static parts of the crescendo module
         "# Module created by Microsoft.PowerShell.Crescendo" > $ModuleName
+        'class PowerShellCustomFunctionAttribute : System.Attribute { '>> $ModuleName
+        '    [bool]$RequiresElevation' >> $ModuleName
+        '    [string]$Source' >> $ModuleName
+        '    PowerShellCustomFunctionAttribute() { $this.RequiresElevation = $false; $this.Source = "Microsoft.PowerShell.Crescendo" }' >> $ModuleName
+        '    PowerShellCustomFunctionAttribute([bool]$rElevation) {' >> $ModuleName
+        '        $this.RequiresElevation = $rElevation' >> $ModuleName
+        '        $this.Source = "Microsoft.PowerShell.Crescendo"' >> $ModuleName
+        '    }' >> $ModuleName
+        '}' >> $ModuleName
+        '' >> $ModuleName
     }
     PROCESS {
         $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
@@ -797,4 +813,47 @@ function Invoke-WindowsNativeAppWithElevation
     }
     # return the output to the caller
     $output
+}
+
+class CrescendoCommandInfo {
+    [string]$Module
+    [string]$Source
+    [string]$Name
+    [bool]$IsCrescendoCommand
+    [bool]$RequiresElevation
+    CrescendoCommandInfo([string]$module, [string]$name, [Attribute]$attribute) {
+        $this.Module = $module
+        $this.Name = $name
+        $this.IsCrescendoCommand = $null -eq $attribute ? $false : ($attribute.Source -eq "Microsoft.PowerShell.Crescendo")
+        $this.RequiresElevation = $null -eq $attribute ? $false : $attribute.RequiresElevation
+        $this.Source = $null -eq $attribute ? "" : $attribute.Source
+    }
+}
+
+function Test-IsCrescendoCommand
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)]
+        [object[]]$Command
+    )
+    PROCESS {
+        # loop through the commands and determine whether it is a Crescendo Function
+        foreach( $cmd in $Command) {
+            $fInfo = $null
+            if ($cmd -is [System.Management.Automation.FunctionInfo]) {
+                $fInfo = $cmd
+            }
+            elseif ($cmd -is [string]) {
+                $fInfo = Get-Command -Name $cmd -CommandType Function -ErrorAction Ignore
+            }
+            if(-not $fInfo) {
+                Write-Error -Message "'$cmd' is not a function" -TargetObject "$cmd" -RecommendedAction "Be sure that the command is a function"
+                continue
+            }
+            #  check for the PowerShellFunctionAttribute and report on findings
+            $crescendoAttribute = $fInfo.ScriptBlock.Attributes|Where-Object {$_.TypeId.Name -eq "PowerShellCustomFunctionAttribute"} | Select-Object -Last 1
+            [CrescendoCommandInfo]::new($fInfo.Source, $fInfo.Name, $crescendoAttribute)
+        }
+    }
 }

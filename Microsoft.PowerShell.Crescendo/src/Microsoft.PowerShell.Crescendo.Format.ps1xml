@@ -22,6 +22,32 @@
      </TableRowEntries>
     </TableControl>
    </View>
+   <View>
+    <Name>CrescendoCommandInfoTable</Name>
+    <ViewSelectedBy>
+     <TypeName>CrescendoCommandInfo</TypeName>
+    </ViewSelectedBy>
+    <GroupBy>
+      <PropertyName>Module</PropertyName>
+      <Label>Module</Label>
+    </GroupBy>
+    <TableControl>
+     <TableHeaders>
+      <TableColumnHeader><Label>Name</Label></TableColumnHeader>
+      <TableColumnHeader><Label>IsCrescendoCommand</Label></TableColumnHeader>
+      <TableColumnHeader><Label>RequiresElevation</Label></TableColumnHeader>
+     </TableHeaders>
+     <TableRowEntries>
+      <TableRowEntry>
+       <TableColumnItems>
+        <TableColumnItem><PropertyName>Name</PropertyName></TableColumnItem>
+        <TableColumnItem><PropertyName>IsCrescendoCommand</PropertyName></TableColumnItem>
+        <TableColumnItem><PropertyName>RequiresElevation</PropertyName></TableColumnItem>
+       </TableColumnItems>
+      </TableRowEntry>
+     </TableRowEntries>
+    </TableControl>
+   </View>
 
    </ViewDefinitions>
 </Configuration>
