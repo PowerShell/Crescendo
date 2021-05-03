@@ -234,11 +234,17 @@ class Command {
         }
     }
 
-    [string]ToString() #  this is to be replaced with actual function-generation code
+    [string]ToString()
+    {
+        return $this.ToString($false)
+    }
+
+    # emit the function, if EmitAttribute is true, the Crescendo attribute will be included
+    [string]ToString([bool]$EmitAttribute)
     {
         $sb = [System.Text.StringBuilder]::new()
         # get the command declaration
-        $sb.AppendLine($this.GetCommandDeclaration())
+        $sb.AppendLine($this.GetCommandDeclaration($EmitAttribute))
         # get the parameters
         # we always need a parameter block
         $sb.AppendLine($this.GetParameters())
@@ -391,11 +397,13 @@ class Command {
     {
         return('[PowerShellCustomFunctionAttribute(RequiresElevation=${0})]' -f (($null -eq $this.Elevation.Command) ? $false : $true))
     }
-    [string]GetCommandDeclaration() {
+    [string]GetCommandDeclaration([bool]$EmitAttribute) {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendFormat("function {0}`n", $this.FunctionName)
         $sb.AppendLine("{")
-        $sb.AppendLine($this.GetCrescendoAttribute())
+        if ( $EmitAttribute ) {
+            $sb.AppendLine($this.GetCrescendoAttribute())
+        }
         $sb.Append("[CmdletBinding(")
         $addlAttributes = @()
         if ( $this.SupportsShouldProcess ) {
@@ -692,7 +700,8 @@ Import-CommandConfiguration
                 # the actual set-alias command will be emited before the export-modulemember
                 $proxy.Aliases.ForEach({$SetAlias += "Set-Alias -Name '{0}' -Value '{1}'" -f $_,$proxy.FunctionName})
             }
-            $proxy.ToString() >> $ModuleName
+            # when set to true, we will emit the Crescendo attribute
+            $proxy.ToString($true) >> $ModuleName
         }
         $SetAlias >> $ModuleName
 
