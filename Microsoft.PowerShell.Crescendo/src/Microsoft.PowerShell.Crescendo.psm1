@@ -661,6 +661,10 @@ Import-CommandConfiguration
         if ($ModuleName -notmatch "\.psm1$") {
             $ModuleName += ".psm1"
         }
+        if (-not $PSCmdlet.ShouldProcess("Creating Module '$ModuleName'"))
+        {
+            return
+        }
         if ((Test-Path $ModuleName) -and -not $Force) {
             throw "$ModuleName already exists"
         }
@@ -678,6 +682,9 @@ Import-CommandConfiguration
         '' >> $ModuleName
     }
     PROCESS {
+        if ( $PSBoundParameters['WhatIf'] ) {
+            return
+        }
         $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
         foreach($file in $resolvedConfigurationPaths) {
             Write-Verbose "Adding $file to Crescendo collection"
@@ -685,6 +692,9 @@ Import-CommandConfiguration
         }
     }
     END {
+        if ( $PSBoundParameters['WhatIf'] ) {
+            return
+        }
         [string[]]$cmdletNames = @()
         [string[]]$aliases = @()
         [string[]]$SetAlias = @()
