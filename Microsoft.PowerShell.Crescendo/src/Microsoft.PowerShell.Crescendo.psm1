@@ -368,7 +368,7 @@ class Command {
         $sb.AppendLine('        $__handlerInfo = $__outputHandlers["Default"] # Guaranteed to be present')
         $sb.AppendLine('    }')
         $sb.AppendLine('    $__handler = $__handlerInfo.Handler')
-        $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
+        $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + ' $__commandArgs")) {')
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
