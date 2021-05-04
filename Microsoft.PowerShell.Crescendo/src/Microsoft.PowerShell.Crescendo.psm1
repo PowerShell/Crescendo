@@ -234,11 +234,17 @@ class Command {
         }
     }
 
-    [string]ToString() #  this is to be replaced with actual function-generation code
+    [string]ToString()
+    {
+        return $this.ToString($false)
+    }
+
+    # emit the function, if EmitAttribute is true, the Crescendo attribute will be included
+    [string]ToString([bool]$EmitAttribute)
     {
         $sb = [System.Text.StringBuilder]::new()
         # get the command declaration
-        $sb.AppendLine($this.GetCommandDeclaration())
+        $sb.AppendLine($this.GetCommandDeclaration($EmitAttribute))
         # get the parameters
         # we always need a parameter block
         $sb.AppendLine($this.GetParameters())
@@ -270,7 +276,7 @@ class Command {
         if ( $this.OriginalCommandElements.Count -ne 0 ) {
             $sb.AppendLine('    $__commandArgs = @(')
             $this.OriginalCommandElements | Foreach-Object {
-                $sb.AppendLine('        "{0}"' -f $_)
+                $sb.AppendLine('        ''{0}''' -f $_)
             }
             $sb.AppendLine('    )')
         }
@@ -387,10 +393,17 @@ class Command {
         $sb.AppendLine("  } # end PROCESS") # always present
         return $sb.ToString()
     }
-    [string]GetCommandDeclaration() {
+    [string]GetCrescendoAttribute()
+    {
+        return('[PowerShellCustomFunctionAttribute(RequiresElevation=${0})]' -f (($null -eq $this.Elevation.Command) ? $false : $true))
+    }
+    [string]GetCommandDeclaration([bool]$EmitAttribute) {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendFormat("Function {0}`n", $this.FunctionName)
+        $sb.AppendFormat("function {0}`n", $this.FunctionName)
         $sb.AppendLine("{")
+        if ( $EmitAttribute ) {
+            $sb.AppendLine($this.GetCrescendoAttribute())
+        }
         $sb.Append("[CmdletBinding(")
         $addlAttributes = @()
         if ( $this.SupportsShouldProcess ) {
@@ -648,12 +661,30 @@ Import-CommandConfiguration
         if ($ModuleName -notmatch "\.psm1$") {
             $ModuleName += ".psm1"
         }
+        if (-not $PSCmdlet.ShouldProcess("Creating Module '$ModuleName'"))
+        {
+            return
+        }
         if ((Test-Path $ModuleName) -and -not $Force) {
             throw "$ModuleName already exists"
         }
+        # static parts of the crescendo module
         "# Module created by Microsoft.PowerShell.Crescendo" > $ModuleName
+        'class PowerShellCustomFunctionAttribute : System.Attribute { '>> $ModuleName
+        '    [bool]$RequiresElevation' >> $ModuleName
+        '    [string]$Source' >> $ModuleName
+        '    PowerShellCustomFunctionAttribute() { $this.RequiresElevation = $false; $this.Source = "Microsoft.PowerShell.Crescendo" }' >> $ModuleName
+        '    PowerShellCustomFunctionAttribute([bool]$rElevation) {' >> $ModuleName
+        '        $this.RequiresElevation = $rElevation' >> $ModuleName
+        '        $this.Source = "Microsoft.PowerShell.Crescendo"' >> $ModuleName
+        '    }' >> $ModuleName
+        '}' >> $ModuleName
+        '' >> $ModuleName
     }
     PROCESS {
+        if ( $PSBoundParameters['WhatIf'] ) {
+            return
+        }
         $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
         foreach($file in $resolvedConfigurationPaths) {
             Write-Verbose "Adding $file to Crescendo collection"
@@ -661,6 +692,9 @@ Import-CommandConfiguration
         }
     }
     END {
+        if ( $PSBoundParameters['WhatIf'] ) {
+            return
+        }
         [string[]]$cmdletNames = @()
         [string[]]$aliases = @()
         [string[]]$SetAlias = @()
@@ -676,7 +710,8 @@ Import-CommandConfiguration
                 # the actual set-alias command will be emited before the export-modulemember
                 $proxy.Aliases.ForEach({$SetAlias += "Set-Alias -Name '{0}' -Value '{1}'" -f $_,$proxy.FunctionName})
             }
-            $proxy.ToString() >> $ModuleName
+            # when set to true, we will emit the Crescendo attribute
+            $proxy.ToString($true) >> $ModuleName
         }
         $SetAlias >> $ModuleName
 
@@ -797,4 +832,47 @@ function Invoke-WindowsNativeAppWithElevation
     }
     # return the output to the caller
     $output
+}
+
+class CrescendoCommandInfo {
+    [string]$Module
+    [string]$Source
+    [string]$Name
+    [bool]$IsCrescendoCommand
+    [bool]$RequiresElevation
+    CrescendoCommandInfo([string]$module, [string]$name, [Attribute]$attribute) {
+        $this.Module = $module
+        $this.Name = $name
+        $this.IsCrescendoCommand = $null -eq $attribute ? $false : ($attribute.Source -eq "Microsoft.PowerShell.Crescendo")
+        $this.RequiresElevation = $null -eq $attribute ? $false : $attribute.RequiresElevation
+        $this.Source = $null -eq $attribute ? "" : $attribute.Source
+    }
+}
+
+function Test-IsCrescendoCommand
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)]
+        [object[]]$Command
+    )
+    PROCESS {
+        # loop through the commands and determine whether it is a Crescendo Function
+        foreach( $cmd in $Command) {
+            $fInfo = $null
+            if ($cmd -is [System.Management.Automation.FunctionInfo]) {
+                $fInfo = $cmd
+            }
+            elseif ($cmd -is [string]) {
+                $fInfo = Get-Command -Name $cmd -CommandType Function -ErrorAction Ignore
+            }
+            if(-not $fInfo) {
+                Write-Error -Message "'$cmd' is not a function" -TargetObject "$cmd" -RecommendedAction "Be sure that the command is a function"
+                continue
+            }
+            #  check for the PowerShellFunctionAttribute and report on findings
+            $crescendoAttribute = $fInfo.ScriptBlock.Attributes|Where-Object {$_.TypeId.Name -eq "PowerShellCustomFunctionAttribute"} | Select-Object -Last 1
+            [CrescendoCommandInfo]::new($fInfo.Source, $fInfo.Name, $crescendoAttribute)
+        }
+    }
 }

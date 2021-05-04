@@ -20,6 +20,9 @@ Copyright = '(c) Microsoft Corporation. All rights reserved.'
 # Description of the functionality provided by this module
 Description = "Module that improves user experience with native commands"
 
+# Link to updateable help
+HelpInfoUri = 'https://aka.ms/ps-modules-help'
+
 TypesToProcess = 'Microsoft.PowerShell.Crescendo.Types.ps1xml'
 FormatsToProcess = 'Microsoft.PowerShell.Crescendo.Format.ps1xml'
 
@@ -35,6 +38,7 @@ FunctionsToExport = @(
     'New-UsageInfo',
     'Import-CommandConfiguration',
     'Export-Schema',
-    'Export-CrescendoModule'
+    'Export-CrescendoModule',
+    'Test-IsCrescendoCommand'
     )
 }

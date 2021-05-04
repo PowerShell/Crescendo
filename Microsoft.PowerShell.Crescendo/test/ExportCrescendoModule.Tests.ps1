@@ -12,7 +12,6 @@ Describe "The correct files are created when a module is created" {
         It "Should create the module code" {
             "${TESTDRIVE}/${ModuleName}.psm1" | Should -Exist
         }
-
     }
 
     Context "Configuration with fault" {
@@ -28,7 +27,14 @@ Describe "The correct files are created when a module is created" {
         It "Should create the module code" {
             "${TESTDRIVE}/${ModuleName}.psm1" | Should -Exist
         }
+    }
 
+    Context "Supports -WhatIf" {
+        It "Does not create a module file when WhatIf is used" {
+            $ModuleName = "whatifmodule"
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/FullProxy.json" -WhatIf
+            Test-Path "${TESTDRIVE}/${ModuleName}*" | Should -Be $False
+        }
     }
 
 }
