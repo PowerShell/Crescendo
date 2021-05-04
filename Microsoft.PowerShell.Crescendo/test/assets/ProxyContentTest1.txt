@@ -33,7 +33,7 @@ PROCESS {
         $__handlerInfo = $__outputHandlers["Default"] # Guaranteed to be present
     }
     $__handler = $__handlerInfo.Handler
-    if ( $PSCmdlet.ShouldProcess("/bin/ls")) {
+    if ( $PSCmdlet.ShouldProcess("/bin/ls $__commandArgs")) {
         if ( $__handlerInfo.StreamOutput ) {
             & "/bin/ls" $__commandArgs | & $__handler
         }
