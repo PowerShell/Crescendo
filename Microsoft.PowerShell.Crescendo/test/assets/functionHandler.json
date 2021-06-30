@@ -1,0 +1,15 @@
+{
+    "$schema": "../../src/Microsoft.Powershell.Crescendo.Schema.json",
+    "Verb": "Get",
+    "Noun": "functionhandler1",
+    "OriginalName": "/bin/date",
+    "OriginalCommandElements": ["+%m/%d/%Y"],
+    "OutputHandlers": [
+        {
+            "HandlerType": "Function",
+            "Handler": "convert-getdate",
+            "ParameterSetName": "default",
+            "StreamOutput": true
+        }
+    ]
+}

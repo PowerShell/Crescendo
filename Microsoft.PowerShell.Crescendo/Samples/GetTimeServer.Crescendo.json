@@ -1,0 +1,17 @@
+{
+    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Get",
+    "Noun": "TimeServer",
+    "Elevation": {
+        "Command": "sudo"
+    },
+    "OriginalCommandElements": ["-getnetworktimeserver"],
+    "OriginalName": "/usr/sbin/systemsetup",
+    "Platform": ["MacOS"],
+    "OutputHandlers": [
+        {
+            "ParameterSetName": "Default",
+            "Handler": "$args|%{[pscustomobject]@{ TimeServer = $_.Split(':')[1].Trim()}}"
+        }
+    ]
+}

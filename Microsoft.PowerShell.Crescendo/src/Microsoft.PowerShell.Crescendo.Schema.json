@@ -183,6 +183,13 @@
             "type": "string",
             "description": "This is the code which converts the output to objects"
           },
+          "HandlerType": {
+            "required": false,
+            "type": "string",
+            "enum": ["Inline", "Function","Script"],
+            "description": "The type of handler, by default this is 'Inline'"
+
+          },
           "StreamOutput": {
             "required": false,
             "type": "boolean",
