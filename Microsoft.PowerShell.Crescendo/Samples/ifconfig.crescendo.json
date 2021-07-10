@@ -1,22 +1,26 @@
 {
-    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
-    "Verb": "Invoke",
-    "Noun": "ifconfig",
-    "Description": "This is a description of the proxy",
-    "OriginalName": "ifconfig",
-    "Aliases": [
-        "Get-NetworkConfiguration"
-    ],
-    "Usage": {
-        "Synopsis": "Run invoke-ifconfig"
-    },
-    "Parameters": [
+   "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "Name": "Interface",
-            "OriginalName": "",
-            "Description": "This is the description for a parameter",
-            "ParameterType": "string",
-            "DefaultValue": ""
+            "Verb": "Invoke",
+            "Noun": "ifconfig",
+            "Description": "This is a description of the proxy",
+            "OriginalName": "ifconfig",
+            "Aliases": [
+                "Get-NetworkConfiguration"
+            ],
+            "Usage": {
+                "Synopsis": "Run invoke-ifconfig"
+            },
+            "Parameters": [
+                {
+                    "Name": "Interface",
+                    "OriginalName": "",
+                    "Description": "This is the description for a parameter",
+                    "ParameterType": "string",
+                    "DefaultValue": ""
+                }
+            ]
         }
     ]
 }

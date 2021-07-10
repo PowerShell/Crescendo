@@ -3,7 +3,7 @@ Describe "Create proxy from Schema" -tags CI {
         $proxies = Get-ChildItem "${PSScriptRoot}/../Samples" -Filter *.json
         $testCases = @()
         foreach ( $proxy in $proxies ) {
-            $platforms = (Get-Content $proxy.FullName | ConvertFrom-Json ).Platform
+            $platforms = (Get-Content $proxy.FullName | ConvertFrom-Json | ForEach-Object {$_.Commands} ).Platform
             if ( $platforms -eq $null ) {
                 $platforms = "Windows","Linux","MacOS"
             }
@@ -29,7 +29,7 @@ Describe "Create proxy from Schema" -tags CI {
             $Parser = [System.Management.Automation.Language.Parser]
             $tokens = $errors = $null
             $ast = $Parser::ParseFile("${modulePath}.psm1", [ref]$tokens, [ref]$errors)
-            $functionNames = $proxies.ForEach({ get-content $_ | convertfrom-json }).ForEach({ "{0}-{1}" -f $_.Verb,$_.Noun})
+            $functionNames = $proxies.ForEach({ get-content $_ | convertfrom-json }).Foreach({$_.Commands}).ForEach({ "{0}-{1}" -f $_.Verb,$_.Noun})
         }
 
         It "Can create a parsable module" {
@@ -47,8 +47,36 @@ Describe "Create proxy from Schema" -tags CI {
         }
 
     }
+    Context "Handling multiple configurations in a single file" {
+        BeforeAll {
+            $modulePath = "${TestDrive}/MultiModule"
+            $configPath = Join-Path -Path $PSScriptRoot -ChildPath assets -AdditionalChildPath MultiConfig.crescendo.json
+            $functionNames = (get-content $configPath | convertfrom-json).Foreach({$_.Commands}).ForEach({ "{0}-{1}" -f $_.Verb,$_.Noun})
+            Export-CrescendoModule -ModuleName $modulePath -ConfigurationFile $configPath
+            $Parser = [System.Management.Automation.Language.Parser]
+            $tokens = $perrors = $null
+            $ast = $Parser::ParseFile("${modulePath}.psm1", [ref]$tokens, [ref]$perrors)
+            $funcs = $ast.findall({$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $args[0].Parent -isnot [System.Management.Automation.Language.FunctionMemberAst]},$false)
+        }
+
+        It "Creates a proper module" {
+            $perrors | Should -BeNullOrEmpty
+        }
+
+        It "Creates the right number of functions" {
+            $funcs.count | Should -Be $functionNames.Count
+        }
+
+        It "Creates the right functions" {
+            $funcs.Name | Should -Be $functionNames
+        }
+    }
+
     Context "Proxies are parsable on Windows PowerShell" {
         BeforeAll {
+            if (! $IsWindows) {
+                return
+            }
             $modulePath = "${TestDrive}/ProxyModule.psm1"
             Export-CrescendoModule -ModuleName $modulePath -ConfigurationFile $proxies
         }

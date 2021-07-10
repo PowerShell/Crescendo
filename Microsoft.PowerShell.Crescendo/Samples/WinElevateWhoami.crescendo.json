@@ -1,40 +1,44 @@
 {
-    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
-    "Verb": "Get",
-    "Noun": "WhoAmI",
-    "Platform": ["Windows"],
-    "OriginalCommandElements": ["/FO","CSV"],
-    "OriginalName": "whoami",
-    "Elevation": {
-        "Command": "Invoke-WindowsNativeAppWithElevation",
-        "Arguments": [
-            {
-                "OriginalName" : "-Credential",
-                "DefaultValue": "(get-secret admin)"
-            }
-        ]
-    },
-    "DefaultParameterSetName": "User",
-    "Parameters": [
+   "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "OriginalName": "/User",
-            "Name": "User",
-            "ParameterType": "switch",
-            "ParameterSetName": ["User"]
-        },
-        {
-            "OriginalName": "/Groups",
-            "Name": "Group",
-            "ParameterType": "switch",
-            "ParameterSetName": ["Group"]
-        }
-    ],
-    "OutputHandlers": [
-        {
-            "Handler": "$input|ConvertFrom-CSV",
-            "StreamOutput": true,
-            "ParameterSetName": "Default"
+            "Verb": "Get",
+            "Noun": "WhoAmI",
+            "Platform": ["Windows"],
+            "OriginalCommandElements": ["/FO","CSV"],
+            "OriginalName": "whoami",
+            "Elevation": {
+                "Command": "Invoke-WindowsNativeAppWithElevation",
+                "Arguments": [
+                    {
+                        "OriginalName" : "-Credential",
+                        "DefaultValue": "(get-secret admin)"
+                    }
+                ]
+            },
+            "DefaultParameterSetName": "User",
+            "Parameters": [
+                {
+                    "OriginalName": "/User",
+                    "Name": "User",
+                    "ParameterType": "switch",
+                    "ParameterSetName": ["User"]
+                },
+                {
+                    "OriginalName": "/Groups",
+                    "Name": "Group",
+                    "ParameterType": "switch",
+                    "ParameterSetName": ["Group"]
+                }
+            ],
+            "OutputHandlers": [
+                {
+                    "Handler": "$input|ConvertFrom-CSV",
+                    "StreamOutput": true,
+                    "ParameterSetName": "Default"
+                }
+            ]
+        
         }
     ]
-
 }

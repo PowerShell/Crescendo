@@ -1,21 +1,25 @@
 {
-    "$schema" : "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
-    "Verb" : "Invoke",
-    "Noun": "filelistproxy2",
-    "OriginalName": "/bin/ls",
-    "Parameters": [
+   "$schema" : "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "Name": "Path",
-            "OriginalName": "",
-            "Position": 0,
-            "OriginalPosition": 10,
-            "DefaultValue": "."
-
-        },
-        {
-            "Name" : "Detail",
-            "OriginalName" : "-l",
-            "ParameterType" : "switch"
+            "Verb" : "Invoke",
+            "Noun": "filelistproxy2",
+            "OriginalName": "/bin/ls",
+            "Parameters": [
+                {
+                    "Name": "Path",
+                    "OriginalName": "",
+                    "Position": 0,
+                    "OriginalPosition": 10,
+                    "DefaultValue": "."
+        
+                },
+                {
+                    "Name" : "Detail",
+                    "OriginalName" : "-l",
+                    "ParameterType" : "switch"
+                }
+            ]
         }
     ]
 }

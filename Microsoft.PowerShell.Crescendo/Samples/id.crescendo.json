@@ -1,75 +1,79 @@
 {
-    "$schema" : "../src/Microsoft.Powershell.Crescendo.Schema.json",
-    "Verb" : "Get",
-    "Noun": "Id",
-    "Platform": [ "Linux","MacOS"],
-    "Aliases": [
-        "gid"
-    ],
-    "DefaultParameterSetName": "Main",
-    "OriginalName": "id",
-    "Usage": {
-        "Synopsis": "Return user identity"
-    },
-    "Elevation": {
-        "Command": "sudo"
-    },
-    "Description": "The id utility displays the user and group names and numeric IDs, of the calling process, to the standard output.  If the real and effective IDs are different, both are displayed, otherwise only the real ID is displayed.",
-    "Parameters": [
+   "$schema" : "../src/Microsoft.Powershell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "ParameterSetName": [ "Main", "FullName","Password", "Groups", "EffectiveGroup","EffectiveUser","ForPeople"],
-            "Name": "User",
-            "OriginalName": "",
-            "Position": 0,
-            "OriginalPosition": 10
-        },
-        {
-            "ParameterSetName": ["FullName"],
-            "Name" : "FullName",
-            "OriginalName" : "-F",
-            "ParameterType" : "switch"
-        },
-        {
-            "ParameterSetName": ["Groups"],
-            "Name": "DisplayGroup",
-            "OriginalName": "-G",
-            "ParameterType": "switch"
-        },
-        {
-            "ParameterSetName": ["Password"],
-            "Name": "AsPassword",
-            "OriginalName": "-P",
-            "ParameterType": "switch"
-        },
-        {
-            "ParameterSetName": ["ForPeople"],
-            "Name" : "HumanReadable",
-            "OriginalName": "-p",
-            "ParameterType": "switch"
-        },
-        {
-            "ParameterSetName": ["EffectiveUser"],
-            "Name" : "EffectiveUser",
-            "OriginalName": "-u",
-            "ParameterType": "switch"
-        },
-        {
-            "ParameterSetName": ["EffectiveGroup"],
-            "Name" : "EffectiveGroup",
-            "OriginalName": "-g",
-            "ParameterType": "switch"
-        },
-        {
-            "ParameterSetName": ["Groups","EffectiveGroup","EffectiveUser"],
-            "Name" : "AsName",
-            "OriginalName" : "-n",
-            "ParameterType" : "switch"
-        },
-        {
-            "ParameterSetName": ["EffectiveGroup","EffectiveUser"],
-            "Name" : "DisplayRealId",
-            "OriginalName" : "-r",
-            "ParameterType" : "switch"
+            "Verb" : "Get",
+            "Noun": "Id",
+            "Platform": [ "Linux","MacOS"],
+            "Aliases": [
+                "gid"
+            ],
+            "DefaultParameterSetName": "Main",
+            "OriginalName": "id",
+            "Usage": {
+                "Synopsis": "Return user identity"
+            },
+            "Elevation": {
+                "Command": "sudo"
+            },
+            "Description": "The id utility displays the user and group names and numeric IDs, of the calling process, to the standard output.  If the real and effective IDs are different, both are displayed, otherwise only the real ID is displayed.",
+            "Parameters": [
+                {
+                    "ParameterSetName": [ "Main", "FullName","Password", "Groups", "EffectiveGroup","EffectiveUser","ForPeople"],
+                    "Name": "User",
+                    "OriginalName": "",
+                    "Position": 0,
+                    "OriginalPosition": 10
+                },
+                {
+                    "ParameterSetName": ["FullName"],
+                    "Name" : "FullName",
+                    "OriginalName" : "-F",
+                    "ParameterType" : "switch"
+                },
+                {
+                    "ParameterSetName": ["Groups"],
+                    "Name": "DisplayGroup",
+                    "OriginalName": "-G",
+                    "ParameterType": "switch"
+                },
+                {
+                    "ParameterSetName": ["Password"],
+                    "Name": "AsPassword",
+                    "OriginalName": "-P",
+                    "ParameterType": "switch"
+                },
+                {
+                    "ParameterSetName": ["ForPeople"],
+                    "Name" : "HumanReadable",
+                    "OriginalName": "-p",
+                    "ParameterType": "switch"
+                },
+                {
+                    "ParameterSetName": ["EffectiveUser"],
+                    "Name" : "EffectiveUser",
+                    "OriginalName": "-u",
+                    "ParameterType": "switch"
+                },
+                {
+                    "ParameterSetName": ["EffectiveGroup"],
+                    "Name" : "EffectiveGroup",
+                    "OriginalName": "-g",
+                    "ParameterType": "switch"
+                },
+                {
+                    "ParameterSetName": ["Groups","EffectiveGroup","EffectiveUser"],
+                    "Name" : "AsName",
+                    "OriginalName" : "-n",
+                    "ParameterType" : "switch"
+                },
+                {
+                    "ParameterSetName": ["EffectiveGroup","EffectiveUser"],
+                    "Name" : "DisplayRealId",
+                    "OriginalName" : "-r",
+                    "ParameterType" : "switch"
+                }
+            ]
         }
     ]
 }

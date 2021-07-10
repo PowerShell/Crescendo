@@ -156,8 +156,24 @@ class ParameterInfo {
 class OutputHandler {
     [string]$ParameterSetName
     [string]$Handler # This is a scriptblock which does the conversion to an object
+    [string]$HandlerType # Inline, Function, or Script
     [bool]$StreamOutput # this indicates whether the output should be streamed to the handler
-    OutputHandler() { }
+    OutputHandler() {
+        $this.HandlerType = "Inline" # default is an inline script
+    }
+    [string]ToString() {
+        $s = '        '
+        if ($this.HandlerType -eq "Inline") {
+            $s += '{0} = @{{ StreamOutput = ${1}; Handler = {{ {2} }} }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
+        }
+        elseif ($this.HandlerType -eq "Script") {
+            $s += '{0} = @{{ StreamOutput = ${1}; Handler = "${PSScriptRoot}/{2}" }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
+        }
+        else { # function
+            $s += '{0} = @{{ StreamOutput = ${1}; Handler = ''{2}'' }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
+        }
+        return $s
+    }
 }
 
 class Elevation {
@@ -234,23 +250,35 @@ class Command {
         }
     }
 
+    [string]GetFunctionHandlers()
+    {
+        # 
+        $functionSB = [System.Text.StringBuilder]::new()
+        if ( $this.OutputHandlers ) {
+            foreach ($handler in $this.OutputHandlers ) {
+                if ( $handler.HandlerType -eq "Function" ) {
+                    $handlerName = $handler.Handler
+                    $functionHandler = Get-Content function:$handlerName -ErrorAction Ignore
+                    if ( $null -eq $functionHandler ) {
+                        throw "Cannot find function '$handlerName'."
+                    }
+                    $functionSB.AppendLine($functionHandler.Ast.Extent.Text)
+                }
+            }
+        }
+        return $functionSB.ToString()
+    }
+
     [string]ToString()
     {
         return $this.ToString($false)
     }
 
-    # emit the function, if EmitAttribute is true, the Crescendo attribute will be included
-    [string]ToString([bool]$EmitAttribute)
+    [string]GetBeginBlock()
     {
         $sb = [System.Text.StringBuilder]::new()
-        # get the command declaration
-        $sb.AppendLine($this.GetCommandDeclaration($EmitAttribute))
-        # get the parameters
-        # we always need a parameter block
-        $sb.AppendLine($this.GetParameters())
-        # get the parameter map
-        # this may be null if there are no parameters
         $sb.AppendLine("BEGIN {")
+        # get the parameter map, this may be null if there are no parameters
         $parameterMap = $this.GetParameterMap()
         if ( $parameterMap ) {
             $sb.AppendLine($parameterMap)
@@ -258,25 +286,30 @@ class Command {
         # Provide for the scriptblocks which handle the output
         if ( $this.OutputHandlers ) {
             $sb.AppendLine('    $__outputHandlers = @{')
-            $this.OutputHandlers|Foreach-Object {
-
-                $s = '        {0} = @{{ StreamOutput = ${2}; Handler = {{ {1} }} }}' -f $_.ParameterSetName, $_.Handler, $_.StreamOutput
-                $sb.AppendLine($s)
+            foreach($handler in $this.OutputHandlers) {
+                $sb.AppendLine($handler.ToString())
             }
             $sb.AppendLine('    }')
         }
         else {
             $sb.AppendLine('    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input } } }')
         }
-        $sb.AppendLine("}")
+        $sb.AppendLine("}") # END BEGIN
+        return $sb.ToString()
+    }
+
+    [string]GetProcessBlock()
+    {
         # construct the command invocation
         # this must exist and should never be null
         # otherwise we won't actually be invoking anything
+        $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine("PROCESS {")
-        if ( $this.OriginalCommandElements.Count -ne 0 ) {
+        if ($this.OriginalCommandElements.Count -ne 0) {
             $sb.AppendLine('    $__commandArgs = @(')
-            $this.OriginalCommandElements | Foreach-Object {
-                $sb.AppendLine('        ''{0}''' -f $_)
+            foreach($element in $this.OriginalCommandElements) {
+                # we use single quotes here to reduce injection attacks
+                $sb.AppendLine('        ''{0}''' -f $element)
             }
             $sb.AppendLine('    )')
         }
@@ -284,14 +317,37 @@ class Command {
             $sb.AppendLine('    $__commandArgs = @()')
         }
         $sb.AppendLine($this.GetInvocationCommand())
+
         # add the help
         $help = $this.GetCommandHelp()
-        if ( $help ) {
+        if ($help) {
             $sb.AppendLine($help)
         }
-
-        # finish the function
+        # finish the block
         $sb.AppendLine("}")
+        return $sb.ToString()
+    }
+
+    # emit the function, if EmitAttribute is true, the Crescendo attribute will be included
+    [string]ToString([bool]$EmitAttribute)
+    {
+        $sb = [System.Text.StringBuilder]::new()
+        # emit any output handlers which are functions,
+        # they're available only in the exported module.
+        $sb.AppendLine($this.GetFunctionHandlers())
+
+        $sb.AppendLine()
+        # get the command declaration
+        $sb.AppendLine($this.GetCommandDeclaration($EmitAttribute))
+        # We will always provide a parameter block, even if it's empty
+        $sb.AppendLine($this.GetParameters())
+
+        # get the begin block
+        $sb.AppendLine($this.GetBeginBlock())
+
+        # get the process block
+        $sb.AppendLine($this.GetProcessBlock())
+
         # return $this.Verb + "-" + $this.Noun
         return $sb.ToString()
     }
@@ -302,12 +358,20 @@ class Command {
             return '    $__PARAMETERMAP = @{}'
         }
         $sb.AppendLine('    $__PARAMETERMAP = @{')
-        $this.Parameters |ForEach-Object {
-            $sb.AppendLine(("        {0} = @{{ OriginalName = '{1}'; OriginalPosition = '{2}'; Position = '{3}'; ParameterType = [{4}]; NoGap = `${5} }}" -f $_.Name, $_.OriginalName, $_.OriginalPosition, $_.Position, $_.ParameterType, $_.NoGap))
+        foreach($parameter in $this.Parameters) {
+            $sb.AppendLine(('         {0} = @{{' -f $parameter.Name))
+            $sb.AppendLine(('               OriginalName = ''{0}''' -f $parameter.OriginalName))
+            $sb.AppendLine(('               OriginalPosition = ''{0}''' -f $parameter.OriginalPosition))
+            $sb.AppendLine(('               Position = ''{0}''' -f $parameter.Position))
+            $sb.AppendLine(('               ParameterType = ''{0}''' -f $parameter.ParameterType))
+            $sb.AppendLine(('               NoGap = ${0}' -f $parameter.NoGap))
+            $sb.AppendLine('               }')
         }
+        # end parameter map
         $sb.AppendLine("    }")
         return $sb.ToString()
     }
+
     [string]GetCommandHelp() {
         $helpSb = [System.Text.StringBuilder]::new()
         $helpSb.AppendLine("<#")
@@ -338,6 +402,7 @@ class Command {
         return $helpSb.ToString()
     }
 
+    # this is where the logic of actually calling the command is created
     [string]GetInvocationCommand() {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine('    $__boundparms = $PSBoundParameters') # debugging assistance
@@ -538,16 +603,21 @@ Export-CrescendoModule
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
-    Get-Content $file | ConvertFrom-Json -depth 10| ConvertTo-Json -depth 10| Foreach-Object {
-        $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
-        $errs = $null
-        if (!(Test-Configuration -configuration $configuration -errors ([ref]$errs))) {
-            $errs | Foreach-Object { Write-Error -ErrorRecord $_ }
-        }
+    Get-Content $file |
+        ConvertFrom-Json -depth 10| 
+        Foreach-Object {$_.Commands} |
+        ForEach-Object { $_ | ConvertTo-Json -depth 10 |
+            Foreach-Object {
+                $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
+                $errs = $null
+                if (!(Test-Configuration -configuration $configuration -errors ([ref]$errs))) {
+                    $errs | Foreach-Object { Write-Error -ErrorRecord $_ }
+                }
 
-        # emit the configuration even if there was an error
-        $configuration
-    }
+                # emit the configuration even if there was an error
+                $configuration
+            }
+        }
 }
 
 function Test-Configuration 
@@ -729,6 +799,7 @@ Import-CommandConfiguration
             AliasesToExport = @()
             VariablesToExport = @()
             FunctionsToExport = @()
+            PrivateData = @{ CrescendoGenerated = Get-Date; CrescendoVersion = (Get-Module Microsoft.PowerShell.Crescendo).Version }
         }
         if ( $cmdletNames ) {
             $ModuleManifestArguments['FunctionsToExport'] = $cmdletNames

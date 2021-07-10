@@ -1,0 +1,20 @@
+{
+	"$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+	"Commands": [
+		{
+			"Verb": "Get",
+			"Noun": "Thing1",
+			"OriginalName": "/bin/app1"
+		},
+		{
+			"Verb": "Get",
+			"Noun": "Thing2",
+			"OriginalName": "/bin/app2"
+		},
+		{
+			"Verb": "Get",
+			"Noun": "Thing3",
+			"OriginalName": "/bin/app3"
+		}
+	]
+}

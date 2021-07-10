@@ -1,13 +1,17 @@
 {
-    "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
-    "Verb": "Test",
-    "Noun": "HandlerError2",
-    "OriginalName": "doesnotexist",
-    "OutputHandlers": [
+   "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "ParameterSetName": "Default",
-            "StreamOutput": true,
-            "Handler": "PROCESS { $_.oTime = "
+            "Verb": "Test",
+            "Noun": "HandlerError2",
+            "OriginalName": "doesnotexist",
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "StreamOutput": true,
+                    "Handler": "PROCESS { $_.oTime = "
+                }
+            ]
         }
     ]
 }

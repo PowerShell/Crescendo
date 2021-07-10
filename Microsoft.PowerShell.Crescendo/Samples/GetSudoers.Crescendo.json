@@ -1,0 +1,23 @@
+{
+   "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
+        {
+            "Verb": "Get",
+            "Noun": "Sudoer",
+            "Elevation": {
+                "Command": "sudo"
+            },
+            "OriginalName": "/bin/cat",
+            "Parameters": [
+                {
+                    "Name": "User",
+                    "Mandatory": true,
+                    "OriginalName": "/etc/sudoers.d/",
+                    "NoGap": true,
+                    "ParameterType": "string"
+                }
+            ],
+            "Platform": ["MacOS"]
+        }
+    ]
+}

@@ -3,7 +3,7 @@ Describe "The help content for the proxy function is correct" -tags CI {
         invoke-expression (Import-CommandConfiguration assets/FullProxy.json).ToString()
         $commandInfo = Get-Command invoke-thing1
         $helpInfo = Get-Help -Full Invoke-Thing1
-        $proxyData = Get-Content "${PSScriptRoot}/assets/FullProxy.json" | ConvertFrom-Json        
+        $proxyData = (Get-Content "${PSScriptRoot}/assets/FullProxy.json" | ConvertFrom-Json).Commands        
     }
     AfterAll {
         remove-item function:"invoke-thing1"

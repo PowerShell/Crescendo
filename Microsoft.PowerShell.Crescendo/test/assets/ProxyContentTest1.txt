@@ -1,4 +1,6 @@
-Function Get-Crescendo
+
+
+function Get-Crescendo
 {
 [CmdletBinding()]
 
@@ -8,6 +10,7 @@ BEGIN {
     $__PARAMETERMAP = @{}
     $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input } } }
 }
+
 PROCESS {
     $__commandArgs = @()
     $__boundparms = $PSBoundParameters
@@ -53,4 +56,5 @@ this is a description
 
 #>
 }
+
 

@@ -1,26 +1,30 @@
 {
-    "$schema" : "../../src/Microsoft.Powershell.Crescendo.Schema.json",
-    "Verb" : "Invoke",
-    "Noun": "filelistproxy1",
-    "OriginalName": "cmd",
-    "OriginalCommandElements": ["/c","dir"],
-    "Usage": {
-        "Synopsis": "Just run it"
-    },
-    "Description": "Just run it",
-    "Parameters": [
+   "$schema" : "../../src/Microsoft.Powershell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "Name": "Path",
-            "OriginalName": "",
-            "Position": 0,
-            "OriginalPosition": 10,
-            "DefaultValue": "."
-
-        },
-        {
-            "Name" : "Detail",
-            "OriginalName" : "",
-            "ParameterType" : "switch"
+            "Verb" : "Invoke",
+            "Noun": "filelistproxy1",
+            "OriginalName": "cmd",
+            "OriginalCommandElements": ["/c","dir"],
+            "Usage": {
+                "Synopsis": "Just run it"
+            },
+            "Description": "Just run it",
+            "Parameters": [
+                {
+                    "Name": "Path",
+                    "OriginalName": "",
+                    "Position": 0,
+                    "OriginalPosition": 10,
+                    "DefaultValue": "."
+        
+                },
+                {
+                    "Name" : "Detail",
+                    "OriginalName" : "",
+                    "ParameterType" : "switch"
+                }
+            ]
         }
     ]
 }
