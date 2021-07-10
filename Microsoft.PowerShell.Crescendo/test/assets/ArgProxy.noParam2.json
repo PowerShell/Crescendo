@@ -1,12 +1,16 @@
 {
-    "$schema": "../../src/Microsoft.Powershell.Crescendo.Schema.json",
-    "Verb": "Invoke",
-    "Noun": "ArgReturn2",
-    "OriginalName": "boop",
-    "NoInvocation": true,
-    "OriginalCommandElements": [
-        "--arg1",
-        "--arg2",
-        "--arg3"
+   "$schema": "../../src/Microsoft.Powershell.Crescendo.Schema.json",
+   "Commands": [
+        {
+            "Verb": "Invoke",
+            "Noun": "ArgReturn2",
+            "OriginalName": "boop",
+            "NoInvocation": true,
+            "OriginalCommandElements": [
+                "--arg1",
+                "--arg2",
+                "--arg3"
+            ]
+        }
     ]
 }

@@ -1,6 +1,10 @@
 {
-    "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
-    "Verb": "Invoke",
-    "Noun": "Thing2",
-    "OriginalName": "/bin/app"
+   "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
+        {
+            "Verb": "Invoke",
+            "Noun": "Thing2",
+            "OriginalName": "/bin/app"
+        }
+    ]
 }

@@ -1,19 +1,23 @@
 {
-    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
-    "Verb": "Remove",
-    "Noun": "DockerImage",
-    "OriginalName": "docker",
-    "SupportsShouldProcess": true,
-    "OriginalCommandElements": [
-        "image",
-        "rm"
-    ],
-    "Parameters": [
+   "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "Commands": [
         {
-            "Name": "ID",
-            "OriginalName": "",
-            "Mandatory": true,
-            "ValueFromPipelineByPropertyName": true
+            "Verb": "Remove",
+            "Noun": "DockerImage",
+            "OriginalName": "docker",
+            "SupportsShouldProcess": true,
+            "OriginalCommandElements": [
+                "image",
+                "rm"
+            ],
+            "Parameters": [
+                {
+                    "Name": "ID",
+                    "OriginalName": "",
+                    "Mandatory": true,
+                    "ValueFromPipelineByPropertyName": true
+                }
+            ]
         }
     ]
 }

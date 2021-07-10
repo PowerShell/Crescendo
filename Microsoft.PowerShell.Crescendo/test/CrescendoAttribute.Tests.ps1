@@ -8,7 +8,7 @@ Describe "Attribute Tests" {
         Export-CrescendoModule -ModuleName "${ModulePath}" -Config "${SampleDir}/*.json"
         $ModuleInfo = Import-Module "${ModulePath}.psd1" -Force -PassThru
         $mFunctions = Get-Command -Module tModule | Where-Object { $_.CommandType -eq "Function" }
-        $configs = (Get-ChildItem "${SampleDir}/*.json").Foreach({Get-Content $_ | ConvertFrom-Json})
+        $configs = (Get-ChildItem "${SampleDir}/*.json").Foreach({Get-Content $_ | ConvertFrom-Json -depth 10}).Foreach({$_.Commands})
         $functionTestCases = $mFunctions.ForEach({@{ Name = $_.Name; Function = $_ }})
         $elevationTestCases = $mFunctions.Foreach({@{ Name = $_.Name; Function = $_; Configuration = $configs }})
     }

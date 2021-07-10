@@ -603,16 +603,21 @@ Export-CrescendoModule
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
-    Get-Content $file | ConvertFrom-Json -depth 10| ConvertTo-Json -depth 10| Foreach-Object {
-        $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
-        $errs = $null
-        if (!(Test-Configuration -configuration $configuration -errors ([ref]$errs))) {
-            $errs | Foreach-Object { Write-Error -ErrorRecord $_ }
-        }
+    Get-Content $file |
+        ConvertFrom-Json -depth 10| 
+        Foreach-Object {$_.Commands} |
+        ForEach-Object { $_ | ConvertTo-Json -depth 10 |
+            Foreach-Object {
+                $configuration = [System.Text.Json.JsonSerializer]::Deserialize($_, [command], $options)
+                $errs = $null
+                if (!(Test-Configuration -configuration $configuration -errors ([ref]$errs))) {
+                    $errs | Foreach-Object { Write-Error -ErrorRecord $_ }
+                }
 
-        # emit the configuration even if there was an error
-        $configuration
-    }
+                # emit the configuration even if there was an error
+                $configuration
+            }
+        }
 }
 
 function Test-Configuration 
