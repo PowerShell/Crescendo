@@ -8,7 +8,7 @@ that are part of PowerShell.
 The Crescendo module is an experiment to provide a novel way to create functions
 which invoke native commands by using a `JSON` configuration file.
 
-The Microsoft.PowerShell.Crescendo module provides a way to more easily for native commands to
+The Microsoft.PowerShell.Crescendo module provides native commands a way to more easily
 participate in the PowerShell pipeline by facilitating parameter handling,
 converting native output into objects, and calling the native executable.
 This module provides a way to create a small bit of json,
@@ -21,7 +21,11 @@ be used by the native command. You can add attributes to the parameters
 to have the proxies take advantage of the PowerShell pipeline and value
 validation.
 
-You can find more about it in the PowerShell blogs:
+To learn the latest about our progress and releases:
+- [Crescendo.Preview.1](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-1/)
+- [Crescendo.Preview.2](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-2/)
+
+You can learn more about our approach from the blog discussion:
 [Part 1](https://devblogs.microsoft.com/powershell/native-commands-in-powershell-a-new-approach/)
 and
 [Part 2](https://devblogs.microsoft.com/powershell/native-commands-in-powershell-a-new-approach-part-2)
