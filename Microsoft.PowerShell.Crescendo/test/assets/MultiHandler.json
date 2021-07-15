@@ -1,0 +1,48 @@
+{
+	"$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+	"Commands": [
+		{
+			"Verb": "Invoke",
+			"Noun": "GetDate",
+			"OriginalName": "Get-Date",
+			"OriginalCommandElements": [ "7/1/2021 12:00:00 AM"],
+			"Parameters": [
+				{
+					"Name": "ViaInline",
+					"ParameterSetName": ["viaInline"],
+					"ParameterType": "switch",
+					"OriginalName": ""
+				},
+				{
+					"Name": "ViaFunction",
+					"ParameterSetName": ["viaFunction"],
+					"ParameterType": "switch",
+					"OriginalName": ""
+				},
+				{
+					"Name": "ViaScript",
+					"ParameterSetName": ["viaScript"],
+					"ParameterType": "switch",
+					"OriginalName": ""
+				}
+			],
+			"OutputHandlers": [
+				{
+					"ParameterSetName": "viaInline",
+					"HandlerType": "Inline",
+					"Handler": "'inline:' + $args[0].ToString('yyyy')"
+				},
+				{
+					"ParameterSetName": "viaFunction",
+					"HandlerType": "Function",
+					"Handler": "Convert-GetDate"
+				},
+				{
+					"ParameterSetName": "viaScript",
+					"HandlerType": "Script",
+					"Handler": "Convert-GetDate.ps1"
+				}
+			]
+		}
+	]
+}

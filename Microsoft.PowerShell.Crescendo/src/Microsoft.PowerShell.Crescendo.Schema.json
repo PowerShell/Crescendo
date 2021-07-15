@@ -48,7 +48,7 @@
         },
         "ParameterSetName": {
           "type": "array",
-          "description": "The names of the parameter set for this parameter",
+          "description": "The names of the parameter set for this parameter.",
           "items": {
             "type": "string"
           }
@@ -155,13 +155,14 @@
 
         "OutputHandlers": {
           "type": "array",
+          "description": "Converts the text output of the native command into an object. Each output handler is associated with a parameter set name.",
           "items": {
             "type": "object",
             "required": ["ParameterSetName", "Handler" ],
             "properties": {
               "ParameterSetName": {
                 "type": "string",
-                "description": "The name of the parameter set which will use the handler"
+                "description": "The name of the parameter set which will use the handler."
               },
               "Handler": {
                 "type": "string",
@@ -301,19 +302,12 @@
                 ]
               },
               "DefaultValue": {
-                "type": [
-                  "string",
-                  "object",
-                  "null"
-                ],
-                "properties": {}
+                "type": "string",
+                "description": "The default value for this parameter."
               },
               "DefaultMissingValue": {
-                "type": [
-                  "object",
-                  "null"
-                ],
-                "properties": {}
+                "type": "string",
+                "description": "The default value for this parameter if the parameter is not present (or is a switch parameter)."
               },
               "AdditionalParameterAttributes": {
                 "type": [

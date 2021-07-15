@@ -55,10 +55,10 @@ class ParameterInfo {
 
     [string]$OriginalText
     [string]$Description
-    [object]$DefaultValue
+    [string]$DefaultValue
     # some parameters are -param or +param which can be represented with a switch parameter
     # so we need way to provide for this
-    [object]$DefaultMissingValue
+    [string]$DefaultMissingValue
     [string]$ParameterType = 'object' # PS type
 
     [string[]]$AdditionalParameterAttributes
@@ -167,7 +167,7 @@ class OutputHandler {
             $s += '{0} = @{{ StreamOutput = ${1}; Handler = {{ {2} }} }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
         }
         elseif ($this.HandlerType -eq "Script") {
-            $s += '{0} = @{{ StreamOutput = ${1}; Handler = "${PSScriptRoot}/{2}" }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
+            $s += '{0} = @{{ StreamOutput = ${1}; Handler = "${{PSScriptRoot}}/{2}" }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
         }
         else { # function
             $s += '{0} = @{{ StreamOutput = ${1}; Handler = ''{2}'' }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
@@ -365,6 +365,9 @@ class Command {
             $sb.AppendLine(('               Position = ''{0}''' -f $parameter.Position))
             $sb.AppendLine(('               ParameterType = ''{0}''' -f $parameter.ParameterType))
             $sb.AppendLine(('               NoGap = ${0}' -f $parameter.NoGap))
+            if($parameter.DefaultMissingValue) {
+                $sb.AppendLine(('               DefaultMissingValue = ''{0}''' -f $parameter.DefaultMissingValue))
+            }
             $sb.AppendLine('               }')
         }
         # end parameter map
@@ -750,6 +753,7 @@ Import-CommandConfiguration
         '    }' >> $ModuleName
         '}' >> $ModuleName
         '' >> $ModuleName
+        $moduleBase = [System.IO.Path]::GetDirectoryName($ModuleName)
     }
     PROCESS {
         if ( $PSBoundParameters['WhatIf'] ) {
@@ -814,6 +818,20 @@ Import-CommandConfiguration
         #if ( $aliases.Count -gt 0 ) {
         #    "Export-ModuleMember -Alias $($aliases -join ', ')" >> $ModuleName
         #}
+        # copy the script output handlers into place
+        foreach($config in $crescendoCollection) {
+            foreach($handler in $config.OutputHandlers) {
+                if ($handler.HandlerType -eq "Script") {
+                    $scriptInfo = Get-Command -ErrorAction Ignore -CommandType ExternalScript $handler.Handler
+                    if($scriptInfo) {
+                        Copy-Item $scriptInfo.Source $moduleBase
+                    }
+                    else {
+                        Write-Error -Category ObjectNotFound -TargetObject $scriptInfo.Source -Message "Handler not found." -RecommendedAction "Copy the handler to the module directory before packaging."
+                    }
+                }
+            }
+        }
     }
 }
 

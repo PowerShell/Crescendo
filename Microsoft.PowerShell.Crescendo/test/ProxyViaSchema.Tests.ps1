@@ -70,6 +70,18 @@ Describe "Create proxy from Schema" -tags CI {
         It "Creates the right functions" {
             $funcs.Name | Should -Be $functionNames
         }
+        It "Creates the right number of aliases (6)" {
+            $expected = @(
+                "Set-Alias -Name 'cf1gt1a' -Value 'Get-Thing1'"
+                "Set-Alias -Name 'cf1gt1b' -Value 'Get-Thing1'"
+                "Set-Alias -Name 'cf2gt2a' -Value 'Get-Thing2'"
+                "Set-Alias -Name 'cf2gt2b' -Value 'Get-Thing2'"
+                "Set-Alias -Name 'cf3gt3a' -Value 'Get-Thing3'"
+                "Set-Alias -Name 'cf3gt3b' -Value 'Get-Thing3'"
+            )
+            $observed =  $ast.findall({$args[0] -is [System.Management.Automation.Language.CommandAst]},$false).extent.text
+            $observed | Should -Be $expected
+        }
     }
 
     Context "Proxies are parsable on Windows PowerShell" {
