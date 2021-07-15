@@ -13,7 +13,7 @@ Describe "Different types of output handlers are supported" {
 [CmdletBinding()]
 param ([Parameter(ValueFromPipeline=$true,Position=0,Mandatory=$true)][DateTime]$date)
 PROCESS { "script:" + $date.date.ToString("MM/dd/yyyy") }
-' > "$TESTDRIVE/convert-getdate.ps1"
+' > "$TESTDRIVE/Convert-GetDate.ps1"
 			New-Item -ItemType Directory $TESTDRIVE/export
 			Export-CrescendoModule -ModuleName $TESTDRIVE/export/multimodule -ConfigurationFile "$PSScriptRoot/assets/MultiHandler.json"
 			Import-Module $TESTDRIVE/export/multimodule.psd1
