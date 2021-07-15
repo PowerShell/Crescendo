@@ -4,17 +4,20 @@
 		{
 			"Verb": "Get",
 			"Noun": "Thing1",
-			"OriginalName": "/bin/app1"
+			"OriginalName": "/bin/app1",
+			"Aliases": [ "cf1gt1a", "cf1gt1b"]
 		},
 		{
 			"Verb": "Get",
 			"Noun": "Thing2",
-			"OriginalName": "/bin/app2"
+			"OriginalName": "/bin/app2",
+			"Aliases": [ "cf2gt2a", "cf2gt2b"]
 		},
 		{
 			"Verb": "Get",
 			"Noun": "Thing3",
-			"OriginalName": "/bin/app3"
+			"OriginalName": "/bin/app3",
+			"Aliases": [ "cf3gt3a", "cf3gt3b"]
 		}
 	]
 }
