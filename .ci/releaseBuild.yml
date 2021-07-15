@@ -30,6 +30,11 @@ stages:
     - checkout: self
 
     - pwsh: |
+        Install-Module -Name "platyPS" -Force
+      displayName: Install dependencies - PlatyPS
+      timeoutInMinutes: 10
+
+    - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/Crescendo"
         ./build.ps1 -Publish
         Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose
