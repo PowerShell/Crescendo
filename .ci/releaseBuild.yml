@@ -72,7 +72,7 @@ stages:
         # the certificate ID to use
         certificateId: "CP-230012"
         # the file pattern to use, comma separated
-        pattern: '*.psm1,*.psd1'
+        pattern: '*.psm1,*.psd1,*.ps1xml,*.ps1'
 
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/Crescendo"
