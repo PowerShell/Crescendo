@@ -24,6 +24,7 @@ validation.
 To learn the latest about our progress and releases:
 - [Crescendo.Preview.1](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-1/)
 - [Crescendo.Preview.2](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-2/)
+- [Crescendo.Preview.3](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-3/)
 
 You can learn more about our approach from the blog discussion:
 [Part 1](https://devblogs.microsoft.com/powershell/native-commands-in-powershell-a-new-approach/)
