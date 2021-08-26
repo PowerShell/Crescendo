@@ -39,6 +39,7 @@ FunctionsToExport = @(
     'Import-CommandConfiguration',
     'Export-Schema',
     'Export-CrescendoModule',
+    'Export-CrescendoCommand',
     'Test-IsCrescendoCommand'
     )
 }
