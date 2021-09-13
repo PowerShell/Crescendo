@@ -572,7 +572,7 @@ function Export-CrescendoCommand {
     param (
         [Parameter(Position=0,Mandatory=$true,ValueFromPipeline=$true)]
         [Command[]]$command,
-        [Parameter()][string]$targetDirectory
+        [Parameter()][string]$targetDirectory = "."
     )
 
     PROCESS
