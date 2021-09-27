@@ -36,6 +36,7 @@ FunctionsToExport = @(
     'New-CrescendoCommand',
     'New-ParameterInfo',
     'New-UsageInfo',
+    'New-OutputHandler',
     'Import-CommandConfiguration',
     'Export-Schema',
     'Export-CrescendoModule',

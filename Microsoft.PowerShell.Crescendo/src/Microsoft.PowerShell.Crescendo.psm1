@@ -195,6 +195,7 @@ class Command {
     [string[]] $Aliases
     [string] $DefaultParameterSetName
     [bool] $SupportsShouldProcess
+    [string] $ConfirmImpact
     [bool] $SupportsTransactions
     [bool] $NoInvocation # certain scenarios want to use the generated code as a front end. When true, the generated code will return the arguments only.
 
@@ -477,6 +478,12 @@ class Command {
         if ( $this.SupportsShouldProcess ) {
             $addlAttributes += 'SupportsShouldProcess=$true'
         }
+        if ( $this.ConfirmImpact ) {
+            if ( @("high","medium","low","none") -notcontains $this.ConfirmImpact) {
+                throw ("Confirm Impact '{0}' is invalid. It must be High, Medium, Low, or None." -f $this.ConfirmImpact)
+            }
+            $addlAttributes += 'ConfirmImpact=''{0}''' -f $this.ConfirmImpact
+        }
         if ( $this.DefaultParameterSetName ) {
             $addlAttributes += 'DefaultParameterSetName=''{0}''' -f $this.DefaultParameterSetName
         }
@@ -553,6 +560,13 @@ function New-ExampleInfo {
         [Parameter(Position=2,Mandatory=$true)][string]$description
         )
     [ExampleInfo]::new($command, $originalCommand, $description)
+}
+
+function New-OutputHandler {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
+    param ( )
+    [OutputHandler]::new()
+
 }
 
 function New-CrescendoCommand {
