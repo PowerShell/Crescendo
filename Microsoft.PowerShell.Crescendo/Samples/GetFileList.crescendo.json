@@ -1,5 +1,5 @@
 {
-   "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+   "$schema": "https://raw.githubusercontent.com/PowerShell/Crescendo/master/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.Schema.json",
    "Commands": [
         {
             "Verb": "Get",

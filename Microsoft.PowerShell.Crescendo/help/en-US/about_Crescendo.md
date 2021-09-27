@@ -63,7 +63,7 @@ A very simple example is as follows to wrap the unix `/bin/ls` command:
 
 ```json
 {
-    "$schema": "../src/Microsoft.PowerShell.Crescendo.Schema.json",
+    "$schema": "https://raw.githubusercontent.com/PowerShell/Crescendo/master/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.Schema.json",
     "Verb": "Get",
     "Noun":"FileList",
     "OriginalName": "/bin/ls",
