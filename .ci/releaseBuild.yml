@@ -20,7 +20,7 @@ stages:
 - stage: Build
   displayName: Build
   pool:
-    name: Package ES CodeHub Lab E
+    name: PowerShell1ES # Package ES CodeHub Lab E
   jobs:
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.Crescendo
@@ -90,7 +90,7 @@ stages:
   jobs:
   - job: Compliance_Job
     pool:
-      name: Package ES CodeHub Lab E
+      name: PowerShell1ES # Package ES CodeHub Lab E
     steps:
     - checkout: self
     - checkout: ComplianceRepo
