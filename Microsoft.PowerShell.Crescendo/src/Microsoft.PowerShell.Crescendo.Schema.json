@@ -1,6 +1,7 @@
 {
   "definitions": {
     "parameter": {
+      "definition": "The description of a parameter.",
       "required": ["ParameterType","Name","OriginalName" ],
       "properties": {
         "ParameterType": {
@@ -13,38 +14,38 @@
         },
         "Name": {
           "type": "string",
-          "description":" the name of the parameter that PowerShell will use."
+          "description": "The name of the parameter that PowerShell will use. If NoGap is used, include the separator in the name. 'parameter=' for parameter=value"
         },
         "OriginalName": {
           "type": "string",
-          "description":" the original parameter name used by the negative command."
+          "description": "The original parameter name used by the negative command."
         },
         "OriginalText": {
           "type": "string",
-          "description":" the original helptext for the native command parameter."
+          "description": "The original help text for the native command parameter."
         },
         "Description": {
           "type": "string",
-          "description":" the description of the parameter, this will be used by help."
+          "description": "The description of the parameter, this will be used by help."
         },
         "DefaultValue": {
           "type": "string",
-          "description":" the default value for the parameter."
+          "description": "The default value for the parameter."
         },
         "DefaultMissingValue": {
           "type": "string",
-          "description":"xxx"
+          "description": "The default value provided if the parameter is not used"
         },
         "AdditionalParameterAttributes": {
           "type": "array",
-          "description":" additional parameter attributes used by PowerShell. This will take the form of a standard script parameter.",
+          "description": "Additional parameter attributes used by PowerShell. This will take the form of a standard script parameter attribute.",
           "items": {
             "type": "string"
           }
         },
         "Mandatory": {
           "type": "boolean",
-          "description":" whether this parameter is mandatory."
+          "description": "A boolean indicating whether this parameter is mandatory."
         },
         "ParameterSetName": {
           "type": "array",
@@ -57,37 +58,37 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "A list of aliases for the cmdlet."
         },
         "OriginalPosition": {
           "type": "integer",
-          "description":" the original parameter position for the native executable. This is used to properly order parameters when calling the native command."
+          "description": "The original parameter position for the native executable. This is used to properly order parameters when calling the native command."
         },
         "ValueFromPipeline": {
           "type": "boolean",
-          "description":" the value for this parameter is taken from the pipeline."
+          "description": "The value for this parameter is taken from the pipeline."
         },
         "NoGap": {
           "type": "boolean",
-          "description":" when constructing the native parameter and volume do not separate with a space."
+          "description": "When constructing the native parameter and value do not separate with a space. Used for native parameters that look like parameter=value"
         },
         "ValueFromPipelineByPropertyName": {
           "type": "boolean",
-          "description":" when are assigning a value to the parameter use the same property as the parameter name."
+          "description": "When are assigning a value to the parameter from a piped object, use the same property as the parameter name."
         },
         "ValueFromRemainingArguments": {
           "type": "boolean",
-          "description":" assign the remaining values to the parameter."
+          "description": "Assign the remaining values to the parameter."
         }
       }
     },
     "command": {
+      "description": "A collection of Crescendo configurations",
       "required": [ "Verb", "Noun", "OriginalName" ],
       "properties": {
         "Verb": {
-          "type": [
-            "string"
-          ],
+          "type": "string",
           "enum": [
             "Add","Approve","Assert",
             "Backup","Block","Build",
@@ -110,7 +111,7 @@
             "Unblock","Undo","Uninstall","Unlock","Unprotect","Unpublish","Unregister","Update","Use",
             "Wait","Watch","Write"
           ],
-          "description" : "The verb of the cmdlet"
+          "description" : "The verb of the cmdlet."
         },
         "Elevation": {
           "type": "object",
@@ -127,12 +128,9 @@
               "description": "Additional arguments required by the elevation command."
             }
           }
-
         },
         "Noun": {
-          "type": [
-            "string"
-          ],
+          "type": "string",
           "description" : "The noun of the cmdlet"
         },
         "Platform": {
@@ -147,9 +145,7 @@
           "description" : "The platform where the function will run, this may be 'Windows','Linux', or 'MacOS' in any combination. The default is all three values."
         },
         "OriginalName": {
-          "type": [
-            "string"
-          ],
+          "type": "string",
           "description" : "The native command to be called by the function."
         },
 
@@ -183,95 +179,76 @@
         },
 
         "OriginalCommandElements": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": "array",
           "items": {
-            "type": [
-              "string"
-            ]
+            "type": "string"
           },
           "description": "Additional elements to be added to the invocation. This is for arguments provided to a Native application which are not part of the parameters."
         },
         "Aliases": {
-          "type": [
-            "array"
-          ],
+          "type": "array",
           "description" : "Aliases to the function that will be created",
           "items": {
-            "type": [
-              "string"
-            ]
+            "type": "string"
           }
         },
         "DefaultParameterSetName": {
-          "type": [
-            "string"
-          ],
+          "type": "string",
           "description": "The default parameter set name for the function"
 
         },
+        "ConfirmImpact": {
+          "type": "string",
+          "enum": ["None", "Low","Medium","High"],
+          "description": "A string indicating the value of Confirm Impact. If not present, this attribute will not be added to the cmdlet declaration."
+        },
         "SupportsShouldProcess": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A boolean indicating whether this command supports ShouldProcess."
         },
         "SupportsTransactions": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "A boolean indicating whether this command supports transactions."
         },
         "Description": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "description": "The description of the cmdlet.",
+          "type": "string"
         },
         "Usage": {
-          "type": [
-            "object"
-          ],
+          "description": "Information which explains how to use this command.",
+          "type": "object",
           "required": [ "Synopsis" ],
           "properties": {
             "Synopsis": {
-              "type": [
-                "string"
-              ]
+              "description": "The synopsis on how to use this command.",
+              "type": "string"
             },
             "SupportsFlags": {
+              "description": "Unused",
               "type": "boolean"
             },
             "HasOptions": {
+              "description": "Unused",
               "type": "boolean"
             },
             "OriginalText": {
-              "type": [
-                "array",
-                "null"
-              ],
+              "type": "array",
               "items": {
-                "type": [
-                  "string"
-                ]
+                "type": "string"
               },
               "description": "The original text for the command help. Usually generated by command -?"
             }
           }
         },
         "Parameters": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": "array",
           "description": "The parameters for the function.",
           "items": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": "object",
             "required": ["ParameterType", "Name", "OriginalName" ],
             "properties": {
               "ParameterType": {
-                "type": [
-                  "string"
-                ],
+                "type": "string",
                 "description": "This the type of the parameter. It should represent an actual type."
               },
               "Position": {
@@ -279,27 +256,20 @@
                 "description": "The position of the parameter."
               },
               "Name": {
-                "type": [
-                  "string"
-                ]
+                "description": "The name of the parameter.",
+                "type": "string"
               },
               "OriginalName": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "description": "The name of the parameter used by the native executable. This can be null.",
+                "type": "string"
               },
               "OriginalText": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "description": "The original text for the native parameter",
+                "type": "string"
               },
               "Description": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "description": "The description of the parameter to be used in help.",
+                "type": "string"
               },
               "DefaultValue": {
                 "type": "string",
@@ -310,111 +280,84 @@
                 "description": "The default value for this parameter if the parameter is not present (or is a switch parameter)."
               },
               "AdditionalParameterAttributes": {
-                "type": [
-                  "array",
-                  "null"
-                ],
+                "description": "Additional parameter attributes. These should take the form of [ValidateNotNullOrEmpty()], etc.",
+                "type": "array",
                 "items": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": "string"
                 }
               },
               "Mandatory": {
+                "description": "A boolean indicating whether this parameter is mandatory.",
                 "type": "boolean"
               },
               "ParameterSetName": {
-                "type": [
-                  "array",
-                  "null"
-                ],
+                "description": "The parameter set name for this parameter.",
+                "type": "array",
                 "items": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": "string"
                 }
               },
               "Aliases": {
-                "type": [
-                  "array",
-                  "null"
-                ],
+                "description": "The parameter alias.",
+                "type": "array",
                 "items": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": "string"
                 }
               },
               "OriginalPosition": {
+                "description": "The position of the parameter for the native executable.",
                 "type": "integer"
               },
               "ValueFromPipeline": {
+                "description": "A boolean indicating whether this parameter accepts piped input.",
                 "type": "boolean"
               },
               "NoGap": {
+                "description": "A boolean indicating whether the constructed parameter should have a gap. This is for parameters which have the shape of parameter=value",
                 "type": "boolean"
               },
               "ValueFromPipelineByPropertyName": {
+                "description": "A boolean indicating whether this parameter accepts piped input which binds to a property name.",
                 "type": "boolean"
               },
               "ValueFromRemainingArguments": {
+                "description": "A boolean indicating whether this parameter gets its value from the remaining arguments.",
                 "type": "boolean"
               }
             }
           }
         },
         "Examples": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "description": "Examples for the command.",
+          "type": "array",
           "items": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": "object",
             "required": [ "Command", "Description" ],
             "properties": {
               "Command": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "description": "The command for the example.",
+                "type": "string"
               },
               "OriginalCommand": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "description": "The original command for the example.",
+                "type": "string"
               },
               "Description": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "description": "The description of the example.",
+                "type": "string"
               }
             }
           }
         },
         "OriginalText": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "description": "The original help text of the native command",
+          "type": "string"
         },
         "HelpLinks": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "description": "Help links for the command",
+          "type": "array",
           "items": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string"
           }
         },
         "NoInvocation": {
@@ -427,7 +370,7 @@
   },
   "type": "object",
   "$id": "https://microsoft.com/powershell/crescendo",
-  "title": "JSON schema for Powershell Crescendo files",
+  "title": "JSON schema for PowerShell Crescendo files",
   "properties": {
     "$schema": {
       "type": "string"

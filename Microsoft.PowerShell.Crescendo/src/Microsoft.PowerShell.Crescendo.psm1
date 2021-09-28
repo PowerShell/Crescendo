@@ -195,6 +195,7 @@ class Command {
     [string[]] $Aliases
     [string] $DefaultParameterSetName
     [bool] $SupportsShouldProcess
+    [string] $ConfirmImpact
     [bool] $SupportsTransactions
     [bool] $NoInvocation # certain scenarios want to use the generated code as a front end. When true, the generated code will return the arguments only.
 
@@ -468,7 +469,7 @@ class Command {
     [string]GetCommandDeclaration([bool]$EmitAttribute) {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendFormat("function {0}`n", $this.FunctionName)
-        $sb.AppendLine("{")
+        $sb.AppendLine("{") # }
         if ( $EmitAttribute ) {
             $sb.AppendLine($this.GetCrescendoAttribute())
         }
@@ -476,6 +477,12 @@ class Command {
         $addlAttributes = @()
         if ( $this.SupportsShouldProcess ) {
             $addlAttributes += 'SupportsShouldProcess=$true'
+        }
+        if ( $this.ConfirmImpact ) {
+            if ( @("high","medium","low","none") -notcontains $this.ConfirmImpact) {
+                throw ("Confirm Impact '{0}' is invalid. It must be High, Medium, Low, or None." -f $this.ConfirmImpact)
+            }
+            $addlAttributes += 'ConfirmImpact=''{0}''' -f $this.ConfirmImpact
         }
         if ( $this.DefaultParameterSetName ) {
             $addlAttributes += 'DefaultParameterSetName=''{0}''' -f $this.DefaultParameterSetName
@@ -494,6 +501,24 @@ class Command {
         }
         $sb.AppendLine("    )")
         return $sb.ToString()
+    }
+
+    [void]ExportConfigurationFile([string]$filePath) {
+        $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
+        $sOptions.WriteIndented = $true
+        $sOptions.MaxDepth = 10
+        $sOptions.IgnoreNullValues = $true
+        $text = [System.Text.Json.JsonSerializer]::Serialize($this, $sOptions)
+        Set-Content -Path $filePath -Value $text
+    }
+
+    [string]GetCrescendoConfiguration() {
+        $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
+        $sOptions.WriteIndented = $true
+        $sOptions.MaxDepth = 10
+        $sOptions.IgnoreNullValues = $true
+        $text = [System.Text.Json.JsonSerializer]::Serialize($this, $sOptions)
+        return $text
     }
 
 }
@@ -537,13 +562,44 @@ function New-ExampleInfo {
     [ExampleInfo]::new($command, $originalCommand, $description)
 }
 
+function New-OutputHandler {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
+    param ( )
+    [OutputHandler]::new()
+
+}
+
 function New-CrescendoCommand {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$Verb,
-        [Parameter(Position=1,Mandatory=$true)][string]$Noun
+        [Parameter(Position=1,Mandatory=$true)][string]$Noun,
+        [Parameter(Position=2)][string]$OriginalName
     )
-    [Command]::new($Verb, $Noun)
+    $cmd = [Command]::new($Verb, $Noun)
+    $cmd.OriginalName = $OriginalName
+    $cmd
+}
+
+function Export-CrescendoCommand {
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param (
+        [Parameter(Position=0,Mandatory=$true,ValueFromPipeline=$true)]
+        [Command[]]$command,
+        [Parameter()][string]$targetDirectory = "."
+    )
+
+    PROCESS
+    {
+        foreach($crescendoCommand in $command) {
+            if($PSCmdlet.ShouldProcess($crescendoCommand)) {
+                $fileName = "{0}-{1}.crescendo.json" -f $crescendoCommand.Verb, $crescendoCommand.Noun
+                $exportPath = Join-Path $targetDirectory $fileName
+                $crescendoCommand.ExportConfigurationFile($exportPath)
+
+            }
+        }
+    }
 }
 
 function Import-CommandConfiguration

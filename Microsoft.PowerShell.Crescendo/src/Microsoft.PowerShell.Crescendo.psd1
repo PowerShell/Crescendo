@@ -8,7 +8,7 @@
 RootModule = 'Microsoft.PowerShell.Crescendo.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.6.1'
+ModuleVersion = '0.7.0'
 
 # ID used to uniquely identify this module
 GUID = '2dd09744-1ced-4636-a8ce-09a0bf0e566a'
@@ -36,9 +36,11 @@ FunctionsToExport = @(
     'New-CrescendoCommand',
     'New-ParameterInfo',
     'New-UsageInfo',
+    'New-OutputHandler',
     'Import-CommandConfiguration',
     'Export-Schema',
     'Export-CrescendoModule',
+    'Export-CrescendoCommand',
     'Test-IsCrescendoCommand'
     )
 }

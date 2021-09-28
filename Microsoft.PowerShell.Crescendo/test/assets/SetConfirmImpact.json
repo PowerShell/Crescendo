@@ -1,0 +1,39 @@
+{
+    "$schema": "../../src/Microsoft.PowerShell.Crescendo.Schema.json",
+	"Commands": [
+		{
+			"Verb": "Get",
+			"Noun": "Thing1",
+			"OriginalName": "/bin/ls",
+			"SupportsShouldProcess": true,
+			"ConfirmImpact": "High"
+		},
+		{
+			"Verb": "Get",
+			"Noun": "Thing2",
+			"OriginalName": "/bin/ls",
+			"SupportsShouldProcess": true,
+			"ConfirmImpact": "Medium"
+		},
+		{
+			"Verb": "Get",
+			"Noun": "Thing3",
+			"OriginalName": "/bin/ls",
+			"SupportsShouldProcess": true,
+			"ConfirmImpact": "Low"
+		},
+		{
+			"Verb": "Get",
+			"Noun": "Thing4",
+			"OriginalName": "/bin/ls",
+			"SupportsShouldProcess": true,
+			"ConfirmImpact": "None"
+		},
+		{
+			"Verb": "Get",
+			"Noun": "Thing5",
+			"SupportsShouldProcess": true,
+			"OriginalName": "/bin/ls"
+		}
+	]
+}
