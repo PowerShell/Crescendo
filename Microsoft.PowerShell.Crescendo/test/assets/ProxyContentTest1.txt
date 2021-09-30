@@ -12,11 +12,13 @@ BEGIN {
 }
 
 PROCESS {
+    $__boundparms = $PSBoundParameters # debugging assistance
     $__commandArgs = @()
-    $__boundparms = $PSBoundParameters
     $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})
     if ($PSBoundParameters["Debug"]){wait-debugger}
-    foreach ($paramName in $PSBoundParameters.Keys|Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {
+    foreach ($paramName in $PSBoundParameters.Keys|
+        Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|
+        Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {
         $value = $PSBoundParameters[$paramName]
         $param = $__PARAMETERMAP[$paramName]
         if ($param) {
