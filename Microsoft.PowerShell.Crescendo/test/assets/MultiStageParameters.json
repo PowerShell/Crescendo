@@ -1,0 +1,43 @@
+{
+	"$schema": "https://aka.ms/Crescendo/Schema.json",
+	"Commands": [
+		{
+			"Verb": "Invoke",
+			"Noun": "Echo",
+			"OriginalName": "echo",
+			"OriginalCommandElements": [
+				"element1",
+				"element2"
+			],
+			"Parameters": [
+				{
+					"Name": "exeParm1",
+					"OriginalName": "-exeParm1=",
+					"ApplyToExecutable": true,
+					"ParameterType": "string",
+					"NoGap": true
+				},
+				{
+					"Name": "exeParm2",
+					"OriginalName": "-exeParm2",
+					"ApplyToExecutable": true,
+					"ParameterType": "string",
+					"NoGap": false
+				},
+				{
+					"Name": "cmdParm1",
+					"OriginalName": "-cmdParm1=",
+					"ParameterType": "string",
+					"ApplyToExecutable": false,
+					"NoGap": true
+				},
+				{
+					"Name": "cmdParm2",
+					"OriginalName": "-cmdParm2",
+					"ParameterType": "string",
+					"NoGap": false
+				}
+			]
+		}
+	]
+}

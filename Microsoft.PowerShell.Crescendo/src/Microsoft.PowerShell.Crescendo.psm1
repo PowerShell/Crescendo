@@ -59,6 +59,8 @@ class ParameterInfo {
     # some parameters are -param or +param which can be represented with a switch parameter
     # so we need way to provide for this
     [string]$DefaultMissingValue
+    # this is in case that the parameters apply before the OriginalCommandElements
+    [bool]$ApplyToExecutable
     [string]$ParameterType = 'object' # PS type
 
     [string[]]$AdditionalParameterAttributes
@@ -306,16 +308,28 @@ class Command {
         # otherwise we won't actually be invoking anything
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine("PROCESS {")
+        $sb.AppendLine('    $__boundparms = $PSBoundParameters # debugging assistance')
+        $sb.AppendLine('    $__commandArgs = @()')
+        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
+        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
+        if ($this.Parameters.Where({$_.ApplyToExecutable})) {
+            $sb.AppendLine('    # look for those parameter values which apply to the executable and must be before the original command elements')
+            $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Where-Object {$__PARAMETERMAP[$_].ApplyToExecutable}) {') # take those parameters which apply to the executable
+            $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
+            $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
+            $sb.AppendLine('        if ($param) {')
+            $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }')
+            $sb.AppendLine('            elseif ( $param.NoGap ) { $__commandArgs += "{0}{1}" -f $param.OriginalName, $value }')
+            $sb.AppendLine('            else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |Foreach-Object {$_}}')
+            $sb.AppendLine('        }')
+            $sb.AppendLine('    }')
+        }
+        # now the original command elements may be added
         if ($this.OriginalCommandElements.Count -ne 0) {
-            $sb.AppendLine('    $__commandArgs = @(')
             foreach($element in $this.OriginalCommandElements) {
                 # we use single quotes here to reduce injection attacks
-                $sb.AppendLine('        ''{0}''' -f $element)
+                $sb.AppendLine(('    $__commandArgs += ''{0}''' -f $element))
             }
-            $sb.AppendLine('    )')
-        }
-        else {
-            $sb.AppendLine('    $__commandArgs = @()')
         }
         $sb.AppendLine($this.GetInvocationCommand())
 
@@ -365,6 +379,7 @@ class Command {
             $sb.AppendLine(('               OriginalPosition = ''{0}''' -f $parameter.OriginalPosition))
             $sb.AppendLine(('               Position = ''{0}''' -f $parameter.Position))
             $sb.AppendLine(('               ParameterType = ''{0}''' -f $parameter.ParameterType))
+            $sb.AppendLine(('               ApplyToExecutable = ${0}' -f $parameter.ApplyToExecutable))
             $sb.AppendLine(('               NoGap = ${0}' -f $parameter.NoGap))
             if($parameter.DefaultMissingValue) {
                 $sb.AppendLine(('               DefaultMissingValue = ''{0}''' -f $parameter.DefaultMissingValue))
@@ -409,10 +424,9 @@ class Command {
     # this is where the logic of actually calling the command is created
     [string]GetInvocationCommand() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendLine('    $__boundparms = $PSBoundParameters') # debugging assistance
-        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
-        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
-        $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
+        $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|')
+        $sb.AppendLine('        Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|') # skip those parameters which apply to the executable
+        $sb.AppendLine('        Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
         $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
         $sb.AppendLine('        if ($param) {')
