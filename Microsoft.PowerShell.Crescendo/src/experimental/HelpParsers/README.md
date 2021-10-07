@@ -45,13 +45,70 @@ but I wasn't interested in supporting _all_ the features of cmdlets and paramete
 
 ## Scanning Technique
 
-I wanted to determine whether it was possible to have common code which could inspect the help
+I wanted to determine whether it was possible to have common code which could inspect the help and then recognize the command component.
+By and large, the help makes a very clear distinction between the help for sub-commands and help for a specific operation.
+
+### Architecture of the scanner
+
+Because I wanted to reuse as much code as possible, I organized it as follows:
+
+- A set of patterns that I could use to recognize the various elements in the help
+- The declaration of the object model (the classes for a command, parameter)
+- The help parser which uses the patterns and the types
+- A packager which takes all the class instances and creates the Crescendo configuration
+
+#### The Patterns
+
+This section tries to generi-size the strings that I would be seeking.
+Originally, I had hoped to create "one parser to rule them all", but that didn't work out,
+however, my intent still lingers in this section.
+The patterns are:
+
+- the executable name
+- the parameter to retrieve help
+- the pattern which designates that sub-commands will follow
+- the pattern which designates that options will follow
+- the pattern which designates that arguments will follow
+- the pattern which designates that usage will follow
+- the pattern which designates the actual parameter
+- the pattern which designates additional help (on-line or other commands)
+
+
+Most of these are fairly straight-forward.
+The help text (for the tools I've chosen so far) is regular enough that when one of these strings is found,
+we start hunting for following data to use.
+For example, when the `Sub-Command` pattern is used, we start a loop which looks for new commands.
+If we find a new command, we call the help parser and start the scan again for the new "command"
+
+> **options _and_ arguments?** -
+Some of the tools have both named _and_ positional parameters, as well as options which apply to the _executable_ and the _command_.
+For example: `docker --debug image list --all` has a parameter `--debug` which applies to the `docker` executable,
+and `--all` which applies to the `image list` command.
+These two elements are an attempt to manage these various conditions.
+I'm not really satisfied with how I've done this, but haven't had time to tease apart the issues.
+I plan on getting back to it eventually.
+
+#### The Object Model
+
+#### The Help Parser
+
+The scanner first starts with the help.
+This means that the scanner has to know two things:
+
+- the name of the executable
+- the parameter to use to get help
+
+There was not much variation here, it was either `-?` and `--help`.
+
+####  The Packager
 
 ### Parsing Help for Commands and Sub-Commands
 
 Each one of these tools had similar mechanisms for designating subcommands.
 
 ### Parsing Help for Parameters
+
+Parameters seem to fall into 2 categories; Parameters that designate a type associated with the value and those that don't.
 
 ### Parsing Help for Usage
 
