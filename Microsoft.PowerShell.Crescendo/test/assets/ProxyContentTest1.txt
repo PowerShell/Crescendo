@@ -12,14 +12,16 @@ BEGIN {
 }
 
 PROCESS {
-    $__boundparms = $PSBoundParameters # debugging assistance
+    $__boundParameters = $PSBoundParameters
+    $__defaultValueParameters = $PSCmdlet.MyInvocation.MyCommand.Parameters.Values.Where({$_.Attributes.Where({$_.TypeId.Name -eq "PSDefaultValueAttribute"})}).Name
+    $__defaultValueParameters.Where({ !$__boundParameters["$_"] }).ForEach({$__boundParameters["$_"] = get-variable -value $_})
     $__commandArgs = @()
-    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})
-    if ($PSBoundParameters["Debug"]){wait-debugger}
-    foreach ($paramName in $PSBoundParameters.Keys|
+    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $__boundParameters[$_.Name]}).ForEach({$__boundParameters[$_.Name] = [switch]::new($false)})
+    if ($__boundParameters["Debug"]){wait-debugger}
+    foreach ($paramName in $__boundParameters.Keys|
         Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|
         Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {
-        $value = $PSBoundParameters[$paramName]
+        $value = $__boundParameters[$paramName]
         $param = $__PARAMETERMAP[$paramName]
         if ($param) {
             if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }
@@ -28,8 +30,8 @@ PROCESS {
         }
     }
     $__commandArgs = $__commandArgs|Where-Object {$_}
-    if ($PSBoundParameters["Debug"]){wait-debugger}
-    if ( $PSBoundParameters["Verbose"]) {
+    if ($__boundParameters["Debug"]){wait-debugger}
+    if ( $__boundParameters["Verbose"]) {
          Write-Verbose -Verbose -Message /bin/ls
          $__commandArgs | Write-Verbose -Verbose
     }
