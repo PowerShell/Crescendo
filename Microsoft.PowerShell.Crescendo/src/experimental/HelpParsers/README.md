@@ -52,10 +52,18 @@ By and large, the help makes a very clear distinction between the help for sub-c
 
 Because I wanted to reuse as much code as possible, I organized it as follows:
 
+- An object model which is an intermediate step to a Crescendo configuration
 - A set of patterns that I could use to recognize the various elements in the help
 - The declaration of the object model (the classes for a command, parameter)
-- The help parser which uses the patterns and the types
-- A packager which takes all the class instances and creates the Crescendo configuration
+- The help parser which uses the patterns to create instances of the types of the parser object model.
+- A packager which takes all the parser instances and converts and then creates the Crescendo configuration
+
+#### The Object Model
+
+I chose to create a new object model for the help parser because I saw the process of parsing the help as a _staging_ step for creating the Crescendo configuration.
+The Crescendo object is pretty rich and tries to handle a pretty large set of scenarios.
+However, the help of these applications don't provide for as much, especially as I was trying to create a more generic framework for scanning the help.
+I view the object model for the help as a trimmed down version of Crescendo which I hope makes the actual mapping a bit easier.
 
 #### The Patterns
 
@@ -64,8 +72,7 @@ Originally, I had hoped to create "one parser to rule them all", but that didn't
 however, my intent still lingers in this section.
 The patterns are:
 
-- the executable name
-- the parameter to retrieve help
+- the executable name and how to retrieve help (is it `-?`, `--help`, or something else)
 - the pattern which designates that sub-commands will follow
 - the pattern which designates that options will follow
 - the pattern which designates that arguments will follow
@@ -73,22 +80,12 @@ The patterns are:
 - the pattern which designates the actual parameter
 - the pattern which designates additional help (on-line or other commands)
 
-
-Most of these are fairly straight-forward.
 The help text (for the tools I've chosen so far) is regular enough that when one of these strings is found,
 we start hunting for following data to use.
 For example, when the `Sub-Command` pattern is used, we start a loop which looks for new commands.
 If we find a new command, we call the help parser and start the scan again for the new "command"
 
-> **options _and_ arguments?** -
-Some of the tools have both named _and_ positional parameters, as well as options which apply to the _executable_ and the _command_.
-For example: `docker --debug image list --all` has a parameter `--debug` which applies to the `docker` executable,
-and `--all` which applies to the `image list` command.
-These two elements are an attempt to manage these various conditions.
-I'm not really satisfied with how I've done this, but haven't had time to tease apart the issues.
-I plan on getting back to it eventually.
-
-#### The Object Model
+Each pattern represents elements which can be incorporated into the configuration.
 
 #### The Help Parser
 
@@ -100,7 +97,65 @@ This means that the scanner has to know two things:
 
 There was not much variation here, it was either `-?` and `--help`.
 
-####  The Packager
+To capture the help, 
+
+Once I start scanning I pick out the parts in the help for the command arguments (and any explanatory strings), its usage, and additional help links.
+This had the most variability in the help.
+Sometimes, the command argument would have an associated type for the parameter and sometime that would not be available.
+This is why there are 2 patterns for a parameter:
+
+```powershell
+$parmPattern = "--(?<pname>[-\w]+)\s(?<ptype>\w+)\s+(?<phelp>.*)|--(?<pname>[-\w]+)\s+(?<phelp>.*)"
+```
+
+This pattern also ignores those patterns which are a single character.
+I did this on purpose as PowerShell prefers parameters which are more descriptive.
+I didn't create aliases out of those one character parameters, which is something that could be done in the future.
+I also don't handle the cases where the one character parameter _follows_ the more verbose parameter.
+In my inspection of the help, they all pretty much did something like:
+
+```bash
+	-q, --quiet     Do not be overly verbose
+```
+
+rather than:
+
+```bash
+	--quiet, -q     Do not be overly verbose
+```
+
+So my parameter recognizer expects it and doesn't capture the first part of the string.
+Again, this is probably pretty easy to support.
+
+> **options _and_ arguments?** -
+Some of the tools have both named _and_ positional parameters, as well as options which apply to the _executable_ and the _command_.
+For example: `docker --debug image list --all` has a parameter `--debug` which applies to the `docker` executable,
+and `--all` which applies to the `image list` command.
+These two elements are an attempt to manage these various conditions.
+I'm not really satisfied with how I've done this, but haven't had time to tease apart the issues.
+I plan on getting back to it eventually.
+
+#### The Packager
+
+Once we've gotten through all of parsing and creation of the Crescendo commands, we need to persist the configurations.
+Fortunately, we can rely on built-in features of .NET to do most of the work.
+The only thing we need to do is to create an object which has the appearance of a configuration file:
+
+```powershell
+$h = [ordered]@{
+    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
+    'Commands' = $commands
+}
+```
+
+After that, it's a simple matter of using the json serializer to construct the configuration.
+It _might_ be reasonable to emit the actual module,
+but my expectation is that the configuration will need some tweaking so emitting the `JSON` is the better approach.
+The parser takes the hashtable and some options and just calls the `JSON` serializer:
+
+```powershell
+System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
+```
 
 ### Parsing Help for Commands and Sub-Commands
 
@@ -112,6 +167,7 @@ Parameters seem to fall into 2 categories; Parameters that designate a type asso
 
 ### Parsing Help for Usage
 
+This seems to be the area of most inconsistency
 ## Constructing Crescendo Configurations
 
 Once the parsed help is separated into its components, we need a way to actually emit the Crescendo configuration.
