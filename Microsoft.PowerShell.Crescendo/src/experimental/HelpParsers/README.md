@@ -31,7 +31,7 @@ This way, it may be possible to keep the Crescendo configurations up to date wit
 ## Object Model Overlap
 
 Crescendo has a very clear idea about its _internal_ object model.
-That is, how Crescendo thinks what a command is, and its component parts.
+That is, how Crescendo thinks what a command is, and its component parts and how it relates to the way advanced functions are created.
 However, the help files that I saw didn't really match this very well.
 For example, sometimes the help would be able to provide a type for a parameter and other types it would not provide that information.
 The help parsers have a stripped down version of the Crescendo model which I could use as a bridge from text that made up the help to the objects that Crescendo uses.
@@ -40,30 +40,32 @@ They aren't necessarily complete because sometimes what is needed isn't in the h
 
 > **_And About Crescendo's Object Model_** -
 I felt the first thing that I needed to do was settle on an object model to express Crescendo configurations.
-With the proper object model, I can make sure that I haven't left anything out.  PowerShell definitely has an object model for creating all the bits of a cmdlet,
-but I wasn't interested in supporting _all_ the features of cmdlets and parameters, so I edited the objects that we have to what I hope is their essence.
+With the proper object model, I can make sure that I haven't left anything out.
+PowerShell definitely has an object model for creating all the bits of a cmdlet,
+but I wasn't interested in supporting _all_ the features of cmdlets and parameters,
+so I edited the objects that we have to what I hope is their essence.
 
 ## Scanning Technique
 
-I wanted to determine whether it was possible to have common code which could inspect the help and then recognize the command component.
-By and large, the help makes a very clear distinction between the help for sub-commands and help for a specific operation.
+I wanted to determine whether it was possible to have common code which could inspect the help and then recognize the command components.
+Generally, the help for the tools I looked at makes a very clear distinction between the help for sub-commands and help for a specific operation.
+This gave me hope that I would be able to at least generate the multiple commands for `docker` or `netsh.exe`.
 
 ### Architecture of the scanner
 
 Because I wanted to reuse as much code as possible, I organized it as follows:
 
-- An object model which is an intermediate step to a Crescendo configuration
-- A set of patterns that I could use to recognize the various elements in the help
-- The declaration of the object model (the classes for a command, parameter)
+- An object model which is represents an intermediate state of a Crescendo configuration.
+- A set of patterns that I could use to recognize the various elements in the help (usage, links, etc.)
 - The help parser which uses the patterns to create instances of the types of the parser object model.
-- A packager which takes all the parser instances and converts and then creates the Crescendo configuration
+- A packager which takes all the parsed instances, converts them, and then creates the Crescendo configuration.
 
 #### The Object Model
 
-I chose to create a new object model for the help parser because I saw the process of parsing the help as a _staging_ step for creating the Crescendo configuration.
-The Crescendo object is pretty rich and tries to handle a pretty large set of scenarios.
-However, the help of these applications don't provide for as much, especially as I was trying to create a more generic framework for scanning the help.
-I view the object model for the help as a trimmed down version of Crescendo which I hope makes the actual mapping a bit easier.
+I chose to create a new object model for the help parser because I saw the process of parsing the help as a _staging_ step int creating the Crescendo configuration.
+The Crescendo object is pretty rich and tries to handle a pretty large set of scenarios,
+however, the help of these applications don't provide for as much, especially as I was trying to create a more generic framework for scanning the help.
+I saw the object model for the help as a trimmed down version of Crescendo which I hope makes the actual mapping a bit easier.
 
 #### The Patterns
 
@@ -87,7 +89,7 @@ If we find a new command, we call the help parser and start the scan again for t
 
 Each pattern represents elements which can be incorporated into the configuration.
 
-#### The Help Parser
+#### Getting the Help Text
 
 The scanner first starts with the help.
 This means that the scanner has to know two things:
@@ -95,12 +97,24 @@ This means that the scanner has to know two things:
 - the name of the executable
 - the parameter to use to get help
 
-There was not much variation here, it was either `-?` and `--help`.
+There was not much variation here, it was either `-?` and `--help` so each one of the parsers has something similar to:
 
-To capture the help, 
+```powershell
+$exe = "docker"
+$helpChar = "--help"
+```
 
-Once I start scanning I pick out the parts in the help for the command arguments (and any explanatory strings), its usage, and additional help links.
-This had the most variability in the help.
+In order to start the parsing, I need to gather the first level help, so `& $exe $helpChar` is executed as part of the `parseHelp` function.
+
+> **_It's a little more complicated than that_** - 
+The function itself is recursive because I have to parse the help multiple times.
+I'll search for sub-commands and when found, I'll call the `parseHelp` function and add the new sub-command,
+which will parse the _new_ command before the original help is finished parsing.
+Eventually, we'll run out of sub-commands so the help will finally get parsed,
+but if you notice the _order_ in which the parsed help objects are returned, they may not be the order you expect.
+
+#### Parameter Recognition
+
 Sometimes, the command argument would have an associated type for the parameter and sometime that would not be available.
 This is why there are 2 patterns for a parameter:
 
@@ -127,6 +141,21 @@ rather than:
 So my parameter recognizer expects it and doesn't capture the first part of the string.
 Again, this is probably pretty easy to support.
 
+Additionally, sometimes the usage statement declares a parameter.
+For example:
+
+```powershell
+PS> docker run --help|select -first 4
+
+Usage:  docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+Run a command in a new container
+```
+
+This indicates that there is a _positional_ parameter `IMAGE` as well as an optional parameter `COMMAND`.
+The current parsers don't handle this case (they need to be added manually to the configuration).
+This is something I would like to address in the future.
+
 > **options _and_ arguments?** -
 Some of the tools have both named _and_ positional parameters, as well as options which apply to the _executable_ and the _command_.
 For example: `docker --debug image list --all` has a parameter `--debug` which applies to the `docker` executable,
@@ -135,9 +164,56 @@ These two elements are an attempt to manage these various conditions.
 I'm not really satisfied with how I've done this, but haven't had time to tease apart the issues.
 I plan on getting back to it eventually.
 
+#### Usage Recognition
+
+This seemed to have the greatest variability across the tools.
+Sometimes the usage statement has a clear delineation:
+
+```powershell
+PS> docker --help | sls usage:  -NoEmphasis
+
+Usage:  docker [OPTIONS] COMMAND
+```
+
+but sometimes this (with an extra line):
+
+```powershell
+PS> kubectl --help
+...
+Usage:
+  kubectl [flags] [options]
+```
+
+or this (with _multiple_ extra lines):
+
+```powershell
+PS> faas-cli --help|select -first 10
+
+Manage your OpenFaaS functions from the command line
+
+Usage:
+  faas-cli [flags]
+  faas-cli [command]
+```
+
+or this (next to Usage: and the following line):
+
+```powershell
+PS> netsh -?
+Usage: C:\windows\system32\netsh.exe [-a AliasFile] [-c Context] [-r RemoteMachine] [-u [DomainName\]UserName] [-p Password | *]
+             [Command | -f ScriptFile]
+```
+
+There was so much variability I sort of hand-waved at this.
+I want to get back to this to see if there's a one-size-fits-all parser,
+but the current examples are not very successful here.
+
 #### The Packager
 
-Once we've gotten through all of parsing and creation of the Crescendo commands, we need to persist the configurations.
+Once the parsed help is separated into its components, we need a way to actually emit the Crescendo configuration.
+I chose to make the parser object model be able to render the text which comprises the Crescendo configuration.
+The parser command object has a method called `GetCrescendoCommand` which does the conversion from the parsers' object model to the Crescendo object model.
+This makes the last mile of the problem the easiest, because the crescendo object _already_ knows how to build the JSON configuration.
 Fortunately, we can rely on built-in features of .NET to do most of the work.
 The only thing we need to do is to create an object which has the appearance of a configuration file:
 
@@ -156,25 +232,6 @@ The parser takes the hashtable and some options and just calls the `JSON` serial
 ```powershell
 System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
 ```
-
-### Parsing Help for Commands and Sub-Commands
-
-Each one of these tools had similar mechanisms for designating subcommands.
-
-### Parsing Help for Parameters
-
-Parameters seem to fall into 2 categories; Parameters that designate a type associated with the value and those that don't.
-
-### Parsing Help for Usage
-
-This seems to be the area of most inconsistency
-## Constructing Crescendo Configurations
-
-Once the parsed help is separated into its components, we need a way to actually emit the Crescendo configuration.
-I chose to make the parser object model be able to render the text which comprises the Crescendo configuration.
-The parser command object has a method called `GetCrescendoCommand` which does the conversion from the parsers' object model to the Crescendo object model.
-Once I have a Crescendo object, _that_ object already knows how to express itself as a configuration.
-This makes the last mile of the problem the easiest, because the crescendo object already knows how to build the JSON configuration.
 
 > **_And what about all that JSON_** -
 As I was designing Crescendo, I wanted to be sure that the object model itself would be able to be expressed as configuration rather than code.
