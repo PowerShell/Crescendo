@@ -47,7 +47,7 @@ so I edited the objects that we have to what I hope is their essence.
 
 ## Scanning Technique
 
-I wanted to determine whether it was possible to have common code which could inspect the help and then recognize the command components.
+I wanted to determine whether it was possible to have common code that could inspect the help and then recognize the command components.
 Generally, the help for the tools I looked at makes a very clear distinction between the help for sub-commands and help for a specific operation.
 This gave me hope that I would be able to at least generate the multiple commands for `docker` or `netsh.exe`.
 
