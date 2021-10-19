@@ -75,12 +75,12 @@ However, my intent still lingers in this section.
 The patterns are:
 
 - the executable name and how to retrieve help (is it `-?`, `--help`, or something else)
-- the pattern which designates that sub-commands will follow
-- the pattern which designates that options will follow
-- the pattern which designates that arguments will follow
-- the pattern which designates that usage will follow
-- the pattern which designates the actual parameter
-- the pattern which designates additional help (on-line or other commands)
+- the pattern that designates that sub-commands will follow
+- the pattern that designates that options will follow
+- the pattern that designates that arguments will follow
+- the pattern that designates that usage will follow
+- the pattern that designates the actual parameter
+- the pattern that designates additional help (on-line or other commands)
 
 The help text (for the tools I've chosen so far) is regular enough that when one of these strings is found,
 we start hunting for following data to use.
