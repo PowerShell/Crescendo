@@ -63,9 +63,9 @@ Because I wanted to reuse as much code as possible, I organized it as follows:
 #### The Object Model
 
 I chose to create a new object model for the help parser because I saw the process of parsing the help as a _staging_ step in creating the Crescendo configuration.
-The Crescendo object is pretty rich and tries to handle a pretty large set of scenarios,
-however, the help of these applications don't provide for as much, especially as I was trying to create a more generic framework for scanning the help.
-I saw the object model for the help as a trimmed down version of Crescendo which I hope makes the actual mapping a bit easier.
+The Crescendo object is pretty rich and tries to handle a large set of scenarios.
+However, the help of these applications doesn't provide for as much, especially as I was trying to create a more generic framework for scanning the help.
+I saw the object model for the help as a trimmed down version of Crescendo, which, I hope, makes the actual mapping a bit easier.
 
 #### The Patterns
 
