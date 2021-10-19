@@ -108,10 +108,10 @@ In order to start the parsing, I need to gather the first level help, so `& $exe
 
 > **_It's a little more complicated than that_** - 
 The function itself is recursive because I have to parse the help multiple times.
-I'll search for sub-commands and when found, I'll call the `parseHelp` function and add the new sub-command,
-which will parse the _new_ command before the original help is finished parsing.
-Eventually, we'll run out of sub-commands so the help will finally get parsed,
-but if you notice the _order_ in which the parsed help objects are returned, they may not be the order you expect.
+I search for sub-commands and, when found, I call the `parseHelp` function to add the new sub-command,
+that parses the _new_ command before the original help is finished parsing.
+Eventually, we run out of sub-commands so the help finally gets parsed.
+But, if you notice the _order_ in which the parsed help objects are returned, they may not be the order you expect.
 
 #### Parameter Recognition
 
