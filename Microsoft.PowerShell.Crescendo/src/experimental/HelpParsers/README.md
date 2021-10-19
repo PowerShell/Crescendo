@@ -226,8 +226,8 @@ $h = [ordered]@{
 
 After that, it's a simple matter of using the json serializer to construct the configuration.
 It _might_ be reasonable to emit the actual module,
-but my expectation is that the configuration will need some tweaking so emitting the `JSON` is the better approach.
-The parser takes the hashtable and some options and just calls the `JSON` serializer:
+but my expectation is that the configuration will need some tweaking so emitting the JSON is the better approach.
+The parser takes the hashtable and some options and just calls the JSON serializer:
 
 ```powershell
 System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
