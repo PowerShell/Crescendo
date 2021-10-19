@@ -247,3 +247,35 @@ I suppose I could have chosen `XML`...
 
 These help parsers are all "works in progress". They aren't finished products but rather something that can be used as a starting point.
 For me, it was an investigation as to what may be possible and for some native tools (I'm looking at you `net.exe`) would not be much help.
+
+## How to use the parsers
+
+It should be possible to just run the parsers _if_ the tools that's being invoked is present.
+The parsers don't check to be sure the executable is available.
+The scripts all support two styles of execution.
+Without any parameters, a hash-table of the schema and commands is returned.
+This can be used to inspect the Crescendo command object.
+If you use `-Generate` and `-File` it will create a Crescendo.json file which may be modified or passed to `Export-CrescendoModule` to create a module.
+`-Force` is available to overwrite the file if you choose.
+Here's an example:
+
+```powershell
+PS> $result = ./Convert-KubectlHelp.ps1
+PS> $result.Commands | Format-Table | Select-Object -First 10
+FunctionName                            OriginalName Description
+------------                            ------------ -----------
+Invoke-KubectlCreateClusterrole         kubectl      Create a ClusterRole.
+Invoke-KubectlCreateClusterrolebinding  kubectl      Create a ClusterRoleBinding for a particular ClusterRole.
+Invoke-KubectlCreateConfigmap           kubectl      Create a configmap based on a file, directory, or specified li…
+Invoke-KubectlCreateCronjob             kubectl      Create a cronjob with the specified name.
+Invoke-KubectlCreateDeployment          kubectl      Create a deployment with the specified name.
+Invoke-KubectlCreateIngress             kubectl      Create an ingress with the specified name.
+Invoke-KubectlCreateJob                 kubectl      Create a job with the specified name.
+Invoke-KubectlCreateNamespace           kubectl      Create a namespace with the specified name.
+Invoke-KubectlCreatePoddisruptionbudget kubectl      Create a pod disruption budget with the specified name, select…
+Invoke-KubectlCreatePriorityclass       kubectl      Create a priorityclass with the specified name, value, globalD…
+```
+
+and a video:
+
+<img src='HelpConversion002.gif' width=720>

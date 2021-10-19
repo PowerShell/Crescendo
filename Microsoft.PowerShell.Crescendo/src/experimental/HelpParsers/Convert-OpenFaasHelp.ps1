@@ -1,4 +1,5 @@
-param ( $file, [switch]$Generate )
+[CmdletBinding(DefaultParameterSetName="Default")]
+param ( [Parameter(Mandatory=$true,ParameterSetName="file")]$file, [Parameter(ParameterSetName="file")][switch]$Generate, [Parameter(ParameterSetName="file")][switch]$force )
 $exe = "faas-cli"
 $helpChar = "--help"
 $commandPattern = "Available Commands:"
@@ -162,8 +163,18 @@ $sOptions.IgnoreNullValues = $true
 
 $parsedConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
 
-if ( $file -and !(test-path $file)) {
-    $parsedConfig > $file
+if ( $file ) {
+    if (test-path $file) {
+        if ($force) {
+            $parsedConfig > $file
+        }
+        else {
+            Write-Error "'$file' exists, use '-force' to overwrite"
+        }
+    }
+    else {
+        $parsedConfig > $file
+    }
 }
 else {
     $parsedConfig

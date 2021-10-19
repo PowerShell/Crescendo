@@ -1,4 +1,5 @@
-param ( $file = "KubectlGenerated.Crescendo.Json", [switch]$force )
+[CmdletBinding(DefaultParameterSetName="Default")]
+param ( [Parameter(Mandatory=$true,ParameterSetName="file")]$file, [Parameter(ParameterSetName="file")][switch]$Generate, [Parameter(ParameterSetName="file")][switch]$force )
 $headerLength = 0
 $exe = "kubectl"
 $helpChar = "--help"
@@ -199,7 +200,7 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
     $c.commandElements = $commandProlog
     $c.Verb = "Invoke"
     $c.Noun = $($exe;$commandProlog).Foreach({"$_".split("-")}).Foreach({[char]::ToUpper("$_"[0]) + "$_".SubString(1).toLower()}) -join ""
-    write-host ("setting noun to " + $c.noun)
+    # write-host ("setting noun to " + $c.noun)
     $c.Parameters = $parameters
     $c.Usage = $usage
     $c.Help = $cmdhelp
@@ -212,8 +213,13 @@ $commands = parseHelp -exe $exe -commandProlog @() | ForEach-Object { $_.GetCres
 # wait-debugger
 
 $h = [ordered]@{
-    '$schema' = 'https://raw.githubusercontent.com/PowerShell/Crescendo/master/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.Schema.json'
+    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
     'Commands' = $commands
+}
+
+if ( ! $Generate ) {
+    $h
+    return
 }
 
 $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
@@ -221,14 +227,21 @@ $sOptions.WriteIndented = $true
 $sOptions.MaxDepth = 20
 $sOptions.IgnoreNullValues = $true
 
-$winGetConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
+$ParsedConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
 
-if ( $file -and (test-path $file) -and $force ) {
-    Remove-Item $file
-}
-if ( $file -and !(test-path $file)) {
-    $winGetConfig > $file
+if ( $file ) {
+    if (test-path $file) {
+        if ($force) {
+            $parsedConfig > $file
+        }
+        else {
+            Write-Error "'$file' exists, use '-force' to overwrite"
+        }
+    }
+    else {
+        $parsedConfig > $file
+    }
 }
 else {
-    $winGetConfig
+    $parsedConfig
 }

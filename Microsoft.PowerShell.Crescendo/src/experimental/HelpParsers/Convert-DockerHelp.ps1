@@ -1,4 +1,5 @@
-param ( $file, [switch]$Generate )
+[CmdletBinding(DefaultParameterSetName="Default")]
+param ( [Parameter(Mandatory=$true,ParameterSetName="file")]$file, [Parameter(ParameterSetName="file")][switch]$Generate, [Parameter(ParameterSetName="file")][switch]$force )
 $exe = "docker"
 $helpChar = "--help"
 $commandPattern = "^Management Commands:|^Commands:"
@@ -177,7 +178,7 @@ $commands.Where({$_.OriginalCommandElements.Count -ne 0}).ForEach({
 
 # we can create the complete configuration file this way
 $h = [ordered]@{
-    '$schema' = 'https://raw.githubusercontent.com/PowerShell/Crescendo/master/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.Schema.json'
+    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
     'Commands' = $commands
 }
 
@@ -185,6 +186,7 @@ if ( ! $Generate ) {
     $h
     return
 }
+
 $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
 $sOptions.WriteIndented = $true
 $sOptions.MaxDepth = 20
@@ -192,8 +194,18 @@ $sOptions.IgnoreNullValues = $true
 
 $parsedConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
 
-if ( $file -and !(test-path $file)) {
-    $parsedConfig > $file
+if ( $file ) {
+    if (test-path $file) {
+        if ($force) {
+            $parsedConfig > $file
+        }
+        else {
+            Write-Error "'$file' exists, use '-force' to overwrite"
+        }
+    }
+    else {
+        $parsedConfig > $file
+    }
 }
 else {
     $parsedConfig

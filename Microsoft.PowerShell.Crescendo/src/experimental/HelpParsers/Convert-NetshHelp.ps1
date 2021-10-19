@@ -1,5 +1,5 @@
-[CmdletBinding()]
-param ( $file, [switch]$force )
+[CmdletBinding(DefaultParameterSetName="Default")]
+param ( [Parameter(Mandatory=$true,ParameterSetName="file")]$file, [Parameter(ParameterSetName="file")][switch]$Generate, [Parameter(ParameterSetName="file")][switch]$force )
 if ( ! $IsWindows ) {
     throw "this can only be run on Windows"
 }
@@ -289,8 +289,13 @@ $convertedCommands = $trimmedCommands | ForEach-Object { $_.GetCrescendoCommand(
 $global:parsedCommands = $convertedCommands
 
 $h = [ordered]@{
-    '$schema' = 'https://raw.githubusercontent.com/PowerShell/Crescendo/master/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.Schema.json'
+    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
     'Commands' = $convertedCommands
+}
+
+if ( ! $Generate ) {
+    $h
+    return
 }
 
 $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
@@ -300,14 +305,19 @@ $sOptions.IgnoreNullValues = $true
 
 $ParsedConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
 
-if ( ! $file ) {
-    $parsedConfig 
-}
-else {
-    if ($file -and (!(test-path $file) -or $force)) {
-        $ParsedConfig > $file
+if ( $file ) {
+    if (test-path $file) {
+        if ($force) {
+            $parsedConfig > $file
+        }
+        else {
+            Write-Error "'$file' exists, use '-force' to overwrite"
+        }
     }
     else {
-        throw "$file exists"
+        $parsedConfig > $file
     }
+}
+else {
+    $parsedConfig
 }

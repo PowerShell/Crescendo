@@ -1,4 +1,5 @@
-param ( $file )
+[CmdletBinding(DefaultParameterSetName="Default")]
+param ( [Parameter(Mandatory=$true,ParameterSetName="file")]$file, [Parameter(ParameterSetName="file")][switch]$Generate, [Parameter(ParameterSetName="file")][switch]$force )
 if ( ! $IsWindows ) {
     throw "this can only be run on Windows"
 }
@@ -140,8 +141,13 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
 $commands = parseHelp -exe $exe -commandProlog @() | ForEach-Object { $_.GetCrescendoCommand()}
 
 $h = [ordered]@{
-    '$schema' = 'https://raw.githubusercontent.com/PowerShell/Crescendo/master/Microsoft.PowerShell.Crescendo/src/Microsoft.PowerShell.Crescendo.Schema.json'
+    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
     'Commands' = $commands
+}
+
+if ( ! $Generate ) {
+    $h
+    return
 }
 
 $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
@@ -149,11 +155,21 @@ $sOptions.WriteIndented = $true
 $sOptions.MaxDepth = 20
 $sOptions.IgnoreNullValues = $true
 
-$winGetConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
+$parsedConfig = [System.Text.Json.JsonSerializer]::Serialize($h, $sOptions)
 
-if ( $file -and !(test-path $file)) {
-    $winGetConfig > $file
+if ( $file ) {
+    if (test-path $file) {
+        if ($force) {
+            $parsedConfig > $file
+        }
+        else {
+            Write-Error "'$file' exists, use '-force' to overwrite"
+        }
+    }
+    else {
+        $parsedConfig > $file
+    }
 }
 else {
-    $winGetConfig
+    $parsedConfig
 }
