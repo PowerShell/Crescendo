@@ -157,9 +157,9 @@ The current parsers don't handle this case (they need to be added manually to th
 This is something I would like to address in the future.
 
 > **options _and_ arguments?** -
-Some of the tools have both named _and_ positional parameters, as well as options which apply to the _executable_ and the _command_.
-For example: `docker --debug image list --all` has a parameter `--debug` which applies to the `docker` executable,
-and `--all` which applies to the `image list` command.
+Some of the tools have both named _and_ positional parameters, as well as options that apply to the _executable_ and the _command_.
+For example: `docker --debug image list --all` has a parameter `--debug` that applies to the `docker` executable,
+and `--all` that applies to the `image list` command.
 These two elements are an attempt to manage these various conditions.
 I'm not really satisfied with how I've done this, but haven't had time to tease apart the issues.
 I plan on getting back to it eventually.
