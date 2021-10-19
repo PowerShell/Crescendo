@@ -122,10 +122,10 @@ This is why there are 2 patterns for a parameter:
 $parmPattern = "--(?<pname>[-\w]+)\s(?<ptype>\w+)\s+(?<phelp>.*)|--(?<pname>[-\w]+)\s+(?<phelp>.*)"
 ```
 
-This pattern also ignores those patterns which are a single character.
-I did this on purpose as PowerShell prefers parameters which are more descriptive.
-I didn't create aliases out of those one character parameters, which is something that could be done in the future.
-I also don't handle the cases where the one character parameter _follows_ the more verbose parameter.
+This pattern also ignores those patterns that are a single character.
+I did this on purpose as PowerShell prefers parameters that are more descriptive.
+I didn't create aliases out of those one-character parameters, which is something that could be done in the future.
+I also don't handle the cases where the on- character parameter _follows_ the more verbose parameter.
 In my inspection of the help, they all pretty much did something like:
 
 ```bash
