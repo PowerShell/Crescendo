@@ -95,7 +95,7 @@ The scanner first starts with the help.
 This means that the scanner has to know two things:
 
 - the name of the executable
-- the parameter to use to get help
+- the parameter used to get help
 
 There was not much variation here, it was either `-?` and `--help` so each one of the parsers has something similar to:
 
