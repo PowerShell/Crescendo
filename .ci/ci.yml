@@ -83,9 +83,9 @@ stages:
 
   - template: test.yml
     parameters:
-      jobName: TestPkgUbuntu16
-      displayName: PowerShell Core on Ubuntu 16.04
-      imageName: ubuntu-16.04
+      jobName: TestPkgUbuntu18
+      displayName: PowerShell Core on Ubuntu 18.04
+      imageName: ubuntu-18.04
 
   - template: test.yml
     parameters:
