@@ -25,7 +25,7 @@ I noticed, for the most part, that the help was regular for each of these tools 
 This gave me a bit of hope that I would be able to create a somewhat generalized parsing framework that I could change for each tool.
 
 Underlying all of these parsers is the _assertion_ that while these tools will change over time with new features it's not likely that the _help_ format will change significantly.
-This means that if the tools change, reparsing the help will catch new parameters and sub-commands enabling easier recreation of the Crescendo configurations.
+This means that if the tools change, reparsing the help can discover new parameters and sub-commands enabling easier regeneration of the Crescendo configurations.
 This way, it may be possible to keep the Crescendo configurations up to date with new revisions of the tools.
 
 ## Object Model Overlap
