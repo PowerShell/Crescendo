@@ -87,7 +87,7 @@ we start hunting for the follow-on data to use.
 For example, when the `Sub-Command` pattern is used, we start a loop that looks for new commands.
 If we find a new command, we call the help parser and start the scan again for the new "command".
 
-Each pattern represents elements which can be incorporated into the configuration.
+Each pattern represents elements that can be incorporated into the configuration.
 
 #### Getting the Help Text
 
