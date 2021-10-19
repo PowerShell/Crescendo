@@ -3,7 +3,7 @@
 While Crescendo improves the experience of wrapping native executables,
 there still may be substantial effort in completely wrapping a complex executable.
 For example, for the `docker` command, there are more than 200 sub-commands,
-each of which may have a large set of parameters which all need to be part of the configuration.
+each of which may have a large set of parameters that all need to be part of the configuration.
 If it were possible to inspect the help of these complex commands and generate at least part of the
 configurations, that would result in a large amount of time saved over constructing the configuration
 individually via an authoring product such as VSCode.
