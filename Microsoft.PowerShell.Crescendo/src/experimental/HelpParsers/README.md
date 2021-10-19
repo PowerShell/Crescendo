@@ -210,9 +210,9 @@ but the current examples are not very successful here.
 
 #### The Packager
 
-Once the parsed help is separated into its components, we need a way to actually emit the Crescendo configuration.
-I chose to make the parser object model be able to render the text which comprises the Crescendo configuration.
-The parser command object has a method called `GetCrescendoCommand` which does the conversion from the parsers' object model to the Crescendo object model.
+Once the parsed help is separated into its components, we need a way to emit the Crescendo configuration.
+I chose to make the parser object model be able to render the text that comprises the Crescendo configuration.
+The parser command object has a method called `GetCrescendoCommand` that does the conversion from the parsers' object model to the Crescendo object model.
 This makes the last mile of the problem the easiest, because the crescendo object _already_ knows how to build the JSON configuration.
 Fortunately, we can rely on built-in features of .NET to do most of the work.
 The only thing we need to do is to create an object which has the appearance of a configuration file:
