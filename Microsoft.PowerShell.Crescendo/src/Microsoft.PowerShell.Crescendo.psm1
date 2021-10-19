@@ -136,6 +136,13 @@ class ParameterInfo {
         #if ( $this.ParameterSetName.Count -gt 1) {
         #    $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
         #}
+        # we need a way to find those parameters which have default values
+        # because they need to be added to the command arguments. We can 
+        # search through the parameters for this attribute.
+        # We may need to handle collections as well.
+        if ( $null -ne $this.DefaultValue ) {
+                $sb.AppendLine(('[PSDefaultValue(Value="{0}")]' -f $this.DefaultValue))
+        }
         $sb.Append(('[{0}]${1}' -f $this.ParameterType, $this.Name))
         if ( $this.DefaultValue ) {
             $sb.Append(' = "' + $this.DefaultValue + '"')
@@ -308,14 +315,17 @@ class Command {
         # otherwise we won't actually be invoking anything
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine("PROCESS {")
-        $sb.AppendLine('    $__boundparms = $PSBoundParameters # debugging assistance')
+        $sb.AppendLine('    $__boundParameters = $PSBoundParameters')
+        # now add those parameters which have default values excluding the ubiquitous parameters
+        $sb.AppendLine('    $__defaultValueParameters = $PSCmdlet.MyInvocation.MyCommand.Parameters.Values.Where({$_.Attributes.Where({$_.TypeId.Name -eq "PSDefaultValueAttribute"})}).Name')
+        $sb.AppendLine('    $__defaultValueParameters.Where({ !$__boundParameters["$_"] }).ForEach({$__boundParameters["$_"] = get-variable -value $_})')
         $sb.AppendLine('    $__commandArgs = @()')
-        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
-        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $__boundParameters[$_.Name]}).ForEach({$__boundParameters[$_.Name] = [switch]::new($false)})')
+        $sb.AppendLine('    if ($__boundParameters["Debug"]){wait-debugger}')
         if ($this.Parameters.Where({$_.ApplyToExecutable})) {
             $sb.AppendLine('    # look for those parameter values which apply to the executable and must be before the original command elements')
-            $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Where-Object {$__PARAMETERMAP[$_].ApplyToExecutable}) {') # take those parameters which apply to the executable
-            $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
+            $sb.AppendLine('    foreach ($paramName in $__boundParameters.Keys|Where-Object {$__PARAMETERMAP[$_].ApplyToExecutable}) {') # take those parameters which apply to the executable
+            $sb.AppendLine('        $value = $__boundParameters[$paramName]')
             $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
             $sb.AppendLine('        if ($param) {')
             $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }')
@@ -424,10 +434,10 @@ class Command {
     # this is where the logic of actually calling the command is created
     [string]GetInvocationCommand() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|')
+        $sb.AppendLine('    foreach ($paramName in $__boundParameters.Keys|')
         $sb.AppendLine('        Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|') # skip those parameters which apply to the executable
         $sb.AppendLine('        Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
-        $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
+        $sb.AppendLine('        $value = $__boundParameters[$paramName]')
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
         $sb.AppendLine('        if ($param) {')
         $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }')
@@ -441,8 +451,8 @@ class Command {
         $sb.AppendLine('    return $__commandArgs')
         }
         else {
-        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
-        $sb.AppendLine('    if ( $PSBoundParameters["Verbose"]) {')
+        $sb.AppendLine('    if ($__boundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    if ( $__boundParameters["Verbose"]) {')
         $sb.AppendLine('         Write-Verbose -Verbose -Message ' + $this.OriginalName)
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
