@@ -245,5 +245,5 @@ I suppose I could have chosen `XML`...
 
 ## About these parsers
 
-These help parsers are all "work in progress", they're aren't finished or products but rather something that can be used as a starting point.
+These help parsers are all "works in progress". They aren't finished products but rather something that can be used as a starting point.
 For me, it was an investigation as to what may be possible and for some native tools (I'm looking at you `net.exe`) would not be much help.
