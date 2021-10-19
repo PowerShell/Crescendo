@@ -34,7 +34,7 @@ Crescendo has a very clear idea about its _internal_ object model.
 That is, how Crescendo thinks what a command is, and its component parts and how it relates to the way advanced functions are created.
 However, the help files that I saw didn't really match this very well.
 For example, sometimes the help would provide a type for a parameter and other times it would not provide that information.
-The help parsers have a stripped down version of the Crescendo model which I could use as a bridge from text that made up the help to the objects that Crescendo uses.
+The help parsers have a stripped-down version of the Crescendo model that I use as a bridge from the help text to the objects that Crescendo uses.
 The experimental help parsers all take the help and create reduced set object model and then convert that into a Crescendo expression.
 They aren't necessarily complete because sometimes what is needed isn't in the help, so the configurations they create will need tweaking.
 
