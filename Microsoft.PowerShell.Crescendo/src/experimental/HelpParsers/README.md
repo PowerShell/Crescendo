@@ -6,7 +6,7 @@ For example, for the `docker` command, there are more than 200 sub-commands,
 each of which may have a large set of parameters that all need to be part of the configuration.
 If it were possible to inspect the help of these complex commands and generate at least part of the
 configurations, that would result in a large amount of time saved over constructing the configuration
-individually via an authoring product such as VSCode.
+individually via an authoring product such as Visual Studio Code (VS Code).
 
 Because of the complexity of some commands, the help associated with those commands is naturally made
 more regular and the way that help is accesses is also more regular.
