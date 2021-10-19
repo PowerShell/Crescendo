@@ -57,8 +57,8 @@ Because I wanted to reuse as much code as possible, I organized it as follows:
 
 - An object model which is represents an intermediate state of a Crescendo configuration.
 - A set of patterns that I could use to recognize the various elements in the help (usage, links, etc.)
-- The help parser which uses the patterns to create instances of the types of the parser object model.
-- A packager which takes all the parsed instances, converts them, and then creates the Crescendo configuration.
+- The help parser that uses the patterns to create instances of the types of the parser object model.
+- A packager that takes all the parsed instances, converts them, and then creates the Crescendo configuration.
 
 #### The Object Model
 
