@@ -115,7 +115,7 @@ But, if you notice the _order_ in which the parsed help objects are returned, th
 
 #### Parameter Recognition
 
-Sometimes, the command argument would have an associated type for the parameter and sometime that would not be available.
+Sometimes, the command argument has an associated type for the parameter and sometimes that information is not available.
 This is why there are 2 patterns for a parameter:
 
 ```powershell
