@@ -9,7 +9,7 @@ configurations, that would result in a large amount of time saved over construct
 individually via an authoring product such as Visual Studio Code (VS Code).
 
 Because of the complexity of some commands, the help associated with those commands is naturally made
-more regular and the way that help is accesses is also more regular.
+more regular and the way that help is accessed is also more regular.
 If it were possible to scan this help for sub-commands and parameters and then use that scanned help
 to generate Crescendo configurations, it may be possible to greatly accelerate wrapping these native commands.
 
