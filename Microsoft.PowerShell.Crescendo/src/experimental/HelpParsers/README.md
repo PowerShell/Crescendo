@@ -239,7 +239,7 @@ I knew that code would be needed for _some_ things, but I wanted to minimize how
 JSON, with its easy schema validation was a natural for this.
 The schema can be annotated with tool-tips making the authoring process easier, as well as support for mandatory elements, types, enums, etc.
 As I was investigating this, I did consider using PowerShell native hash-tables, but they simply lack these extra features.
-Rather than spending my time in adding these features to PowerShell, _which I heartily recommend someone undertake_,
+Rather than spending my time adding these features to PowerShell, _which I heartily recommend someone undertake_,
 I chose something that was ready to go.
 I suppose I could have chosen `XML`...
 
