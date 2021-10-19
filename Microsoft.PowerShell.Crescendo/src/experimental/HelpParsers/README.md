@@ -70,8 +70,8 @@ I saw the object model for the help as a trimmed down version of Crescendo, whic
 #### The Patterns
 
 This section tries to genericize the strings that I would be seeking.
-Originally, I had hoped to create "one parser to rule them all", but that didn't work out,
-however, my intent still lingers in this section.
+Originally, I had hoped to create "one parser to rule them all", but that didn't work out.
+However, my intent still lingers in this section.
 The patterns are:
 
 - the executable name and how to retrieve help (is it `-?`, `--help`, or something else)
