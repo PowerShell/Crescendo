@@ -82,8 +82,8 @@ The patterns are:
 - the pattern that designates the actual parameter
 - the pattern that designates additional help (on-line or other commands)
 
-The help text (for the tools I've chosen so far) is regular enough that when one of these strings is found,
-we start hunting for following data to use.
+For the tools I've chosen so far, the help text is regular enough that when one of these strings is found,
+we start hunting for the follow-on data to use.
 For example, when the `Sub-Command` pattern is used, we start a loop which looks for new commands.
 If we find a new command, we call the help parser and start the scan again for the new "command"
 
