@@ -9,6 +9,7 @@ $HelpRoot = "${ModRoot}/help/${Lang}"
 $TestRoot = "${ModRoot}/test"
 $SampleRoot = "${ModRoot}/Samples"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
+$ExpRoot = "${SrcRoot}/Experimental/HelpParsers"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
 $Version = $ManifestData.ModuleVersion
 $PubBase  = "${PSScriptRoot}/out"
@@ -34,6 +35,14 @@ $FileManifest = @(
     @{ SRC = "${SampleRoot}"; NAME = "ls.Crescendo.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
     @{ SRC = "${SampleRoot}"; NAME = "tar.Crescendo.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
     @{ SRC = "${SampleRoot}"; NAME = "who.Crescendo.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-DockerHelp.ps1"             ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-KubectlHelp.ps1"            ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-NetshHelp.ps1"              ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-OpenFaasHelp.ps1"           ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-WingetHelp.ps1"             ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "README.md"                          ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Types.ps1xml"               ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Format.ps1xml"              ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
