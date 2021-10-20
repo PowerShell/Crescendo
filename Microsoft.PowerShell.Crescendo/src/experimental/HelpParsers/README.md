@@ -138,7 +138,7 @@ rather than:
 	--quiet, -q     Do not be overly verbose
 ```
 
-So my parameter recognizer expects it and doesn't capture the first part of the string.
+The regular expression which recognizes a parameter doesn't capture the first part where it is a single dash and letter `-q`.
 Again, this is probably pretty easy to support.
 
 Additionally, sometimes the usage statement declares a parameter.
