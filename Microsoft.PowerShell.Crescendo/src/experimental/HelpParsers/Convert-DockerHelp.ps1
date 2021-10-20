@@ -49,7 +49,7 @@ class ParsedHelpCommand {
         return $this.GetCrescendoCommand().GetCrescendoConfiguration()
     }
     [string]GetNoun() {
-        $segments = .{ $exe.Split("-"); $commandProlog.Foreach({$_.split("-")}) } | %{ [char]::ToUpper($_.substring(0,1)) + $_.substring(1) }
+        $segments = .{ $exe.Split("-"); $commandProlog.Foreach({$_.split("-")}) } | ForEach-Object { [char]::ToUpper($_.substring(0,1)) + $_.substring(1) }
         return ($segments -join "")
     }
 }
@@ -83,7 +83,7 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
     }
     #$cmdHelpString = $cmdhelp -join " "
     $parameters = @()
-    $usage = $help = ""
+    $usage = ""
     for($i = $offset; $i -lt $helpText.Count; $i++) {
         if ($helpText[$i] -match $usagePattern) {
             $usage = $matches['usage']
@@ -116,7 +116,6 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
         }
         elseif ($helpText[$i] -match $argumentPattern) {
             $i++
-            $position = 0
             while($helpText[$i] -ne "" -and $i -lt $helpText.Count) {
                 if ($helpText[$i] -match $parmPattern) {
                     $originalName = "--" + $matches['pname']
@@ -130,7 +129,6 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
         }
         elseif ($helpText[$i] -match $commandPattern) {
             $i++
-            $subCommands = @()
             while($helpText[$i] -ne "" -and $i -lt $helpText.Count) {
                 $t = $helpText[$i].Trim().Replace('*','') # specific for docker
                 $subCommand, $subHelp = $t.split(" ",2, [System.StringSplitOptions]::RemoveEmptyEntries)

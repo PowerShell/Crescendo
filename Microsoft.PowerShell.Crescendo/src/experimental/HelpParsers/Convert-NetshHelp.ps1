@@ -134,11 +134,6 @@ function Get-ParameterFromUsage ( [string[]]$prolog, [string]$usage ) {
     return "no parameter"
 }
 
-function Find-Parameters ( [string[]]$text, [int]$offset, [ref][int]$newOffset ) {
-    $parameters = @()
-
-}
-
 function parseHelp([string]$exe, [string[]]$commandProlog) {
     write-progress ("parsing help for '$exe " + ($commandProlog -join " ") + "'")
     if ( $commandProlog ) {
@@ -154,7 +149,7 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
     }
     #$cmdHelpString = $cmdhelp -join " "
     $parameters = @()
-    $usage = $help = ""
+    $usage = ""
     for($i = $offset; $i -lt $helpText.Count; $i++) {
         if ($helpText[$i] -match $usagePattern) {
             $usage = $matches['usage']
@@ -183,7 +178,7 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
                         $p = $matches['parm'].Trim()
                     }
                     catch {
-                        #wait-debugger
+                        wait-debugger
                     }
 
                     while ( Test-ParameterContinue -text $helpText -offset $i ) {
@@ -196,10 +191,11 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
                     Get-Parm -parameterString $p
                     $parameters += $p
                     $p = ""
-                    $matches = $null
+                    if( $matches ) {
+                        $matches.Clear()
+                    }
                 }
                 $i++
-                
             }
         }
         elseif ($helpText[$i] -match $linkPattern ) {
@@ -282,11 +278,9 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
     $c
 }
 
-$commands = parseHelp -exe $exe -commandProlog @() 
+$commands = parseHelp -exe $exe -commandProlog @()
 $trimmedCommands = $commands.Where({$_.Usage -or ($_.commandElements -contains "show" -and $_.commandElements[-1] -ne "show")})
 $convertedCommands = $trimmedCommands | ForEach-Object { $_.GetCrescendoCommand()}
-
-$global:parsedCommands = $convertedCommands
 
 $h = [ordered]@{
     '$schema' = 'https://aka.ms/Crescendo/Schema.json'

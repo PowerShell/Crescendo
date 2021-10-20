@@ -75,7 +75,7 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
     }
     #$cmdHelpString = $cmdhelp -join " "
     $parameters = @()
-    $usage = $help = ""
+    $usage = ""
     for($i = $offset; $i -lt $helpText.Count; $i++) {
         if ($helpText[$i] -match $usagePattern) {
             $usage = $matches['usage']
@@ -113,7 +113,6 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
         }
         elseif ($helpText[$i] -match $commandPattern) {
             $i++
-            $subCommands = @()
             while($helpText[$i] -ne "") {
                 $t = $helpText[$i].Trim()
                 $subCommand, $subHelp = $t.split(" ",2, [System.StringSplitOptions]::RemoveEmptyEntries)
