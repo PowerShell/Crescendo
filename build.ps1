@@ -42,6 +42,8 @@ $FileManifest = @(
     @{ SRC = "${ExpRoot}";    NAME = "Convert-OpenFaasHelp.ps1"           ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
     @{ SRC = "${ExpRoot}";    NAME = "Convert-WingetHelp.ps1"             ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
     @{ SRC = "${ExpRoot}";    NAME = "README.md"                          ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "HelpConversion002.gif"              ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "HelpConversion002.mp4"              ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
 
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Types.ps1xml"               ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Format.ps1xml"              ; SIGN = $true  ; DEST = "OUTDIR" }
