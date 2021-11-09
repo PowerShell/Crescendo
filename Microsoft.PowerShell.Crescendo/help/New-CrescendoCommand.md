@@ -1,41 +1,67 @@
 ---
 external help file: Microsoft.PowerShell.Crescendo-help.xml
 Module Name: Microsoft.PowerShell.Crescendo
-ms.date: 03/16/2021
-online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/new-crescendocommand?view=ps-modules.1&WT.mc_id=ps-gethelp
+ms.date: 11/09/2021
+online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/new-crescendocommand?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
 ---
 
 # New-CrescendoCommand
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a PowerShell command object.
 
 ## SYNTAX
 
 ```
-New-CrescendoCommand [-Verb] <String> [-Noun] <String> [<CommonParameters>]
+New-CrescendoCommand [-Verb] <String> [-Noun] <String> [[-OriginalName] <String>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-{{ Fill in the Description }}
+Creates a PowerShell command object. You can use this object to set the properties of the command
+you are defining. The resulting object can be converted to JSON to be added to a configuration file.
 
 ## EXAMPLES
 
-### Example 1
+### Example 1 - Create a new command and convert it to JSON
 
 ```powershell
-PS C:\> {{ Add example code here }}
+PS> New-CrescendoCommand -Verb Get -Noun Something -OriginalName "native.exe" | ConvertTo-Json
+{
+  "Verb": "Get",
+  "Noun": "Something",
+  "OriginalName": "native.exe",
+  "OriginalCommandElements": null,
+  "Platform": [
+    "Windows",
+    "Linux",
+    "MacOS"
+  ],
+  "Elevation": null,
+  "Aliases": null,
+  "DefaultParameterSetName": null,
+  "SupportsShouldProcess": false,
+  "ConfirmImpact": null,
+  "SupportsTransactions": false,
+  "NoInvocation": false,
+  "Description": null,
+  "Usage": null,
+  "Parameters": [],
+  "Examples": [],
+  "OriginalText": null,
+  "HelpLinks": null,
+  "OutputHandlers": null,
+  "FunctionName": "Get-Something"
+}
 ```
-
-{{ Add example description here }}
 
 ## PARAMETERS
 
 ### -Noun
 
-{{ Fill Noun Description }}
+The noun of the cmdlet you are defining.
 
 ```yaml
 Type: System.String
@@ -49,9 +75,25 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -OriginalName
+
+The name of the native command executable to run.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Verb
 
-{{ Fill Verb Description }}
+The verb of the cmdlet you are defining.
 
 ```yaml
 Type: System.String
@@ -83,3 +125,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
+[New-ExampleInfo](New-ExampleInfo.md)
+
+[New-OutputHandler](New-OutputHandler.md)
+
+[New-ParameterInfo](New-ParameterInfo.md)
+
+[New-UsageInfo](New-UsageInfo.md)

@@ -2,7 +2,7 @@
 external help file: Microsoft.PowerShell.Crescendo-help.xml
 Module Name: Microsoft.PowerShell.Crescendo
 ms.date: 03/16/2021
-online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/import-commandconfiguration?view=ps-modules.1&WT.mc_id=ps-gethelp
+online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/import-commandconfiguration?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Import a PowerShell Crescendo json file.
 ## SYNTAX
 
 ```
-Import-CommandConfiguration [[-file] <String>]
+Import-CommandConfiguration [-file] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -65,14 +65,23 @@ Type: System.String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: 1
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable,
+-InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose,
+-WarningAction, and -WarningVariable. For more information, see
+[about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
 ## INPUTS
+
+### None
 
 ## OUTPUTS
 

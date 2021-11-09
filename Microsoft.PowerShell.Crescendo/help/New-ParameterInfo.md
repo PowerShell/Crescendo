@@ -1,15 +1,15 @@
 ---
 external help file: Microsoft.PowerShell.Crescendo-help.xml
 Module Name: Microsoft.PowerShell.Crescendo
-ms.date: 03/16/2021
-online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/new-parameterinfo?view=ps-modules.1&WT.mc_id=ps-gethelp
+ms.date: 11/09/2021
+online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/new-parameterinfo?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
 ---
 
 # New-ParameterInfo
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a PowerShell object representing a Crescendo Parameter definition.
 
 ## SYNTAX
 
@@ -19,14 +19,36 @@ New-ParameterInfo [-Name] <String> [-OriginalName] <String> [<CommonParameters>]
 
 ## DESCRIPTION
 
-{{ Fill in the Description }}
+Creates a PowerShell object representing a Crescendo Parameter definition. You can assign values to
+the properties of the object. The resulting object can be added to the **Parameters** property of
+a command object or it can be converted to JSON to be inserted in the configuration file.
 
 ## EXAMPLES
 
-### Example 1
+### Example 1 - Create a new parameter object
 
 ```powershell
-PS C:\> {{ Add example code here }}
+PS> $param = New-ParameterInfo -Name ComputerName -OriginalName '--targethost'
+PS> $param
+
+Name                            : ComputerName
+OriginalName                    : --targethost
+OriginalText                    :
+Description                     :
+DefaultValue                    :
+DefaultMissingValue             :
+ApplyToExecutable               : False
+ParameterType                   : object
+AdditionalParameterAttributes   :
+Mandatory                       : False
+ParameterSetName                :
+Aliases                         :
+Position                        : 2147483647
+OriginalPosition                : 0
+ValueFromPipeline               : False
+ValueFromPipelineByPropertyName : False
+ValueFromRemainingArguments     : False
+NoGap                           : False
 ```
 
 {{ Add example description here }}
@@ -35,7 +57,7 @@ PS C:\> {{ Add example code here }}
 
 ### -Name
 
-{{ Fill Name Description }}
+The name of the parameter for the cmdlet being defined.
 
 ```yaml
 Type: System.String
@@ -51,7 +73,7 @@ Accept wildcard characters: False
 
 ### -OriginalName
 
-{{ Fill OriginalName Description }}
+The original parameter used by the native executable.
 
 ```yaml
 Type: System.String
@@ -83,3 +105,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
+[New-CrescendoCommand](New-CrescendoCommand.md)
+
+[New-ExampleInfo](New-ExampleInfo.md)
+
+[New-OutputHandler](New-OutputHandler.md)
+
+[New-UsageInfo](New-UsageInfo.md)

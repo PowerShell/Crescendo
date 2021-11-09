@@ -1,15 +1,15 @@
 ---
 external help file: Microsoft.PowerShell.Crescendo-help.xml
 Module Name: Microsoft.PowerShell.Crescendo
-ms.date: 03/16/2021
-online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/new-exampleinfo?view=ps-modules.1&WT.mc_id=ps-gethelp
+ms.date: 11/09/2021
+online version: https://docs.microsoft.com/powershell/module/microsoft.powershell.crescendo/new-exampleinfo?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
 ---
 
 # New-ExampleInfo
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a PowerShell object representing an example used in a Crescendo command object.
 
 ## SYNTAX
 
@@ -19,23 +19,30 @@ New-ExampleInfo [-command] <String> [-originalCommand] <String> [-description] <
 
 ## DESCRIPTION
 
-{{ Fill in the Description }}
+Creates a PowerShell object representing an example used in a Crescendo command object. The
+resulting object can be converted to JSON to be inserted into a configuration file or added to a
+command object coversion to JSON later.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-PS C:\> {{ Add example code here }}
-```
+PS> New-ExampleInfo -command Get-Something -originalCommand native.exe -description 'this is some text' |
+    ConvertTo-Json
 
-{{ Add example description here }}
+{
+  "Command": "Get-Something",
+  "OriginalCommand": "native.exe",
+  "Description": "this is some text"
+}
+```
 
 ## PARAMETERS
 
 ### -command
 
-{{ Fill command Description }}
+The command line for the example being described.
 
 ```yaml
 Type: System.String
@@ -51,7 +58,7 @@ Accept wildcard characters: False
 
 ### -description
 
-{{ Fill description Description }}
+The description of the example.
 
 ```yaml
 Type: System.String
@@ -67,7 +74,7 @@ Accept wildcard characters: False
 
 ### -originalCommand
 
-{{ Fill originalCommand Description }}
+The original native command that is run for this cmdlet example.
 
 ```yaml
 Type: System.String
@@ -99,3 +106,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
+[New-CrescendoCommand](New-CrescendoCommand.md)
+
+[New-OutputHandler](New-OutputHandler.md)
+
+[New-ParameterInfo](New-ParameterInfo.md)
+
+[New-UsageInfo](New-UsageInfo.md)
