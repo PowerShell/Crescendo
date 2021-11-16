@@ -43,7 +43,9 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
         $sb.AppendLine("PS> " + $this.Command)
         $sb.AppendLine("")
         $sb.AppendLine($this.Description)
-        $sb.AppendLine("Original Command: " + $this.OriginalCommand)
+        if ($this.OriginalCommand) {
+            $sb.AppendLine("Original Command: " + $this.OriginalCommand)
+        }
         return $sb.ToString()
     }
 }
@@ -580,8 +582,8 @@ function New-ExampleInfo {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$command,
-        [Parameter(Position=1,Mandatory=$true)][string]$originalCommand,
-        [Parameter(Position=2,Mandatory=$true)][string]$description
+        [Parameter(Position=1,Mandatory=$true)][string]$description,
+        [Parameter(Position=2)][string]$originalCommand = ""
         )
     [ExampleInfo]::new($command, $originalCommand, $description)
 }
