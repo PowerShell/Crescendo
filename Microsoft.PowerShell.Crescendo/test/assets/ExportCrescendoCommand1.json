@@ -1,0 +1,15 @@
+{
+  "Verb": "Get",
+  "Noun": "Thing",
+  "OriginalName": "doesnotexist",
+  "Platform": [
+    "Windows",
+    "Linux",
+    "MacOS"
+  ],
+  "SupportsShouldProcess": false,
+  "SupportsTransactions": false,
+  "NoInvocation": false,
+  "Parameters": [],
+  "Examples": []
+}

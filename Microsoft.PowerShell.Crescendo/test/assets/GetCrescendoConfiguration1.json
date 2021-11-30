@@ -1,0 +1,34 @@
+{
+  "Verb": "get",
+  "Noun": "thing",
+  "OriginalName": "doesnotexist",
+  "Platform": [
+    "Windows"
+  ],
+  "SupportsShouldProcess": false,
+  "SupportsTransactions": false,
+  "NoInvocation": false,
+  "Description": "A simple example",
+  "Parameters": [
+    {
+      "Name": "p1",
+      "OriginalName": "--parameter1",
+      "ApplyToExecutable": false,
+      "ParameterType": "object",
+      "Mandatory": false,
+      "Position": 2147483647,
+      "OriginalPosition": 0,
+      "ValueFromPipeline": false,
+      "ValueFromPipelineByPropertyName": false,
+      "ValueFromRemainingArguments": false,
+      "NoGap": false
+    }
+  ],
+  "Examples": [
+    {
+      "Command": "get-thing -p1 zapped",
+      "OriginalCommand": "",
+      "Description": "An example"
+    }
+  ]
+}

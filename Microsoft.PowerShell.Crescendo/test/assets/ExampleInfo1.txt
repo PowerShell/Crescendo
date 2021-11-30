@@ -1,0 +1,5 @@
+.EXAMPLE
+PS> this is a command
+
+This is a description
+
