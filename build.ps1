@@ -1,5 +1,5 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
-param ([switch]$test, [switch]$build, [switch]$publish, [switch]$signed, [switch]$package)
+param ([switch]$test, [switch]$build, [switch]$publish, [switch]$signed, [switch]$package, [switch]$coverage)
 
 $Name = "Microsoft.PowerShell.Crescendo"
 $Lang = "en-US"
@@ -127,7 +127,12 @@ if ($test) {
     Import-Module -force "${PubRoot}"
     Push-Location "${TestRoot}"
     try {
-        $result = Invoke-Pester -PassThru
+        $pesterArgs = @{ PassThru = $true }
+        if ( $coverage ) {
+            $pesterArgs['CodeCoverageOutputFile'] = "${PSScriptRoot}/CoverageOutput.xml"
+            $pesterArgs['CodeCoverage'] = "${PSScriptRoot}/out/Microsoft.PowerShell.Crescendo/0.7.0/Microsoft.PowerShell.Crescendo.psm1"
+        }
+        $result = Invoke-Pester @pesterArgs
         if (0 -ne $result.FailedCount) {
             $result.testresult.Where({$_.result -eq "Failed"}).Foreach({Write-Error $_.Name})
             throw ("{0} failed tests" -f $result.FailedCount)
