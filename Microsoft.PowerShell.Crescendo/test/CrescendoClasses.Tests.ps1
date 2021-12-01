@@ -14,7 +14,8 @@ Describe "The class tests" {
 		It "ToString method returns correct data" {
 			$ui = New-UsageInfo "This is usage"
 			$observed = $ui.ToString()
-			$expected = (Get-Content "${PSScriptRoot}/assets/UsageInfo1.txt") -join [System.Environment]::newline
+			# Synopsis is joined explicitly with a "`n" - line 21 in Microsoft.PowerShell.Crescendo.psm1
+			$expected = (Get-Content "${PSScriptRoot}/assets/UsageInfo1.txt") -join "`n"
 			$observed | Should -Be $expected
 		}
 	}
