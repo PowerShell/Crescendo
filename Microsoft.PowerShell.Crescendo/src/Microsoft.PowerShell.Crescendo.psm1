@@ -920,7 +920,7 @@ Import-CommandConfiguration
                         Copy-Item $scriptInfo.Source $moduleBase
                     }
                     else {
-                        errArgs = @{
+                        $errArgs = @{
                             Category = "ObjectNotFound"
                             TargetObject = $scriptInfo.Source
                             Message = "Handler '" + $scriptInfo.Source + "' not found."
