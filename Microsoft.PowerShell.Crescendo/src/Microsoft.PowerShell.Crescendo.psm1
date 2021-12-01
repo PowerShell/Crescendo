@@ -137,7 +137,7 @@ class ParameterInfo {
         #    $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
         #}
         # we need a way to find those parameters which have default values
-        # because they need to be added to the command arguments. We can 
+        # because they need to be added to the command arguments. We can
         # search through the parameters for this attribute.
         # We may need to handle collections as well.
         if ( $null -ne $this.DefaultValue ) {
@@ -262,7 +262,7 @@ class Command {
 
     [string]GetFunctionHandlers()
     {
-        # 
+        #
         $functionSB = [System.Text.StringBuilder]::new()
         if ( $this.OutputHandlers ) {
             foreach ($handler in $this.OutputHandlers ) {
@@ -448,7 +448,7 @@ class Command {
         $sb.AppendLine('            }')
         $sb.AppendLine('            elseif ( $param.NoGap ) {')
         $sb.AppendLine('                $pFmt = "{0}{1}"')
-        $sb.AppendLine('                if($value -match "\s") { $pFmt = "{0}""{1}""" }') 
+        $sb.AppendLine('                if($value -match "\s") { $pFmt = "{0}""{1}""" }')
         $sb.AppendLine('                $__commandArgs += $pFmt -f $param.OriginalName, $value')
         $sb.AppendLine('            }')
         $sb.AppendLine('            else {')
@@ -702,7 +702,7 @@ Export-CrescendoModule
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
     Get-Content $file |
-        ConvertFrom-Json -depth 10| 
+        ConvertFrom-Json -depth 10|
         Foreach-Object {$_.Commands} |
         ForEach-Object { $_ | ConvertTo-Json -depth 10 |
             Foreach-Object {
@@ -718,7 +718,7 @@ Export-CrescendoModule
         }
 }
 
-function Test-Configuration 
+function Test-Configuration
 {
     param ([Command]$Configuration, [ref]$errors)
 
