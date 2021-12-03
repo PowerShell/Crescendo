@@ -8,6 +8,7 @@ $SrcRoot = "${ModRoot}/src"
 $HelpRoot = "${ModRoot}/help/${Lang}"
 $TestRoot = "${ModRoot}/test"
 $SampleRoot = "${ModRoot}/Samples"
+$SchemaRoot = "${ModRoot}/Schemas"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
 $ExpRoot = "${SrcRoot}/Experimental/HelpParsers"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
@@ -49,7 +50,7 @@ $FileManifest = @(
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Format.ps1xml"              ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "Microsoft.PowerShell.Crescendo.Schema.json" ; SIGN = $false ; DEST = "OUTDIR" }
+    @{ SRC = "${SchemaRoot}"; NAME = "2021-11"                            ; SIGN = $false ; DEST = "OUTDIR/Schemas" }
 )
 
 if ($build) {

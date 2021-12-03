@@ -212,7 +212,7 @@ $commands = parseHelp -exe $exe -commandProlog @() | ForEach-Object { $_.GetCres
 # wait-debugger
 
 $h = [ordered]@{
-    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
+    '$schema' = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11'
     'Commands' = $commands
 }
 

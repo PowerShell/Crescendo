@@ -176,7 +176,7 @@ $commands.Where({$_.OriginalCommandElements.Count -ne 0}).ForEach({
 
 # we can create the complete configuration file this way
 $h = [ordered]@{
-    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
+    '$schema' = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11'
     'Commands' = $commands
 }
 
