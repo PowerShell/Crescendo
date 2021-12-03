@@ -140,7 +140,7 @@ function parseHelp([string]$exe, [string[]]$commandProlog) {
 $commands = parseHelp -exe $exe -commandProlog @() | ForEach-Object { $_.GetCrescendoCommand()}
 
 $h = [ordered]@{
-    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
+    '$schema' = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11'
     'Commands' = $commands
 }
 

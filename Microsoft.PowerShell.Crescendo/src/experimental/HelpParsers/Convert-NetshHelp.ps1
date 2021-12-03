@@ -283,7 +283,7 @@ $trimmedCommands = $commands.Where({$_.Usage -or ($_.commandElements -contains "
 $convertedCommands = $trimmedCommands | ForEach-Object { $_.GetCrescendoCommand()}
 
 $h = [ordered]@{
-    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
+    '$schema' = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11'
     'Commands' = $convertedCommands
 }
 

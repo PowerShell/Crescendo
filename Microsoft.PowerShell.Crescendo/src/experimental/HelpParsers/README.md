@@ -219,7 +219,7 @@ The only thing we need to do is to create an object which has the appearance of 
 
 ```powershell
 $h = [ordered]@{
-    '$schema' = 'https://aka.ms/Crescendo/Schema.json'
+    '$schema' = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11'
     'Commands' = $commands
 }
 ```
