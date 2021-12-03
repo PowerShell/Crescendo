@@ -13,4 +13,9 @@ Describe "Packaging tests" {
         param ([string]$FullName, [object]$JSON )
         $JSON.'$schema' | Should -Be $SchemaUrl
     }
+
+    It "'$SchemaUrl' is active" {
+        $schema = Invoke-RestMethod $SchemaUrl
+        $schema.title | Should -Be "JSON schema for PowerShell Crescendo files"
+    }
 }
