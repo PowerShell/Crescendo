@@ -1,4 +1,4 @@
-# NativveCommandProxy still has presence here as that's what it's called in the release build
+# NativeCommandProxy still has presence here as that's what it's called in the release build
 name: Crescendo-Release-$(Build.BuildId)
 trigger: none
 
