@@ -81,7 +81,7 @@ stages:
 
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/Crescendo"
-        ./build -package -signed
+        ./build -package -CopySBOM -signed
         Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
       displayName: package build
 

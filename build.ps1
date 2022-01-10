@@ -1,5 +1,13 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
-param ([switch]$test, [switch]$build, [switch]$publish, [switch]$signed, [switch]$package, [switch]$coverage)
+param (
+    [switch]$test,
+    [switch]$build,
+    [switch]$publish,
+    [switch]$signed,
+    [switch]$package,
+    [switch]$coverage,
+    [switch]$CopySBOM
+    )
 
 $Name = "Microsoft.PowerShell.Crescendo"
 $Lang = "en-US"
@@ -16,6 +24,7 @@ $Version = $ManifestData.ModuleVersion
 $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
+$SignVersion = "$SignRoot/$Version"
 $PubDir   = "${PubRoot}/${Version}"
 $PubHelp  = "${PubDir}/${Lang}"
 
@@ -114,7 +123,12 @@ if ($publish) {
     $null = New-ExternalHelp -Output ${PubHelp} -Path "${HelpRoot}/about_Crescendo.md"
 }
 
+# this copies the manifest before creating the module nupkg
+# if -CopySBOM is used.
 if ($package) {
+    if($CopySBOM) {
+        Copy-Item -Recurse -Path "signed/_manifest" -Destination $SignVersion
+    }
     Export-Module
 }
 
