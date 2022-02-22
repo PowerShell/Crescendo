@@ -18,7 +18,7 @@
         },
         "OriginalName": {
           "type": "string",
-          "description": "The original parameter name used by the negative command."
+          "description": "The original parameter name used by the native command."
         },
         "OriginalText": {
           "type": "string",
