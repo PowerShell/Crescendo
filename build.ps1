@@ -10,10 +10,8 @@ param (
     )
 
 $Name = "Microsoft.PowerShell.Crescendo"
-$Lang = "en-US"
 $ModRoot = "${PSScriptRoot}/${Name}"
 $SrcRoot = "${ModRoot}/src"
-$HelpRoot = "${ModRoot}/help/${Lang}"
 $TestRoot = "${ModRoot}/test"
 $SampleRoot = "${ModRoot}/Samples"
 $SchemaRoot = "${ModRoot}/Schemas"
@@ -26,7 +24,6 @@ $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $SignVersion = "$SignRoot/$Version"
 $PubDir   = "${PubRoot}/${Version}"
-$PubHelp  = "${PubDir}/${Lang}"
 
 if (-not $test -and -not $build -and -not $publish -and -not $package) {
     throw "must use 'build', 'test', 'publish', 'package'"
@@ -119,8 +116,6 @@ if ($publish) {
 
 
     }
-    # Create about topic file
-    $null = New-ExternalHelp -Output ${PubHelp} -Path "${HelpRoot}/about_Crescendo.md"
 }
 
 # this copies the manifest before creating the module nupkg
