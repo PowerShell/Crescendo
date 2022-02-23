@@ -645,59 +645,6 @@ function Import-CommandConfiguration
 {
 [CmdletBinding()]
 param ([Parameter(Position=0,Mandatory=$true)][string]$file)
-<#
-.SYNOPSIS
-
-Import a PowerShell Crescendo json file.
-
-.DESCRIPTION
-
-This cmdlet exports an object that can be converted into a function that acts as a proxy for the platform specific command.
-The resultant object may then be used to call a native command that can participate in the PowerShell pipeline.
-The ToString method of the output object returns a string that can be used to create a function that calls the native command.
-Microsoft Windows, Linux, and macOS can run the generated function, if the native command is on all of the platform.
-
-.PARAMETER File
-
-The json file which represents the command to be wrapped.
-
-.EXAMPLE
-
-PS> Import-CommandConfiguration ifconfig.crescendo.json
-
-Verb                    : Invoke
-Noun                    : ifconfig
-OriginalName            : ifconfig
-OriginalCommandElements :
-Aliases                 :
-DefaultParameterSetName :
-SupportsShouldProcess   : False
-SupportsTransactions    : False
-NoInvocation            : False
-Description             : This is a description of the generated function
-Usage                   : .SYNOPSIS
-                          Run invoke-ifconfig
-Parameters              : {[Parameter()]
-                          [string]$Interface = ""}
-Examples                :
-OriginalText            :
-HelpLinks               :
-OutputHandlers          :
-
-.NOTES
-
-The object returned by Import-CommandConfiguration is converted through the ToString method.
-Generally, you should use the Export-CrescendoModule function, which creates a PowerShell .psm1 file.
-
-.OUTPUTS
-
-A Command object
-
-.LINK
-
-Export-CrescendoModule
-
-#>
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
@@ -768,56 +715,6 @@ function Export-Schema() {
 
 function Export-CrescendoModule
 {
-<#
-.SYNOPSIS
-
-Creates a module from PowerShell Crescendo JSON configuration files
-
-.DESCRIPTION
-
-This cmdlet exports an object that can be converted into a function that acts as a proxy for a platform specific command.
-The resultant module file should be executable down to version 5.1 of PowerShell.
-
-
-.PARAMETER ConfigurationFile
-
-This is a list of JSON files that represent the proxies for the module
-
-.PARAMETER ModuleName
-
-The name of the module file you wish to create.
-You can omit the trailing .psm1.
-
-.PARAMETER Force
-
-By default, if Export-CrescendoModule finds an already created module, it will not overwrite the existing file.
-Use -Force to overwrite the existing file, or remove it prior to running Export-CrescendoModule.
-
-.EXAMPLE
-
-PS> Export-CrescendoModule -ModuleName netsh -ConfigurationFile netsh*.json
-PS> Import-Module ./netsh.psm1
-
-.EXAMPLE
-
-PS> Export-CrescendoModule netsh netsh*.json -force
-
-.NOTES
-
-Internally, this function calls the Import-CommandConfiguration cmdlet that returns a command object.
-All files provided in the -ConfigurationFile parameter are then used to create each individual function.
-Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultant module is
-imported, the module has all the command proxies available.
-
-.OUTPUTS
-
-None
-
-.LINK
-
-Import-CommandConfiguration
-
-#>
     [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
