@@ -24,6 +24,8 @@ $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $SignVersion = "$SignRoot/$Version"
 $PubDir   = "${PubRoot}/${Version}"
+$Lang = "en-US"
+$HelpDir = "${ModRoot}/help/${Lang}"
 
 if (-not $test -and -not $build -and -not $publish -and -not $package) {
     throw "must use 'build', 'test', 'publish', 'package'"
@@ -51,6 +53,10 @@ $FileManifest = @(
     @{ SRC = "${ExpRoot}";    NAME = "README.md"                          ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
     @{ SRC = "${ExpRoot}";    NAME = "HelpConversion002.gif"              ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
     @{ SRC = "${ExpRoot}";    NAME = "HelpConversion002.mp4"              ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+
+    # publish the help files for the present
+    @{ SRC = "${HelpDir}";    NAME = "about_Crescendo.help.txt"           ; SIGN = $false ; DEST = "OUTDIR/${Lang}" }
+    @{ SRC = "${HelpDir}";    NAME = "${Name}-help.xml"                   ; SIGN = $false ; DEST = "OUTDIR/${Lang}" }
 
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Types.ps1xml"               ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Format.ps1xml"              ; SIGN = $true  ; DEST = "OUTDIR" }
