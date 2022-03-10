@@ -57,8 +57,10 @@ issues you find.
 
 ## Release history
 
-- 12/20 - [Crescendo.Preview.1](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-1/)
-- 5/21 - [Crescendo.Preview.2](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-2/)
-- 7/21 - [Crescendo.Preview.3](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-3/)
-- 10/21 - [Crescendo.Preview.4](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-4/)
-- 12/21 - [Crescendo.RC](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-release-candidate-rc/)
+Release announcements on the [PowerShell Blog](https://devblogs.microsoft.com/powershell/tag/powershell-crescendo/).
+
+- 12/20 - Crescendo.Preview.1
+- 05/21 - Crescendo.Preview.2
+- 07/21 - Crescendo.Preview.3
+- 10/21 - Crescendo.Preview.4
+- 12/21 - Crescendo.RC
