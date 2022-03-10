@@ -1,21 +1,29 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
-param ([switch]$test, [switch]$build, [switch]$publish, [switch]$signed, [switch]$package)
+param (
+    [switch]$test,
+    [switch]$build,
+    [switch]$publish,
+    [switch]$signed,
+    [switch]$package,
+    [switch]$coverage,
+    [switch]$CopySBOM
+    )
 
 $Name = "Microsoft.PowerShell.Crescendo"
-$Lang = "en-US"
 $ModRoot = "${PSScriptRoot}/${Name}"
 $SrcRoot = "${ModRoot}/src"
-$HelpRoot = "${ModRoot}/help/${Lang}"
 $TestRoot = "${ModRoot}/test"
 $SampleRoot = "${ModRoot}/Samples"
+$SchemaRoot = "${ModRoot}/Schemas"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
+$ExpRoot = "${SrcRoot}/Experimental/HelpParsers"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
 $Version = $ManifestData.ModuleVersion
 $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
+$SignVersion = "$SignRoot/$Version"
 $PubDir   = "${PubRoot}/${Version}"
-$PubHelp  = "${PubDir}/${Lang}"
 
 if (-not $test -and -not $build -and -not $publish -and -not $package) {
     throw "must use 'build', 'test', 'publish', 'package'"
@@ -34,11 +42,21 @@ $FileManifest = @(
     @{ SRC = "${SampleRoot}"; NAME = "ls.Crescendo.json"                  ; SIGN = $false ; DEST = "OUTDIR/Samples" }
     @{ SRC = "${SampleRoot}"; NAME = "tar.Crescendo.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
     @{ SRC = "${SampleRoot}"; NAME = "who.Crescendo.json"                 ; SIGN = $false ; DEST = "OUTDIR/Samples" }
+
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-DockerHelp.ps1"             ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-KubectlHelp.ps1"            ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-NetshHelp.ps1"              ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-OpenFaasHelp.ps1"           ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "Convert-WingetHelp.ps1"             ; SIGN = $true  ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "README.md"                          ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "HelpConversion002.gif"              ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+    @{ SRC = "${ExpRoot}";    NAME = "HelpConversion002.mp4"              ; SIGN = $false ; DEST = "OUTDIR/Experimental/HelpParsers" }
+
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Types.ps1xml"               ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.Format.ps1xml"              ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
-    @{ SRC = "${SrcRoot}";    NAME = "Microsoft.PowerShell.Crescendo.Schema.json" ; SIGN = $false ; DEST = "OUTDIR" }
+    @{ SRC = "${SchemaRoot}"; NAME = "2021-11"                            ; SIGN = $false ; DEST = "OUTDIR/Schemas" }
 )
 
 if ($build) {
@@ -98,11 +116,14 @@ if ($publish) {
 
 
     }
-    # Create about topic file
-    $null = New-ExternalHelp -Output ${PubHelp} -Path "${HelpRoot}/about_Crescendo.md"
 }
 
+# this copies the manifest before creating the module nupkg
+# if -CopySBOM is used.
 if ($package) {
+    if($CopySBOM) {
+        Copy-Item -Recurse -Path "signed/_manifest" -Destination $SignVersion
+    }
     Export-Module
 }
 
@@ -116,7 +137,12 @@ if ($test) {
     Import-Module -force "${PubRoot}"
     Push-Location "${TestRoot}"
     try {
-        $result = Invoke-Pester -PassThru
+        $pesterArgs = @{ PassThru = $true }
+        if ( $coverage ) {
+            $pesterArgs['CodeCoverageOutputFile'] = "${PSScriptRoot}/CoverageOutput.xml"
+            $pesterArgs['CodeCoverage'] = "${PSScriptRoot}/out/Microsoft.PowerShell.Crescendo/0.7.0/Microsoft.PowerShell.Crescendo.psm1"
+        }
+        $result = Invoke-Pester @pesterArgs
         if (0 -ne $result.FailedCount) {
             $result.testresult.Where({$_.result -eq "Failed"}).Foreach({Write-Error $_.Name})
             throw ("{0} failed tests" -f $result.FailedCount)

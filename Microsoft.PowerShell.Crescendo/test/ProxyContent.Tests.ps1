@@ -84,8 +84,8 @@ Describe "The help content for the proxy function is correct" -tags CI {
         }
 
         It "the proxy should produce the same results as the native app" {
-            $expected = Get-Content -read 0 TESTDRIVE:/output/nativeoutput.txt
-            $observed = Get-Content -read 0 TESTDRIVE:/output/proxyoutput.txt
+            $expected = Get-Content TESTDRIVE:/output/nativeoutput.txt
+            $observed = Get-Content TESTDRIVE:/output/proxyoutput.txt
             $expected | Should -Be $observed
         }
     }

@@ -1,0 +1,12 @@
+    $__PARAMETERMAP = @{
+         P1 = @{
+               OriginalName = '-p1'
+               OriginalPosition = '0'
+               Position = '2147483647'
+               ParameterType = 'object'
+               ApplyToExecutable = $False
+               NoGap = $False
+               DefaultMissingValue = 'Default missing value'
+               }
+    }
+

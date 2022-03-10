@@ -1,0 +1,33 @@
+{
+	"$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2021-11",
+	"Commands": [
+		{
+			"Verb": "Invoke",
+			"Noun": "Echo",
+			"OriginalName": "Echo",
+			"Parameters": [
+				{
+					"Name": "Parameter1",
+					"OriginalName": "--par1",
+					"DefaultValue": "defval1",
+					"ParameterType": "string",
+					"OriginalPosition": 0
+				},
+				{
+					"Name": "Parameter2",
+					"OriginalName": "--par2",
+					"DefaultValue": "defval2",
+					"ParameterType": "string",
+					"OriginalPosition": 1
+				},
+				{
+					"Name": "Parameter3",
+					"OriginalName": "--par3",
+					"ParameterType": "string",
+					"OriginalPosition": 2
+				}
+			]
+		}
+	]
+
+}

@@ -45,4 +45,39 @@ Describe "Unit tests for Microsoft.PowerShell.Crescendo" -tags CI {
             $s | Should -Be $expectedResult
         }
     }
+
+    Context "Schema tests" {
+        BeforeAll {
+            $crescendoSchema = Export-Schema
+        }
+        It "Export-Schema emits a proper schema" {
+            $crescendoSchema | Should -BeOfType "Newtonsoft.Json.Schema.JsonSchema"            
+        }
+
+        It "Schema contains the '<Name>' property with proper type" -TestCases @(
+            @{ Name = 'Verb';                     ExpectedType = 'String, Null'  }
+            @{ Name = 'Noun';                     ExpectedType = 'String, Null'  }
+            @{ Name = 'OriginalName';             ExpectedType = 'String, Null'  }
+            @{ Name = 'OriginalCommandElements';  ExpectedType = 'Array, Null'   }
+            @{ Name = 'Platform';                 ExpectedType = 'Array, Null'   }
+            @{ Name = 'Elevation';                ExpectedType = 'Object, Null'  }
+            @{ Name = 'Aliases';                  ExpectedType = 'Array, Null'   }
+            @{ Name = 'DefaultParameterSetName';  ExpectedType = 'String, Null'  }
+            @{ Name = 'SupportsShouldProcess';    ExpectedType = 'Boolean' }
+            @{ Name = 'ConfirmImpact';            ExpectedType = 'String, Null'  }
+            @{ Name = 'SupportsTransactions';     ExpectedType = 'Boolean' }
+            @{ Name = 'NoInvocation';             ExpectedType = 'Boolean' }
+            @{ Name = 'Description';              ExpectedType = 'String, Null'  }
+            @{ Name = 'Usage';                    ExpectedType = 'Object, Null'  }
+            @{ Name = 'Parameters';               ExpectedType = 'Array, Null'   }
+            @{ Name = 'Examples';                 ExpectedType = 'Array, Null'   }
+            @{ Name = 'OriginalText';             ExpectedType = 'String, Null'  }
+            @{ Name = 'HelpLinks';                ExpectedType = 'Array, Null'   }
+            @{ Name = 'OutputHandlers';           ExpectedType = 'Array, Null'   }
+        ) {
+            param ( $Name, $ExpectedType )
+            $observedType = $crescendoSchema.Properties[$Name].Type
+            $observedType | Should -Be $ExpectedType
+        }
+    }
 }

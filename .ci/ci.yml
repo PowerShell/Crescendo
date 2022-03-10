@@ -91,7 +91,7 @@ stages:
     parameters:
       jobName: TestPkgWinMacOS
       displayName: PowerShell Core on macOS
-      imageName: macOS-10.14
+      imageName: macOS-latest
 
 - stage: Release
   displayName: Release Package

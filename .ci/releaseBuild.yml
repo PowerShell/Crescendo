@@ -1,4 +1,4 @@
-# NativveCommandProxy still has presence here as that's what it's called in the release build
+# NativeCommandProxy still has presence here as that's what it's called in the release build
 name: Crescendo-Release-$(Build.BuildId)
 trigger: none
 
@@ -21,6 +21,8 @@ stages:
   displayName: Build
   pool:
     name: PowerShell1ES # Package ES CodeHub Lab E
+    demands:
+      - ImageOverride -equals PSMMS2019-Secure
   jobs:
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.Crescendo
@@ -74,9 +76,14 @@ stages:
         # the file pattern to use, comma separated
         pattern: '*.psm1,*.psd1,*.ps1xml,*.ps1'
 
+    - template: Sbom.yml@ComplianceRepo
+      parameters:
+        BuildDropPath: $(signOutPath)
+        Build_Repository_Uri: 'https://github.com/powershell/crescendo'
+
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/Crescendo"
-        ./build -package -signed
+        ./build -package -CopySBOM -signed
         Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
       displayName: package build
 

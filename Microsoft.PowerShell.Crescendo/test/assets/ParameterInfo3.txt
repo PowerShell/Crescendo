@@ -1,0 +1,6 @@
+[ValidateRange(1,10)]
+[ValidateNotNullOrEmpty()]
+[Alias('alias1','alias2')]
+[Parameter(Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true,Mandatory=$true,ValueFromRemainingArguments=$true)]
+[PSDefaultValue(Value="defaultValue")]
+[int]$Param1 = "defaultValue"

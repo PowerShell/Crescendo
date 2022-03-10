@@ -43,7 +43,9 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
         $sb.AppendLine("PS> " + $this.Command)
         $sb.AppendLine("")
         $sb.AppendLine($this.Description)
-        $sb.AppendLine("Original Command: " + $this.OriginalCommand)
+        if ($this.OriginalCommand) {
+            $sb.AppendLine("Original Command: " + $this.OriginalCommand)
+        }
         return $sb.ToString()
     }
 }
@@ -111,7 +113,6 @@ class ParameterInfo {
             if ( $this.Position -ne [int]::MaxValue ) { $elements += "Position=" + $this.Position }
             if ( $this.ValueFromPipeline ) { $elements += 'ValueFromPipeline=$true' }
             if ( $this.ValueFromPipelineByPropertyName ) { $elements += 'ValueFromPipelineByPropertyName=$true' }
-            if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
             if ( $this.Mandatory ) { $elements += 'Mandatory=$true' }
             if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
             if ($elements.Count -gt 0) { $sb.Append(($elements -join ",")) }
@@ -125,7 +126,6 @@ class ParameterInfo {
                 if ( $this.ValueFromPipelineByPropertyName ) { $elements += 'ValueFromPipelineByPropertyName=$true' }
                 if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
                 if ( $this.Mandatory ) { $elements += 'Mandatory=$true' }
-                if ( $this.ValueFromRemainingArguments ) { $elements += 'ValueFromRemainingArguments=$true' }
                 $elements += "ParameterSetName='{0}'" -f $parameterSetName
                 if ($elements.Count -gt 0) { $sb.Append(($elements -join ",")) }
                 $sb.AppendLine(')]')
@@ -136,6 +136,13 @@ class ParameterInfo {
         #if ( $this.ParameterSetName.Count -gt 1) {
         #    $this.ParameterSetName.ForEach({$sb.AppendLine(('[Parameter(ParameterSetName="{0}")]' -f $_))})
         #}
+        # we need a way to find those parameters which have default values
+        # because they need to be added to the command arguments. We can
+        # search through the parameters for this attribute.
+        # We may need to handle collections as well.
+        if ( $null -ne $this.DefaultValue ) {
+                $sb.AppendLine(('[PSDefaultValue(Value="{0}")]' -f $this.DefaultValue))
+        }
         $sb.Append(('[{0}]${1}' -f $this.ParameterType, $this.Name))
         if ( $this.DefaultValue ) {
             $sb.Append(' = "' + $this.DefaultValue + '"')
@@ -255,7 +262,7 @@ class Command {
 
     [string]GetFunctionHandlers()
     {
-        # 
+        #
         $functionSB = [System.Text.StringBuilder]::new()
         if ( $this.OutputHandlers ) {
             foreach ($handler in $this.OutputHandlers ) {
@@ -308,14 +315,17 @@ class Command {
         # otherwise we won't actually be invoking anything
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine("PROCESS {")
-        $sb.AppendLine('    $__boundparms = $PSBoundParameters # debugging assistance')
+        $sb.AppendLine('    $__boundParameters = $PSBoundParameters')
+        # now add those parameters which have default values excluding the ubiquitous parameters
+        $sb.AppendLine('    $__defaultValueParameters = $PSCmdlet.MyInvocation.MyCommand.Parameters.Values.Where({$_.Attributes.Where({$_.TypeId.Name -eq "PSDefaultValueAttribute"})}).Name')
+        $sb.AppendLine('    $__defaultValueParameters.Where({ !$__boundParameters["$_"] }).ForEach({$__boundParameters["$_"] = get-variable -value $_})')
         $sb.AppendLine('    $__commandArgs = @()')
-        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $PSBoundParameters[$_.Name]}).ForEach({$PSBoundParameters[$_.Name] = [switch]::new($false)})')
-        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $__boundParameters[$_.Name]}).ForEach({$__boundParameters[$_.Name] = [switch]::new($false)})')
+        $sb.AppendLine('    if ($__boundParameters["Debug"]){wait-debugger}')
         if ($this.Parameters.Where({$_.ApplyToExecutable})) {
             $sb.AppendLine('    # look for those parameter values which apply to the executable and must be before the original command elements')
-            $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|Where-Object {$__PARAMETERMAP[$_].ApplyToExecutable}) {') # take those parameters which apply to the executable
-            $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
+            $sb.AppendLine('    foreach ($paramName in $__boundParameters.Keys|Where-Object {$__PARAMETERMAP[$_].ApplyToExecutable}) {') # take those parameters which apply to the executable
+            $sb.AppendLine('        $value = $__boundParameters[$paramName]')
             $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
             $sb.AppendLine('        if ($param) {')
             $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }')
@@ -424,25 +434,36 @@ class Command {
     # this is where the logic of actually calling the command is created
     [string]GetInvocationCommand() {
         $sb = [System.Text.StringBuilder]::new()
-        $sb.AppendLine('    foreach ($paramName in $PSBoundParameters.Keys|')
-        $sb.AppendLine('        Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|') # skip those parameters which apply to the executable
-        $sb.AppendLine('        Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
-        $sb.AppendLine('        $value = $PSBoundParameters[$paramName]')
+        $sb.AppendLine('    foreach ($paramName in $__boundParameters.Keys|')
+        $sb.AppendLine('            Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|') # skip those parameters which apply to the executable
+        $sb.AppendLine('            Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
+        $sb.AppendLine('        $value = $__boundParameters[$paramName]')
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
         $sb.AppendLine('        if ($param) {')
-        $sb.AppendLine('            if ( $value -is [switch] ) { $__commandArgs += if ( $value.IsPresent ) { $param.OriginalName } else { $param.DefaultMissingValue } }')
-        # $sb.AppendLine('            elseif ( $param.Position -ne [int]::MaxValue ) { $__commandArgs += $value }')
-        $sb.AppendLine('            elseif ( $param.NoGap ) { $__commandArgs += "{0}""{1}""" -f $param.OriginalName, $value }')
-        $sb.AppendLine('            else { $__commandArgs += $param.OriginalName; $__commandArgs += $value |Foreach-Object {$_}}')
+        $sb.AppendLine('            if ($value -is [switch]) {')
+        $sb.AppendLine('                 if ($value.IsPresent) {')
+        $sb.AppendLine('                     if ($param.OriginalName) { $__commandArgs += $param.OriginalName }')
+        $sb.AppendLine('                 }')
+        $sb.AppendLine('                 elseif ($param.DefaultMissingValue) { $__commandArgs += $param.DefaultMissingValue }')
+        $sb.AppendLine('            }')
+        $sb.AppendLine('            elseif ( $param.NoGap ) {')
+        $sb.AppendLine('                $pFmt = "{0}{1}"')
+        $sb.AppendLine('                if($value -match "\s") { $pFmt = "{0}""{1}""" }')
+        $sb.AppendLine('                $__commandArgs += $pFmt -f $param.OriginalName, $value')
+        $sb.AppendLine('            }')
+        $sb.AppendLine('            else {')
+        $sb.AppendLine('                if($param.OriginalName) { $__commandArgs += $param.OriginalName }')
+        $sb.AppendLine('                $__commandArgs += $value | Foreach-Object {$_}')
+        $sb.AppendLine('            }')
         $sb.AppendLine('        }')
         $sb.AppendLine('    }')
-        $sb.AppendLine('    $__commandArgs = $__commandArgs|Where-Object {$_}') # strip nulls
+        $sb.AppendLine('    $__commandArgs = $__commandArgs | Where-Object {$_ -ne $null}') # strip only nulls
         if ( $this.NoInvocation ) {
         $sb.AppendLine('    return $__commandArgs')
         }
         else {
-        $sb.AppendLine('    if ($PSBoundParameters["Debug"]){wait-debugger}')
-        $sb.AppendLine('    if ( $PSBoundParameters["Verbose"]) {')
+        $sb.AppendLine('    if ($__boundParameters["Debug"]){wait-debugger}')
+        $sb.AppendLine('    if ( $__boundParameters["Verbose"]) {')
         $sb.AppendLine('         Write-Verbose -Verbose -Message ' + $this.OriginalName)
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
@@ -452,6 +473,10 @@ class Command {
         $sb.AppendLine('    }')
         $sb.AppendLine('    $__handler = $__handlerInfo.Handler')
         $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + ' $__commandArgs")) {')
+        $sb.AppendLine('    # check for the application and throw if it cannot be found')
+        $sb.AppendLine('        if ( -not (Get-Command -ErrorAction Ignore "' + $this.OriginalName + '")) {')
+        $sb.AppendLine('          throw "Cannot find executable ''' + $this.OriginalName + '''"')
+        $sb.AppendLine('        }')
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
@@ -570,8 +595,8 @@ function New-ExampleInfo {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$command,
-        [Parameter(Position=1,Mandatory=$true)][string]$originalCommand,
-        [Parameter(Position=2,Mandatory=$true)][string]$description
+        [Parameter(Position=1,Mandatory=$true)][string]$description,
+        [Parameter(Position=2)][string]$originalCommand = ""
         )
     [ExampleInfo]::new($command, $originalCommand, $description)
 }
@@ -620,64 +645,11 @@ function Import-CommandConfiguration
 {
 [CmdletBinding()]
 param ([Parameter(Position=0,Mandatory=$true)][string]$file)
-<#
-.SYNOPSIS
-
-Import a PowerShell Crescendo json file.
-
-.DESCRIPTION
-
-This cmdlet exports an object that can be converted into a function that acts as a proxy for the platform specific command.
-The resultant object may then be used to call a native command that can participate in the PowerShell pipeline.
-The ToString method of the output object returns a string that can be used to create a function that calls the native command.
-Microsoft Windows, Linux, and macOS can run the generated function, if the native command is on all of the platform.
-
-.PARAMETER File
-
-The json file which represents the command to be wrapped.
-
-.EXAMPLE
-
-PS> Import-CommandConfiguration ifconfig.crescendo.json
-
-Verb                    : Invoke
-Noun                    : ifconfig
-OriginalName            : ifconfig
-OriginalCommandElements :
-Aliases                 :
-DefaultParameterSetName :
-SupportsShouldProcess   : False
-SupportsTransactions    : False
-NoInvocation            : False
-Description             : This is a description of the generated function
-Usage                   : .SYNOPSIS
-                          Run invoke-ifconfig
-Parameters              : {[Parameter()]
-                          [string]$Interface = ""}
-Examples                :
-OriginalText            :
-HelpLinks               :
-OutputHandlers          :
-
-.NOTES
-
-The object returned by Import-CommandConfiguration is converted through the ToString method.
-Generally, you should use the Export-CrescendoModule function, which creates a PowerShell .psm1 file.
-
-.OUTPUTS
-
-A Command object
-
-.LINK
-
-Export-CrescendoModule
-
-#>
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
     Get-Content $file |
-        ConvertFrom-Json -depth 10| 
+        ConvertFrom-Json -depth 10|
         Foreach-Object {$_.Commands} |
         ForEach-Object { $_ | ConvertTo-Json -depth 10 |
             Foreach-Object {
@@ -693,7 +665,7 @@ Export-CrescendoModule
         }
 }
 
-function Test-Configuration 
+function Test-Configuration
 {
     param ([Command]$Configuration, [ref]$errors)
 
@@ -743,56 +715,6 @@ function Export-Schema() {
 
 function Export-CrescendoModule
 {
-<#
-.SYNOPSIS
-
-Creates a module from PowerShell Crescendo JSON configuration files
-
-.DESCRIPTION
-
-This cmdlet exports an object that can be converted into a function that acts as a proxy for a platform specific command.
-The resultant module file should be executable down to version 5.1 of PowerShell.
-
-
-.PARAMETER ConfigurationFile
-
-This is a list of JSON files that represent the proxies for the module
-
-.PARAMETER ModuleName
-
-The name of the module file you wish to create.
-You can omit the trailing .psm1.
-
-.PARAMETER Force
-
-By default, if Export-CrescendoModule finds an already created module, it will not overwrite the existing file.
-Use -Force to overwrite the existing file, or remove it prior to running Export-CrescendoModule.
-
-.EXAMPLE
-
-PS> Export-CrescendoModule -ModuleName netsh -ConfigurationFile netsh*.json
-PS> Import-Module ./netsh.psm1
-
-.EXAMPLE
-
-PS> Export-CrescendoModule netsh netsh*.json -force
-
-.NOTES
-
-Internally, this function calls the Import-CommandConfiguration cmdlet that returns a command object.
-All files provided in the -ConfigurationFile parameter are then used to create each individual function.
-Finally, all proxies are used to create an Export-ModuleMember command invocation, so when the resultant module is
-imported, the module has all the command proxies available.
-
-.OUTPUTS
-
-None
-
-.LINK
-
-Import-CommandConfiguration
-
-#>
     [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
@@ -861,7 +783,9 @@ Import-CommandConfiguration
 
         # include the windows helper if it has been included
         if ($IncludeWindowsElevationHelper) {
-            (Get-Content function:Invoke-WindowsNativeAppWithElevation).Ast.Extent.Text >> $ModuleName
+            "function Invoke-WindowsNativeAppWithElevation {" >> $ModuleName
+            $InvokeWindowsNativeAppWithElevationFunction >> $ModuleName
+            "}" >> $ModuleName
         }
 
         $ModuleManifestArguments = @{
@@ -884,10 +808,6 @@ Import-CommandConfiguration
 
         New-ModuleManifest @ModuleManifestArguments
 
-        #"Export-ModuleMember -Function $($cmdletNames -join ', ')" >> $ModuleName
-        #if ( $aliases.Count -gt 0 ) {
-        #    "Export-ModuleMember -Alias $($aliases -join ', ')" >> $ModuleName
-        #}
         # copy the script output handlers into place
         foreach($config in $crescendoCollection) {
             foreach($handler in $config.OutputHandlers) {
@@ -897,7 +817,13 @@ Import-CommandConfiguration
                         Copy-Item $scriptInfo.Source $moduleBase
                     }
                     else {
-                        Write-Error -Category ObjectNotFound -TargetObject $scriptInfo.Source -Message "Handler not found." -RecommendedAction "Copy the handler to the module directory before packaging."
+                        $errArgs = @{
+                            Category = "ObjectNotFound"
+                            TargetObject = $scriptInfo.Source
+                            Message = "Handler '" + $scriptInfo.Source + "' not found."
+                            RecommendedAction = "Copy the handler to the module directory before packaging."
+                        }
+                        Write-Error @errArgs
                     }
                 }
             }
@@ -906,8 +832,7 @@ Import-CommandConfiguration
 }
 
 # This is an elevation function for Windows which may be distributed with a crescendo module
-function Invoke-WindowsNativeAppWithElevation
-{
+$InvokeWindowsNativeAppWithElevationFunction = @'
     [CmdletBinding(DefaultParameterSetName="username")]
     param (
         [Parameter(Position=0,Mandatory=$true)][string]$command,
@@ -991,7 +916,7 @@ function Invoke-WindowsNativeAppWithElevation
     }
     # return the output to the caller
     $output
-}
+'@
 
 class CrescendoCommandInfo {
     [string]$Module

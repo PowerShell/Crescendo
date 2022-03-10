@@ -21,14 +21,32 @@ be used by the native command. You can add attributes to the parameters
 to have the proxies take advantage of the PowerShell pipeline and value
 validation.
 
+## Progress and releases
+
 To learn the latest about our progress and releases:
 - [Crescendo.Preview.1](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-1/)
 - [Crescendo.Preview.2](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-2/)
 - [Crescendo.Preview.3](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-3/)
+- [Crescendo.Preview.4](https://devblogs.microsoft.com/powershell/announcing-powershell-crescendo-preview-4/)
 
 You can learn more about our approach from the blog discussion:
 [Part 1](https://devblogs.microsoft.com/powershell/native-commands-in-powershell-a-new-approach/)
 and
 [Part 2](https://devblogs.microsoft.com/powershell/native-commands-in-powershell-a-new-approach-part-2)
 
-We're not taking PRs at the moment.
+## How to use Crescendo
+
+For more information using **Microsoft.PowerShell.Crescendo**, check out this excellent blog series
+by Sean Wheeler posted to the
+[PowerShell Community](https://devblogs.microsoft.com/powershell-community/).
+
+* [My Crescendo journey](https://devblogs.microsoft.com/powershell-community/my-crescendo-journey/)
+* [Converting string output to objects](https://devblogs.microsoft.com/powershell-community/converting-string-output-to-objects/)
+* [A closer look at the parsing code of a Crescendo output handler](https://devblogs.microsoft.com/powershell-community/a-closer-look-at-the-parsing-code-of-a-crescendo-output-handler/)
+* [A closer look at the Crescendo configuration](https://devblogs.microsoft.com/powershell-community/a-closer-look-at-the-crescendo-configuration/)
+
+## Community guidance
+
+We are approaching our general release (GA) of **PowerShell Crescendo 1.0**. We look forward to
+community feedback and suggestions. Please file issues for erroneous behavior or suggested features.
+As we stabilize for GA, we will not be taking feature PRs.
