@@ -48,10 +48,7 @@ To get started using Crescendo, check out the
 For a detailed walkthrough using Crescendo, see this excellent blog series from Sean Wheeler -
 Thanks Sean!
 
-- [PowerShell Community](https://devblogs.microsoft.com/powershell-community/).
-- [My Crescendo journey](https://devblogs.microsoft.com/powershell-community/my-crescendo-journey/)
-- [Converting string output to objects](https://devblogs.microsoft.com/powershell-community/converting-string-output-to-objects/)
-- [A closer look at the parsing code of a Crescendo output handler](https://devblogs.microsoft.com/powershell-community/a-closer-look-at-the-parsing-code-of-a-crescendo-output-handler/)- [A closer look at the Crescendo configuration](https://devblogs.microsoft.com/powershell-community/a-closer-look-at-the-crescendo-configuration/)
+- Crescendo on the [PowerShell Community Blog](https://devblogs.microsoft.com/powershell-community/tag/crescendo/).
 
 ## Future plans
 
