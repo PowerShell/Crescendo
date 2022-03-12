@@ -464,7 +464,7 @@ class Command {
         else {
         $sb.AppendLine('    if ($__boundParameters["Debug"]){wait-debugger}')
         $sb.AppendLine('    if ( $__boundParameters["Verbose"]) {')
-        $sb.AppendLine('         Write-Verbose -Verbose -Message ' + $this.OriginalName)
+        $sb.AppendLine('         Write-Verbose -Verbose -Message "' + $this.OriginalName + '"')
         $sb.AppendLine('         $__commandArgs | Write-Verbose -Verbose')
         $sb.AppendLine('    }')
         $sb.AppendLine('    $__handlerInfo = $__outputHandlers[$PSCmdlet.ParameterSetName]')
