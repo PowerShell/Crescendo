@@ -44,7 +44,7 @@ PROCESS {
     $__commandArgs = $__commandArgs | Where-Object {$_ -ne $null}
     if ($__boundParameters["Debug"]){wait-debugger}
     if ( $__boundParameters["Verbose"]) {
-         Write-Verbose -Verbose -Message /bin/ls
+         Write-Verbose -Verbose -Message "/bin/ls"
          $__commandArgs | Write-Verbose -Verbose
     }
     $__handlerInfo = $__outputHandlers[$PSCmdlet.ParameterSetName]
