@@ -8,13 +8,13 @@
             "SupportsShouldProcess": true,
             "Parameters": [
                 {
-                    "Name": "Input",
+                    "Name": "InputFile",
                     "OriginalName": "if=",
                     "NoGap": true,
                     "ParameterType": "string"
                 },
                 {
-                    "Name": "Output",
+                    "Name": "OutputFile",
                     "OriginalName": "of=",
                     "NoGap": true,
                     "ParameterType": "string"
