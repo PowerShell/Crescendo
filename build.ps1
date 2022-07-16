@@ -57,6 +57,7 @@ $FileManifest = @(
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psd1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SrcRoot}";    NAME = "${Name}.psm1"                       ; SIGN = $true  ; DEST = "OUTDIR" }
     @{ SRC = "${SchemaRoot}"; NAME = "2021-11"                            ; SIGN = $false ; DEST = "OUTDIR/Schemas" }
+    @{ SRC = "${SchemaRoot}"; NAME = "2022-06"                            ; SIGN = $false ; DEST = "OUTDIR/Schemas" }
 )
 
 if ($build) {
