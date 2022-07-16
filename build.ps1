@@ -142,7 +142,7 @@ if ($test) {
         `$pesterArgs = @{ PassThru = `$true }
         if ( `$$coverage ) {
             `$pesterArgs['CodeCoverageOutputFile'] = "${PSScriptRoot}/CoverageOutput.xml"
-            `$pesterArgs['CodeCoverage'] = "${PSScriptRoot}/out/Microsoft.PowerShell.Crescendo/0.7.0/Microsoft.PowerShell.Crescendo.psm1"
+            `$pesterArgs['CodeCoverage'] = "${PSScriptRoot}/out/Microsoft.PowerShell.Crescendo/${Version}/Microsoft.PowerShell.Crescendo.psm1"
         }
         `$result = Invoke-Pester @pesterArgs
         if (0 -ne `$result.FailedCount) {
