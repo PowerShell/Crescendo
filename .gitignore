@@ -5,3 +5,4 @@ binskim.log
 binskim-results.xml
 *.pester.xml
 *.swp
+CoverageOutput.xml
