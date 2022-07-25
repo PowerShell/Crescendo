@@ -692,7 +692,7 @@ function Export-CrescendoCommand {
         $sOptions.IgnoreNullValues = $true
         $text = [System.Text.Json.JsonSerializer]::Serialize($multiConfiguration, $sOptions)
         if ($PSCmdlet.ShouldProcess($outputFile)) {
-            Set-Content -LiteralPath $outputFile -Value $text
+            Out-File -LiteralPath $outputFile -InputObject $text
         }
     }
 }
