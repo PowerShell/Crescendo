@@ -621,22 +621,78 @@ function New-CrescendoCommand {
 }
 
 function Export-CrescendoCommand {
-    [CmdletBinding(SupportsShouldProcess=$true)]
+    [CmdletBinding(SupportsShouldProcess=$true,DefaultParameterSetName="MultipleFile")]
     param (
         [Parameter(Position=0,Mandatory=$true,ValueFromPipeline=$true)]
         [Command[]]$command,
-        [Parameter()][string]$targetDirectory = "."
+        [Parameter(ParameterSetName="MultipleFile")][string]$targetDirectory = ".",
+        [Parameter(ParameterSetName="SingleFile", Mandatory=$true)][string]$fileName = "",
+        [Parameter(ParameterSetName="SingleFile")][switch]$Force
     )
+
+    BEGIN
+    {
+        if ( $PSCmdlet.ParameterSetName -eq "SingleFile") {
+            $commandConfigurations = @()
+            $outputFile = Get-Item -Path $filename -ErrorAction Ignore
+
+            if ( @($outputFile).Count -gt 1) {
+                throw ("'$fileName' must resolve to a single file")
+            }
+
+            # output file does not exist
+            if ( ! $outputFile ) {
+                $outputFile = $fileName
+            }
+            else {
+                # check to see if the path is a directory
+                if ( $outputFile.PSIsContainer ) {
+                    throw ("'$fileName' is a directory, it must resolve to a single file")
+                }
+                if ( $Force ) {
+                    $outputFile.Delete()
+                } 
+                else {
+                    throw ("File '$fileName' already exists. Use -Force to overwrite")
+                }
+            }
+        }
+    }
 
     PROCESS
     {
         foreach($crescendoCommand in $command) {
-            if($PSCmdlet.ShouldProcess($crescendoCommand)) {
-                $fileName = "{0}-{1}.crescendo.json" -f $crescendoCommand.Verb, $crescendoCommand.Noun
-                $exportPath = Join-Path $targetDirectory $fileName
-                $crescendoCommand.ExportConfigurationFile($exportPath)
-
+            if($PSCmdlet.ShouldProcess($crescendoCommand.FunctionName)) {
+                if ($PSCmdlet.ParameterSetName -eq "MultipleFile") {
+                    $fileName = "{0}-{1}.crescendo.json" -f $crescendoCommand.Verb, $crescendoCommand.Noun
+                    $exportPath = Join-Path $targetDirectory $fileName
+                    $crescendoCommand.ExportConfigurationFile($exportPath)
+                }
+                else {
+                    $commandConfigurations += $crescendoCommand
+                }
             }
+        }
+    }
+
+    END
+    {
+        # there's nothing to do for this parameter set.
+        if ($PSCmdlet.ParameterSetName -eq "MultipleFile") {
+            return
+        }
+
+        # now save all the command configurations to a single file.
+        $multiConfiguration = [System.Collections.Specialized.OrderedDictionary]::new()
+        $multiConfiguration.Add('$schema', 'https://aka.ms/PowerShell/Crescendo/Schemas/2022-06')
+        $multiConfiguration.Add('commands', $commandConfigurations)
+        $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
+        $sOptions.WriteIndented = $true
+        $sOptions.MaxDepth = 10
+        $sOptions.IgnoreNullValues = $true
+        $text = [System.Text.Json.JsonSerializer]::Serialize($multiConfiguration, $sOptions)
+        if ($PSCmdlet.ShouldProcess($outputFile)) {
+            Out-File -LiteralPath $outputFile -InputObject $text
         }
     }
 }
@@ -644,7 +700,9 @@ function Export-CrescendoCommand {
 function Import-CommandConfiguration
 {
 [CmdletBinding()]
-param ([Parameter(Position=0,Mandatory=$true)][string]$file)
+param (
+    [Parameter(Position=0,Mandatory=$true)][string]$file
+    )
     $options = [System.Text.Json.JsonSerializerOptions]::new()
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
