@@ -792,7 +792,15 @@ function Export-CrescendoModule
             throw "$ModuleName already exists"
         }
         # static parts of the crescendo module
+        # the schema will be taken from the first configuration file
+        $ModuleVersion = $MyInvocation.MyCommand.Version
+        $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0]) | ConvertFrom-Json).'$schema'
+        if ( ! $SchemaVersion ) {
+            $SchemaVersion = "unknown"
+        }
         "# Module created by Microsoft.PowerShell.Crescendo" > $ModuleName
+        "# Version: $ModuleVersion" >> $ModuleName
+        "# Schema: $SchemaVersion" >> $ModuleName
         'class PowerShellCustomFunctionAttribute : System.Attribute { '>> $ModuleName
         '    [bool]$RequiresElevation' >> $ModuleName
         '    [string]$Source' >> $ModuleName
