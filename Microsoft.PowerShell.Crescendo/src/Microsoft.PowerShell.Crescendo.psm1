@@ -794,7 +794,7 @@ function Export-CrescendoModule
         # static parts of the crescendo module
         # the schema will be taken from the first configuration file
         $ModuleVersion = $MyInvocation.MyCommand.Version
-        $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0]) | ConvertFrom-Json).'$schema'
+        $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0])[0] | ConvertFrom-Json).'$schema'
         if ( ! $SchemaVersion ) {
             $SchemaVersion = "unknown"
         }
