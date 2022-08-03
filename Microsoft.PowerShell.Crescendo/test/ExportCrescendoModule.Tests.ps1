@@ -43,7 +43,6 @@ Describe "The correct files are created when a module is created" {
             Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/FullProxy.json"
             # call it twice to produce the error
             { Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/FullProxy.json" } | Should -Throw
-
         }
 
         It "Produces an error if the target platform is not allowed" {
@@ -76,6 +75,26 @@ Describe "The correct files are created when a module is created" {
             Export-CrescendoModule -ConfigurationFile "${tPath}.json" -ModuleName "${tPath}" -ErrorVariable badHandler -ErrorAction SilentlyContinue
             $badHandler | Should -Not -BeNullOrEmpty
             $badHandler.FullyQualifiedErrorId | Should -Be "Microsoft.PowerShell.Commands.WriteErrorException,Export-CrescendoModule"
+        }
+
+        It "The psm1 file will contain the version of Crescendo that created it." {
+            $ModuleName = [guid]::NewGuid()
+            $configurationPath = "${PSScriptRoot}/assets/FullProxy.json"
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile $configurationPath
+            $moduleContent = Get-Content "${TESTDRIVE}/${ModuleName}.psm1"
+            $exportCmd = Get-Command Export-CrescendoModule
+            $expectedModuleVersion = $exportCmd.Version
+            $observedModuleVersion = $moduleContent[1] -replace ".* "
+        }
+
+        It "The psm1 file will contain the schema used when creating it." {
+            $ModuleName = [guid]::NewGuid()
+            $configurationPath = "${PSScriptRoot}/assets/FullProxy.json"
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile $configurationPath
+            $moduleContent = Get-Content "${TESTDRIVE}/${ModuleName}.psm1"
+            $expectedSchemaUrl = (Get-Content $configurationPath|ConvertFrom-Json).'$schema'
+            $observedSchemaUrl = $moduleContent[2] -replace ".* "
+            $observedSchemaUrl | Should -Be $expectedSchemaUrl
         }
     }
 }
