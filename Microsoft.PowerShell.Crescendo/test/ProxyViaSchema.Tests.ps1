@@ -56,7 +56,12 @@ Describe "Create proxy from Schema" -tags CI {
             $Parser = [System.Management.Automation.Language.Parser]
             $tokens = $perrors = $null
             $ast = $Parser::ParseFile("${modulePath}.psm1", [ref]$tokens, [ref]$perrors)
-            $funcs = $ast.findall({$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $args[0].Parent -isnot [System.Management.Automation.Language.FunctionMemberAst]},$false)
+            # exclude the two helper functions for managing errors
+            $funcs = $ast.findall({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Parent -isnot [System.Management.Automation.Language.FunctionMemberAst] -and
+                $args[0].Name -notmatch "Push-CrescendoError|Pop-CrescendoError"
+                },$false)
         }
 
         It "Creates a proper module" {

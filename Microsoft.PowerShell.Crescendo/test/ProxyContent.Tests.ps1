@@ -68,6 +68,9 @@ Describe "The help content for the proxy function is correct" -tags CI {
             Set-Content -Path TESTDRIVE:/file2 -Value "This is another test"
             New-Item -Type Directory -Path TESTDRIVE:/output
             Set-Content -Path TESTDRIVE:/output/proxyoutput.txt -Value "dummy output" # set dummy content so the lists are the same
+            # get the error helpers
+            $helpers = & (get-module Microsoft.PowerShell.Crescendo){ Get-CrescendoErrorHelper }
+            Invoke-Expression ($helpers -join "`n")
             If ( $IsWindows ) {
                 $configuration = (Import-CommandConfiguration "$PSScriptRoot/assets/Dir.Proxy.json")
                 $commandName = $configuration.FunctionName

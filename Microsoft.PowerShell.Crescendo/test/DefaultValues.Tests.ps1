@@ -1,5 +1,7 @@
 Describe "Can handle default values correctly" {
 	BeforeAll {
+        $helpers = & (get-module Microsoft.PowerShell.Crescendo){ Get-CrescendoErrorHelper }
+        Invoke-Expression ($helpers -join "`n")
 		$configuration = Import-CommandConfiguration -file "$PSScriptRoot/assets/DefaultValues.json"
 		Invoke-Expression ($configuration.ToString())
 	}

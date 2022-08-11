@@ -21,7 +21,7 @@ BEGIN {
                }
     }
 
-    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input } } }
+    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input; Pop-CrescendoError -EmitAsError } } }
 }
 
 PROCESS {
@@ -71,10 +71,10 @@ PROCESS {
           throw "Cannot find executable '/bin/ls'"
         }
         if ( $__handlerInfo.StreamOutput ) {
-            & "/bin/ls" $__commandArgs | & $__handler
+            & "/bin/ls" $__commandArgs 2>&1| Push-CrescendoError | & $__handler
         }
         else {
-            $result = & "/bin/ls" $__commandArgs
+            $result = & "/bin/ls" $__commandArgs 2>&1| Push-CrescendoError
             & $__handler $result
         }
     }
