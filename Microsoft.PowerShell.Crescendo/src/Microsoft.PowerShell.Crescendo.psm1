@@ -302,7 +302,7 @@ class Command {
             $sb.AppendLine('    }')
         }
         else {
-            $sb.AppendLine('    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input; Pop-CrescendoError -EmitAsError } } }')
+            $sb.AppendLine('    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input; Pop-CrescendoNativeError -EmitAsError } } }')
         }
         $sb.AppendLine("}") # END BEGIN
         return $sb.ToString()
@@ -480,19 +480,19 @@ class Command {
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
-            $sb.AppendLine(('            & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoError | & $__handler' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+            $sb.AppendLine(('            & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
         }
         else {
-            $sb.AppendLine(('            & "{0}" $__commandArgs 2>&1| Push-CrescendoError | & $__handler' -f $this.OriginalName))
+            $sb.AppendLine(('            & "{0}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.OriginalName))
         }
         $sb.AppendLine('        }')
         $sb.AppendLine('        else {')
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
-            $sb.AppendLine(('            $result = & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoError' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+            $sb.AppendLine(('            $result = & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoNativeError' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
         }
         else {
-            $sb.AppendLine(('            $result = & "{0}" $__commandArgs 2>&1| Push-CrescendoError' -f $this.OriginalName))
+            $sb.AppendLine(('            $result = & "{0}" $__commandArgs 2>&1| Push-CrescendoNativeError' -f $this.OriginalName))
         }
         $sb.AppendLine('            & $__handler $result')
         $sb.AppendLine('        }')
@@ -789,29 +789,29 @@ function Get-ModuleHeader {
     ''
 }
 
-function Get-CrescendoErrorHelper {
+function Get-CrescendoNativeErrorHelper {
     '# Queue for holding errors'
-    '$__CrescendoErrorQueue = [System.Collections.Queue]::new()'
+    '$__CrescendoNativeErrorQueue = [System.Collections.Queue]::new()'
     '# Returns available errors'
     '# Assumes that we are being called from within a script cmdlet when EmitAsError is used.'
-    'function Pop-CrescendoError {'
+    'function Pop-CrescendoNativeError {'
     'param ([switch]$EmitAsError)'
-    '    while ($__CrescendoErrorQueue.Count -gt 0) {'
+    '    while ($__CrescendoNativeErrorQueue.Count -gt 0) {'
     '        if ($EmitAsError) {'
-    '            $msg = $__CrescendoErrorQueue.Dequeue()'
+    '            $msg = $__CrescendoNativeErrorQueue.Dequeue()'
     '            $er = [System.Management.Automation.ErrorRecord]::new([system.invalidoperationexception]::new($msg), $PSCmdlet.Name, "InvalidOperation", $msg)'
     '            $PSCmdlet.WriteError($er)'
     '        }'
     '        else {'
-    '            $__CrescendoErrorQueue.Dequeue()'
+    '            $__CrescendoNativeErrorQueue.Dequeue()'
     '        }'
     '    }'
     '}'
 
     '# this is purposefully a filter rather than a function for streaming errors'
-    'filter Push-CrescendoError {'
+    'filter Push-CrescendoNativeError {'
     '    if ($_ -is [System.Management.Automation.ErrorRecord]) {'
-    '        $__CrescendoErrorQueue.Enqueue($_)'
+    '        $__CrescendoNativeErrorQueue.Enqueue($_)'
     '    }'
     '    else {'
     '        $_'
@@ -850,7 +850,7 @@ function Export-CrescendoModule
         Get-ModuleHeader -schemaVersion $schemaVersion > $ModuleName
 
         # put the error handling code in the module
-        Get-CrescendoErrorHelper >> $ModuleName
+        Get-CrescendoNativeErrorHelper >> $ModuleName
 
         $moduleBase = [System.IO.Path]::GetDirectoryName($ModuleName)
     }

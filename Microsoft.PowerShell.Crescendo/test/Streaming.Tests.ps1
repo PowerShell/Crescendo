@@ -9,7 +9,7 @@ Describe "The framework respects the streamoutput setting (these tests take a wh
         function New-StreamOutput {
             1..3 | foreach-object { [pscustomobject]@{ Value = $_; cTime = [datetime]::Now; oTime = [datetime]::new(0)}; Start-Sleep 2 }
         }
-        $helpers = & (get-module Microsoft.PowerShell.Crescendo){ Get-CrescendoErrorHelper }
+        $helpers = & (get-module Microsoft.PowerShell.Crescendo){ Get-CrescendoNativeErrorHelper }
         Invoke-Expression ($helpers -join "`n")
     }
     It "will stream when the handler is set for streaming" {

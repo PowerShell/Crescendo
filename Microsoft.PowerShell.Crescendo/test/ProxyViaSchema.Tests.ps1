@@ -60,7 +60,7 @@ Describe "Create proxy from Schema" -tags CI {
             $funcs = $ast.findall({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
                 $args[0].Parent -isnot [System.Management.Automation.Language.FunctionMemberAst] -and
-                $args[0].Name -notmatch "Push-CrescendoError|Pop-CrescendoError"
+                $args[0].Name -notmatch "Push-CrescendoNativeError|Pop-CrescendoNativeError"
                 },$false)
         }
 
