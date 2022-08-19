@@ -1,6 +1,8 @@
 #
 Describe "Multistage parameters behave properly" {
 	It "creates parameters for both the executable and the command" {
+        $helpers = & (get-module Microsoft.PowerShell.Crescendo){ Get-CrescendoNativeErrorHelper }
+        Invoke-Expression ($helpers -join "`n")
 		$config = Import-CommandConfiguration ${PSScriptRoot}/assets/MultiStageParameters.json
 		Invoke-Expression ($config.ToString())
 		$result = Invoke-Echo -exeParm1 ep1 -exeParm2 ep2 -cmdParm1 "cmd p2" -cmdParm2 cmd2  

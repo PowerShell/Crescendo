@@ -302,7 +302,7 @@ class Command {
             $sb.AppendLine('    }')
         }
         else {
-            $sb.AppendLine('    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input } } }')
+            $sb.AppendLine('    $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input; Pop-CrescendoNativeError -EmitAsError } } }')
         }
         $sb.AppendLine("}") # END BEGIN
         return $sb.ToString()
@@ -480,19 +480,19 @@ class Command {
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
-            $sb.AppendLine(('            & "{0}" {1} "{2}" $__commandArgs | & $__handler' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+            $sb.AppendLine(('            & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
         }
         else {
-            $sb.AppendLine(('            & "{0}" $__commandArgs | & $__handler' -f $this.OriginalName))
+            $sb.AppendLine(('            & "{0}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.OriginalName))
         }
         $sb.AppendLine('        }')
         $sb.AppendLine('        else {')
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
-            $sb.AppendLine(('            $result = & "{0}" {1} "{2}" $__commandArgs' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+            $sb.AppendLine(('            $result = & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoNativeError' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
         }
         else {
-            $sb.AppendLine(('            $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+            $sb.AppendLine(('            $result = & "{0}" $__commandArgs 2>&1| Push-CrescendoNativeError' -f $this.OriginalName))
         }
         $sb.AppendLine('            & $__handler $result')
         $sb.AppendLine('        }')
@@ -771,6 +771,55 @@ function Export-Schema() {
     $sGen.Generate([command])
 }
 
+function Get-ModuleHeader {
+    param ([string]$schemaVersion)
+    $ModuleVersion = $MyInvocation.MyCommand.Version
+    "# Module created by Microsoft.PowerShell.Crescendo"
+    "# Version: $ModuleVersion"
+    "# Schema: $SchemaVersion"
+    'class PowerShellCustomFunctionAttribute : System.Attribute { '
+    '    [bool]$RequiresElevation'
+    '    [string]$Source'
+    '    PowerShellCustomFunctionAttribute() { $this.RequiresElevation = $false; $this.Source = "Microsoft.PowerShell.Crescendo" }'
+    '    PowerShellCustomFunctionAttribute([bool]$rElevation) {'
+    '        $this.RequiresElevation = $rElevation'
+    '        $this.Source = "Microsoft.PowerShell.Crescendo"'
+    '    }'
+    '}'
+    ''
+}
+
+function Get-CrescendoNativeErrorHelper {
+    '# Queue for holding errors'
+    '$__CrescendoNativeErrorQueue = [System.Collections.Queue]::new()'
+    '# Returns available errors'
+    '# Assumes that we are being called from within a script cmdlet when EmitAsError is used.'
+    'function Pop-CrescendoNativeError {'
+    'param ([switch]$EmitAsError)'
+    '    while ($__CrescendoNativeErrorQueue.Count -gt 0) {'
+    '        if ($EmitAsError) {'
+    '            $msg = $__CrescendoNativeErrorQueue.Dequeue()'
+    '            $er = [System.Management.Automation.ErrorRecord]::new([system.invalidoperationexception]::new($msg), $PSCmdlet.Name, "InvalidOperation", $msg)'
+    '            $PSCmdlet.WriteError($er)'
+    '        }'
+    '        else {'
+    '            $__CrescendoNativeErrorQueue.Dequeue()'
+    '        }'
+    '    }'
+    '}'
+
+    '# this is purposefully a filter rather than a function for streaming errors'
+    'filter Push-CrescendoNativeError {'
+    '    if ($_ -is [System.Management.Automation.ErrorRecord]) {'
+    '        $__CrescendoNativeErrorQueue.Enqueue($_)'
+    '    }'
+    '    else {'
+    '        $_'
+    '    }'
+    '}'
+    ''
+}
+
 function Export-CrescendoModule
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
@@ -791,26 +840,18 @@ function Export-CrescendoModule
         if ((Test-Path $ModuleName) -and -not $Force) {
             throw "$ModuleName already exists"
         }
+
         # static parts of the crescendo module
         # the schema will be taken from the first configuration file
-        $ModuleVersion = $MyInvocation.MyCommand.Version
         $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0])[0] | ConvertFrom-Json).'$schema'
         if ( ! $SchemaVersion ) {
             $SchemaVersion = "unknown"
         }
-        "# Module created by Microsoft.PowerShell.Crescendo" > $ModuleName
-        "# Version: $ModuleVersion" >> $ModuleName
-        "# Schema: $SchemaVersion" >> $ModuleName
-        'class PowerShellCustomFunctionAttribute : System.Attribute { '>> $ModuleName
-        '    [bool]$RequiresElevation' >> $ModuleName
-        '    [string]$Source' >> $ModuleName
-        '    PowerShellCustomFunctionAttribute() { $this.RequiresElevation = $false; $this.Source = "Microsoft.PowerShell.Crescendo" }' >> $ModuleName
-        '    PowerShellCustomFunctionAttribute([bool]$rElevation) {' >> $ModuleName
-        '        $this.RequiresElevation = $rElevation' >> $ModuleName
-        '        $this.Source = "Microsoft.PowerShell.Crescendo"' >> $ModuleName
-        '    }' >> $ModuleName
-        '}' >> $ModuleName
-        '' >> $ModuleName
+        Get-ModuleHeader -schemaVersion $schemaVersion > $ModuleName
+
+        # put the error handling code in the module
+        Get-CrescendoNativeErrorHelper >> $ModuleName
+
         $moduleBase = [System.IO.Path]::GetDirectoryName($ModuleName)
     }
     PROCESS {
