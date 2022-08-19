@@ -25,4 +25,33 @@ Describe "Error Condition Tests" -Tag CI {
             $handlerFault.Exception.Message | Should Match "pset1"
         }
     }
+
+    Context "Native output to stderr is redirected" {
+        BeforeAll {
+            if ( $IsWindows ) {
+                return
+            }
+            $moduleName = [Guid]::NewGuid().ToString("n")
+            Export-CrescendoModule -ConfigurationFile "${PSScriptRoot}/assets/ls.proxy.json" -ModuleName "${TESTDRIVE}/${ModuleName}"
+            Import-Module "${TESTDRIVE}/${moduleName}.psd1"
+            Invoke-filelistproxy2 -path "${TESTDRIVE}/ThisFileDoesNotExist" -ErrorAction SilentlyContinue -ErrorVariable crescendoError
+            Remove-Module ${ModuleName}
+        }
+
+        It "The default output handler can emit an error" -skip:($IsWindows) {
+            $crescendoError | Should -Not -BeNullOrEmpty
+        }
+
+        It "The default output handler can emit the proper number of errors" -skip:($IsWindows) {
+            $crescendoError.Count | Should -Be 1
+        }
+
+        It "The default output handler can emit an ErrorRecord" -skip:($IsWindows) {
+            $crescendoError[0] | Should -BeOfType [System.Management.Automation.ErrorRecord]
+        }
+
+        It "The default output handler will emit the proper error message" -skip:($IsWindows) {
+            "$crescendoError" | Should -Match "ThisFileDoesNotExist"
+        }
+    }
 }
