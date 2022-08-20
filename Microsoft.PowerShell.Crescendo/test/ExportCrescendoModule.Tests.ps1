@@ -29,6 +29,27 @@ Describe "The correct files are created when a module is created" {
         }
     }
 
+    Context 'Supports NoUpdateManifest' {
+        BeforeAll {
+            $ModuleName = [guid]::NewGuid().ToString("n")
+            $manifestPath = "${TESTDRIVE}/${ModuleName}.psd1"
+            # create an empty manifest
+            $null = New-Item -ItemType File -Path "${TESTDRIVE}/${ModuleName}.psd1"
+        }
+
+        It "A zero length manifest should be present when NoUpdateManifest is set" {
+            $manifestPath | Should -Exist
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/SimpleProxy.json" -Force -NoUpdateManifest
+            (Get-Item $manifestPath).Length | Should -Be 0
+        }
+
+        It "A nonzero length manifest should be present when NoUpdateManifest is not set" {
+            $manifestPath | Should -Exist
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/SimpleProxy.json" -Force
+            (Get-Item $manifestPath).Length | Should -BeGreaterThan 0
+        }
+    }
+
     Context "Supports -WhatIf" {
         It "Does not create a module file when WhatIf is used" {
             $ModuleName = "whatifmodule"

@@ -826,7 +826,8 @@ function Export-CrescendoModule
     param (
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
         [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
-        [Parameter()][switch]$Force
+        [Parameter()][switch]$Force,
+        [Parameter()][switch]$NoUpdateManifest
         )
     BEGIN {
         [array]$crescendoCollection = @()
@@ -913,7 +914,10 @@ function Export-CrescendoModule
             $ModuleManifestArguments['AliasesToExport'] = $aliases
         }
 
-        New-ModuleManifest @ModuleManifestArguments
+        # only create the manifest if we are not in no-update-manifest mode
+        if (! $NoUpdateManifest) {
+            New-ModuleManifest @ModuleManifestArguments
+        }
 
         # copy the script output handlers into place
         foreach($config in $crescendoCollection) {
