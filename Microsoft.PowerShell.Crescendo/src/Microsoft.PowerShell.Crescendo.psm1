@@ -826,8 +826,8 @@ function Export-CrescendoModule
     param (
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
         [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
-        [Parameter()][switch]$Force,
-        [Parameter()][switch]$NoUpdateManifest
+        [Parameter(HelpMessage="Overwrite the psm1 and psd1 files.")][switch]$Force,
+        [Parameter(HelpMessage="Do not overwrite the module manifest.")][switch]$NoClobberManifest
         )
     BEGIN {
         [array]$crescendoCollection = @()
@@ -915,7 +915,7 @@ function Export-CrescendoModule
         }
 
         # only create the manifest if we are not in no-update-manifest mode
-        if (! $NoUpdateManifest) {
+        if (! $NoClobberManifest) {
             New-ModuleManifest @ModuleManifestArguments
         }
 
