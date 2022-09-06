@@ -1,6 +1,7 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param (
     [switch]$test,
+    [switch]$SkipTestToolBuild,
     [switch]$build,
     [switch]$publish,
     [switch]$signed,
@@ -129,6 +130,29 @@ if ($package) {
 }
 
 if ($test) {
+    # build the echo test executable
+    if ($IsWindows) {
+        $runtime = "win-x64"
+    }
+    elseif ($IsLinux) {
+        $runtime = "linux-x64"
+    }
+    else {
+        $runtime = "osx-x64"
+    }
+    $dotnetArgs = "publish",
+        "Microsoft.Powershell.Crescendo/test/src/EchoTool/EchoTool.csproj",
+        "--configuration",
+        "Release",
+        "--runtime",
+        $runtime,
+        "--output",
+        "Microsoft.Powershell.Crescendo/test"
+    if (!$SkipTestToolBuild) {
+        dotnet $dotnetArgs
+    }
+
+    # run the tests, but we do this in a separate process
     $script = @"
     # be sure to not get pester 5
     if ( Get-Module Pester ) {

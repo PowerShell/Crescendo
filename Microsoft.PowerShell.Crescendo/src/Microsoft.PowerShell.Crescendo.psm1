@@ -77,6 +77,16 @@ class ParameterInfo {
     [bool] $ValueFromRemainingArguments
     [bool] $NoGap # this means that we need to construct the parameter as "foo=bar"
 
+    # This is a scriptblock, file or function which will transform the value(s) of the parameter
+    # If the value needs to be transformed, this is the scriptblock to do it
+    [string]$ArgumentTransform
+    # this can be inline, file, or function
+    # the default is inline, but we will follow the same logic as for output handlers
+    # if 'function' we will inspect the current environment for the function and embed it in the module
+    # if 'file' we will hunt for the file in the current environment and copy it to the module location
+    # the value as a single object will be passed as an argument to the scriptblock/file/function
+    [string]$ArgumentTransformType
+
     ParameterInfo() {
         $this.Position = [int]::MaxValue
     }
@@ -260,9 +270,10 @@ class Command {
         }
     }
 
+    # collect the output handler functions and the argument transform functions
     [string]GetFunctionHandlers()
     {
-        #
+        # TODO: check for duplicate names
         $functionSB = [System.Text.StringBuilder]::new()
         if ( $this.OutputHandlers ) {
             foreach ($handler in $this.OutputHandlers ) {
@@ -270,10 +281,22 @@ class Command {
                     $handlerName = $handler.Handler
                     $functionHandler = Get-Content function:$handlerName -ErrorAction Ignore
                     if ( $null -eq $functionHandler ) {
-                        throw "Cannot find function '$handlerName'."
+                        throw "Cannot find output handler function '$handlerName'."
                     }
                     $functionSB.AppendLine($functionHandler.Ast.Extent.Text)
                 }
+            }
+        }
+        # add the argument transform functions
+        # do not add duplicate functions
+        if ( $this.Parameters ) {
+            $transformFunctions = $this.Parameters.Where({$_.ArgumentTransformType -eq "Function"}) | Sort-Object -Unique -Property ArgumentTransform
+            foreach ($transform in $transformFunctions) {
+                $transformHandler = Get-Content function:$transform -ErrorAction Ignore
+                if ( $null -eq $transformHandler ) {
+                    throw "Cannot find argument transform function '$transform'."
+                }
+                $functionSB.AppendLine($transformHandler.Ast.Extent.Text)
             }
         }
         return $functionSB.ToString()
@@ -394,6 +417,17 @@ class Command {
             if($parameter.DefaultMissingValue) {
                 $sb.AppendLine(('               DefaultMissingValue = ''{0}''' -f $parameter.DefaultMissingValue))
             }
+            # Add the transform if present
+            if($parameter.ArgumentTransform) {
+                $sb.AppendLine(('               ArgumentTransform = ''{0}''' -f $parameter.ArgumentTransform))
+                $trType = $parameter.ArgumentTransformType
+                $sb.AppendLine(('               ArgumentTransformType = ''{0}''' -f (($null -eq $trType) ? 'inline' : $trType)))
+            }
+            else {
+                # by default, pass the arguments as is - we stream it (which used to happen in the code below)
+                $sb.AppendLine(('               ArgumentTransform = ''$args'''))
+                $sb.AppendLine(('               ArgumentTransformType = ''inline'''))
+            }
             $sb.AppendLine('               }')
         }
         # end parameter map
@@ -453,7 +487,13 @@ class Command {
         $sb.AppendLine('            }')
         $sb.AppendLine('            else {')
         $sb.AppendLine('                if($param.OriginalName) { $__commandArgs += $param.OriginalName }')
-        $sb.AppendLine('                $__commandArgs += $value | Foreach-Object {$_}')
+        $sb.AppendLine('                if($param.ArgumentTransformType -eq ''inline'') {')
+        $sb.AppendLine('                   $transform = [scriptblock]::Create($param.ArgumentTransform)')
+        $sb.AppendLine('                }')
+        $sb.AppendLine('                else {')
+        $sb.AppendLine('                   $transform = $param.ArgumentTransform')
+        $sb.AppendLine('                }')
+        $sb.AppendLine('                $__commandArgs += & $transform $value')
         $sb.AppendLine('            }')
         $sb.AppendLine('        }')
         $sb.AppendLine('    }')
@@ -827,7 +867,8 @@ function Export-CrescendoModule
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
         [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
         [Parameter(HelpMessage="Overwrite the psm1 and psd1 files.")][switch]$Force,
-        [Parameter(HelpMessage="Do not overwrite the module manifest.")][switch]$NoClobberManifest
+        [Parameter(HelpMessage="Do not overwrite the module manifest.")][switch]$NoClobberManifest,
+        [Parameter(HelpMessage="Emit an object with the path to the .psm1 and the arguments to New-ModuleManifest.")][switch]$PassThru
         )
     BEGIN {
         [array]$crescendoCollection = @()
@@ -919,6 +960,15 @@ function Export-CrescendoModule
             New-ModuleManifest @ModuleManifestArguments
         }
 
+        if ($PassThru) {
+            [PSCustomObject]@{
+                ModulePath = $ModuleName
+                ManifestArguments = $ModuleManifestArguments
+            }
+        }
+
+        # TODO: 
+        # ArgumentTransforms need to be copied
         # copy the script output handlers into place
         foreach($config in $crescendoCollection) {
             foreach($handler in $config.OutputHandlers) {

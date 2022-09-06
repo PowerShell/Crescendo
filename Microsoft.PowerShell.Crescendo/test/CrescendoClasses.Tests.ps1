@@ -223,7 +223,7 @@ Describe "The class tests" {
 			$oh.HandlerType = "Function"
 			$oh.Handler = "doesnotexist"
 			$cc.OutputHandlers += $oh
-			{ $cc.GetFunctionHandlers() } | Should -Throw -ErrorId "Cannot find function 'doesnotexist'."
+			{ $cc.GetFunctionHandlers() } | Should -Throw -ErrorId "Cannot find output handler function 'doesnotexist'."
 		}
 	}
 

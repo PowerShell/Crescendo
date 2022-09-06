@@ -1,0 +1,50 @@
+{
+	"$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06",
+	"Commands": [
+		{
+			"Verb": "Invoke",
+			"Noun": "Echo",
+			"OriginalName": "EchoTool",
+			"Parameters": [
+				{
+					"Name": "hasht",
+					"OriginalName": "--p1",
+					"ParameterType": "hashtable",
+					"OriginalPosition": 0,
+                    "ArgumentTransform": "param([hashtable]$v) $v.Keys.ForEach({''{0}={1}'' -f $_,$v[$_]}) -join '',''"
+
+				},
+				{
+					"Name": "join",
+					"OriginalName": "--p2",
+					"ParameterType": "string[]",
+					"OriginalPosition": 1,
+                    "ArgumentTransform": "param([string[]]$v) $v -join '',''"
+				},
+                {
+					"Name": "mult2",
+					"OriginalName": "--p3",
+					"ParameterType": "int",
+					"OriginalPosition": 2,
+                    "ArgumentTransform": "param([int]$v) $v * 2"
+				},
+                {
+					"Name": "multmult1",
+					"OriginalName": "--p4",
+					"ParameterType": "int[]",
+					"OriginalPosition": 3,
+                    "ArgumentTransform": "param([int[]]$v) $v.foreach({$_ * 2})"
+				},
+                {
+					"Name": "multmult2",
+					"OriginalName": "--p5",
+					"ParameterType": "int[]",
+					"OriginalPosition": 3,
+                    "ArgumentTransform": "param([int[]]$v) [string]::Join('','', $v.foreach({$_ * 2}))"
+				}
+			]
+		}
+        
+	]
+
+}

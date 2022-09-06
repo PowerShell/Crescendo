@@ -1,23 +1,35 @@
 Describe "Packaging tests" {
     Context "Schema Tests" {
         BeforeAll {
+            $schemaBase = "https://aka.ms/PowerShell/Crescendo/Schemas"
             $fileList = Get-ChildItem -File -Recurse "${PSScriptRoot}/.." | Where-Object { $_.Extension -eq ".json" -and (Select-String '"\$schema"' $_.FullName) }
             $testCases = $fileList |
                 Foreach-Object {
                     $json = Get-Content $_.fullname | ConvertFrom-Json
-                    @{ FullName = $_.FullName -Replace ".*/Microsoft.PowerShell.Crescendo/"; JSON = $json }
+                    @{
+                        FullName = $_.FullName -Replace ".*/Microsoft.PowerShell.Crescendo/"
+                        JSON = $json
+                        SchemaUrl = $_.FullName -match "ArgumentTransform" ? "${schemaBase}/2022-06" : "${schemaBase}/2021-11" 
+                    }
                 }
-            $SchemaUrl = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11'
+            $schemas = @{ SchemaUrl = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11' },
+                @{ SchemaUrl = 'https://aka.ms/PowerShell/Crescendo/Schemas/2022-06'}
         }
 
-        It "'<FullName>' references schema '$SchemaUrl'" -TestCases $testCases {
-            param ([string]$FullName, [object]$JSON )
+        It "'<FullName>' references schema '<SchemaUrl>" -TestCases $testCases {
+            param ([string]$FullName, [object]$JSON, [string]$SchemaUrl )
             $JSON.'$schema' | Should -Be $SchemaUrl
         }
 
-        It "'$SchemaUrl' is active" {
-            $schema = Invoke-RestMethod $SchemaUrl
-            $schema.title | Should -Be "JSON schema for PowerShell Crescendo files"
+        It "<SchemaUrl>' is active" -TestCases @($schemas) {
+            param ( $SchemaUrl )
+            if ( $SchemaUrl -match "2022-06" ) {
+                Set-ItResult -Pending -Because "2022-06 ArgumentTransform schema is not yet published"
+            }
+            else {
+                $schema = Invoke-RestMethod $SchemaUrl
+                $schema.title | Should -Be "JSON schema for PowerShell Crescendo files"
+            }
         }
     }
 
