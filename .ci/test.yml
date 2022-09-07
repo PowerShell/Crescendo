@@ -61,7 +61,7 @@ jobs:
     timeoutInMinutes: 10
 
   - ${{ parameters.powershellExecutable }}: |
-      Copy-Item -Path '$(System.ArtifactsDirectory/EchoTool*' -Destination '$(System.SourceDirectory)/Microsoft.PowerShell.Crescendo/test'
+      Copy-Item -Path '$(System.ArtifactsDirectory)/EchoTool*' -Destination '$(System.SourceDirectory)/Microsoft.PowerShell.Crescendo/test'
       Get-ChildItem -Rec -File '$(System.ArtifactsDirectory)'
       Get-ChildItem -Rec -File '$(System.SourceDirectory)'
       Invoke-PSPackageProjectTest -Type Functional
