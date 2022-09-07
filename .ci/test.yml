@@ -34,11 +34,19 @@ jobs:
   #  displayName: Remove >= 5.0.0 Pester
 
   - task: DownloadBuildArtifacts@0
-    displayName: 'Download artifacts'
+    displayName: 'Download nuget package'
     inputs:
       buildType: current
       downloadType: specific
       itemPattern: '**/*.nupkg'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download nuget package'
+    inputs:
+      buildType: current
+      downloadType: specific
+      itemPattern: '**/EchoTool*'
       downloadPath: '$(System.ArtifactsDirectory)'
 
   - ${{ parameters.powershellExecutable }}: |
@@ -53,6 +61,9 @@ jobs:
     timeoutInMinutes: 10
 
   - ${{ parameters.powershellExecutable }}: |
+      Copy-Item -Path '$(System.ArtifactsDirectory/EchoTool*' -Destination '$(System.SourceDirectory)/Microsoft.PowerShell.Crescendo/test'
+      Get-ChildItem -Rec -File '$(System.ArtifactsDirectory)'
+      Get-ChildItem -Rec -File '$(System.SourceDirectory)'
       Invoke-PSPackageProjectTest -Type Functional
     displayName: Execute functional tests
     errorActionPreference: continue

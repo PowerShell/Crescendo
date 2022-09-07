@@ -2,6 +2,7 @@
 param (
     [switch]$test,
     [switch]$SkipTestToolBuild,
+    [switch]$BuildTestTool,
     [switch]$build,
     [switch]$publish,
     [switch]$signed,
@@ -26,8 +27,8 @@ $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $SignVersion = "$SignRoot/$Version"
 $PubDir   = "${PubRoot}/${Version}"
 
-if (-not $test -and -not $build -and -not $publish -and -not $package) {
-    throw "must use 'build', 'test', 'publish', 'package'"
+if (-not $test -and -not $build -and -not $publish -and -not $package -and -not $BuildTestTool) {
+    throw "must use 'build', 'test', 'publish', 'package', 'BuildTestTool'"
 }
 
 [bool]$verboseValue = $PSBoundParameters['Verbose'].IsPresent ? $PSBoundParameters['Verbose'].ToBool() : $false
@@ -129,7 +130,7 @@ if ($package) {
     Export-Module
 }
 
-if ($test) {
+function Build-TestTool {
     # build the echo test executable
     if ($IsWindows) {
         $runtime = "win-x64"
@@ -151,6 +152,14 @@ if ($test) {
     if (!$SkipTestToolBuild) {
         dotnet $dotnetArgs
     }
+}
+
+if ($BuildTestTool) {
+    Build-TestTool
+}
+
+if ($test) {
+    Build-TestTool
 
     # run the tests, but we do this in a separate process
     $script = @"
