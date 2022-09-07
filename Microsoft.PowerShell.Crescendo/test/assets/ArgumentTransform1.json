@@ -4,15 +4,21 @@
 		{
 			"Verb": "Invoke",
 			"Noun": "Echo",
-			"OriginalName": "EchoTool",
+			"OriginalName": "echoit",
 			"Parameters": [
 				{
-					"Name": "hasht",
+					"Name": "hasht1",
 					"OriginalName": "--p1",
 					"ParameterType": "hashtable",
 					"OriginalPosition": 0,
                     "ArgumentTransform": "param([hashtable]$v) $v.Keys.ForEach({''{0}={1}'' -f $_,$v[$_]}) -join '',''"
-
+				},
+				{
+					"Name": "hasht2",
+					"OriginalName": "--p1ordered",
+					"ParameterType": "System.Collections.Specialized.OrderedDictionary",
+					"OriginalPosition": 0,
+                    "ArgumentTransform": "param([System.Collections.Specialized.OrderedDictionary]$v) $v.Keys.ForEach({''{0}={1}'' -f $_,$v[$_]}) -join '',''"
 				},
 				{
 					"Name": "join",
@@ -41,7 +47,12 @@
 					"ParameterType": "int[]",
 					"OriginalPosition": 3,
                     "ArgumentTransform": "param([int[]]$v) [string]::Join('','', $v.foreach({$_ * 2}))"
-				}
+				},
+                {
+                    "Name" : "foobar1",
+                    "ArgumentTransform": "myfunction",
+                    "ArgumentTransformType" : "script|function"
+                }
 			]
 		}
         

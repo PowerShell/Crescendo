@@ -147,6 +147,7 @@ function Build-TestTool {
         "Release",
         "--runtime",
         $runtime,
+        "--self-contained",
         "--output",
         "Microsoft.Powershell.Crescendo/test"
     if (!$SkipTestToolBuild) {
@@ -154,7 +155,41 @@ function Build-TestTool {
     }
 }
 
+function Install-DotNet {
+    $installObtainUrl = "https://dotnet.microsoft.com/download/dotnet/scripts/v1"
+    $reqVersion = Get-RequiredDotnetVersion
+    if ( $IsWindows  ) {
+        $installScript = "dotnet-install.ps1"
+    }
+    else {
+        $installScript = "dotnet-install.sh"
+    }
+    Invoke-WebRequest -Uri $installObtainUrl/$installScript -OutFile $installScript
+    if ( ! $IsWindows ) {
+        chmod +x $installScript
+    }
+    & "./$installScript" -v $reqVersion -skipnonversionedfiles
+}
+
+function Get-RequiredDotnetVersion {
+    $globalConfig = "global.json"
+    $reqVersion = (Get-Content $globalConfig | ConvertFrom-Json).sdk.version
+    $reqVersion
+}
+
+function Test-DotNet {
+    if ( -not (Get-Command dotnet -ea ignore)) {
+        return $false
+    }
+    $reqVersion = Get-RequiredDotnetVersion
+    $present = dotnet --list-sdks | Where-Object {$_ -match $reqVersion }
+    @($present).Count -ne 0
+}
+
 if ($BuildTestTool) {
+    if ( -not (Test-DotNet)) {
+        Install-DotNet
+    }
     Build-TestTool
 }
 

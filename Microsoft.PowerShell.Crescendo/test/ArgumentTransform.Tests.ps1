@@ -27,8 +27,8 @@ Describe "Crescendo supports transforming the parameter argument values" {
         $result[1] | Should Be "Argument 2 <a,b,c>"
     }
 
-    It "Should transform a hashtable argument (hasht)" {
-        $result = Invoke-Echo -hasht @{a=1;b=2;c=3}
+    It "Should transform a hashtable argument (hasht1)" {
+        $result = Invoke-Echo -hasht1 @{a=1;b=2;c=3}
         $result.Count | Should -Be 2
         $result[0] | Should Be "Argument 1 <--p1>"
         # we can't be guaranteed of the order of the hashtable keys
@@ -38,6 +38,13 @@ Describe "Crescendo supports transforming the parameter argument values" {
         $kvps = $matches[2].Split(",") | Sort-Object
         $reconstructedResult = $matches[1] + ($kvps -join ",") + $matches[3]
         $reconstructedResult | Should Be "Argument 2 <a=1,b=2,c=3>"
+    }
+
+    It "Should transform an ordered dictionary argument (hasht2)" {
+        $result = Invoke-Echo -hasht2 ([ordered]@{a=1;b=2;c=3})
+        $result.Count | Should -Be 2
+        $result[0] | Should Be "Argument 1 <--p1ordered>"
+        $result[1] | Should Be "Argument 2 <a=1,b=2,c=3>"
     }
 
     It "Should transform an array argument value into multiple argument (multmult1)" {
