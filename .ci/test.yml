@@ -42,11 +42,11 @@ jobs:
       downloadPath: '$(System.ArtifactsDirectory)'
 
   - task: DownloadBuildArtifacts@0
-    displayName: 'Download nuget package'
+    displayName: 'Download EchoTool package'
     inputs:
       buildType: current
       downloadType: specific
-      itemPattern: '**/EchoTool*'
+      itemPattern: '**/*EchoTool*'
       downloadPath: '$(System.ArtifactsDirectory)'
 
   - ${{ parameters.powershellExecutable }}: |
@@ -61,9 +61,15 @@ jobs:
     timeoutInMinutes: 10
 
   - ${{ parameters.powershellExecutable }}: |
+      Set-PSDebug -Trace 1
       Copy-Item -Verbose -Path '$(System.ArtifactsDirectory)/EchoTool*' -Destination '$(System.SourceDirectory)/Microsoft.PowerShell.Crescendo/test'
-      Get-ChildItem -Rec -File '$(System.ArtifactsDirectory)' | Write-Verbose -Verbose
-      Get-ChildItem -Rec -File '$(System.SourceDirectory)' | Write-Verbose -Verbose
+      Get-ChildItem -Rec -File -Path '$(System.ArtifactsDirectory)' | Write-Verbose -Verbose
+      Get-ChildItem -Rec -File -Path '$(System.SourceDirectory)' | Write-Verbose -Verbose
+      Set-PSDebug -Trace 0
+    displayName: Place EchoTool
+    timeoutInMinutes: 10
+
+  - ${{ parameters.powershellExecutable }}: |
       Invoke-PSPackageProjectTest -Type Functional
     displayName: Execute functional tests
     errorActionPreference: continue
