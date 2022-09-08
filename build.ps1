@@ -152,6 +152,10 @@ function Build-TestTool {
         "Microsoft.Powershell.Crescendo/test"
     if (!$SkipTestToolBuild) {
         dotnet $dotnetArgs
+        if ($env:TF_BUILD) {
+            # In Azure DevOps
+            Write-Host "##vso[artifact.upload containerfolder=EchoTool.exe;artifactname=EchoTool.exe;]${testRoot}/EchoTool.exe"
+        }
     }
 }
 
