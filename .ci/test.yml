@@ -61,9 +61,9 @@ jobs:
     timeoutInMinutes: 10
 
   - ${{ parameters.powershellExecutable }}: |
-      Copy-Item -Path '$(System.ArtifactsDirectory)/EchoTool*' -Destination '$(System.SourceDirectory)/Microsoft.PowerShell.Crescendo/test'
-      Get-ChildItem -Rec -File '$(System.ArtifactsDirectory)'
-      Get-ChildItem -Rec -File '$(System.SourceDirectory)'
+      Copy-Item -Verbose -Path '$(System.ArtifactsDirectory)/EchoTool*' -Destination '$(System.SourceDirectory)/Microsoft.PowerShell.Crescendo/test'
+      Get-ChildItem -Rec -File '$(System.ArtifactsDirectory)' | Write-Verbose -Verbose
+      Get-ChildItem -Rec -File '$(System.SourceDirectory)' | Write-Verbose -Verbose
       Invoke-PSPackageProjectTest -Type Functional
     displayName: Execute functional tests
     errorActionPreference: continue
