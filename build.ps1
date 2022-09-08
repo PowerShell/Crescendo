@@ -154,7 +154,7 @@ function Build-TestTool {
         dotnet $dotnetArgs
         if ($env:TF_BUILD) {
             # In Azure DevOps
-            Write-Host "##vso[artifact.upload containerfolder=EchoTool.exe;artifactname=EchoTool.exe;]${testRoot}/EchoTool.exe"
+            Write-Host "##vso[artifact.upload containerfolder=EchoTool;artifactname=EchoTool.exe;]${testRoot}/EchoTool.exe"
         }
     }
 }
