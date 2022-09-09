@@ -158,11 +158,20 @@ function Build-TestTool {
 }
 
 # we have to find the proper dotnet as there may be multiple installations
+# try really hard
 function Find-DotNet {
+    if ( $IsWindows ) {
+        $dotnetDir = "AppData/Local/Microsoft/dotnet"
+    }
+    else {
+        $dotnetDir = ".dotnet"
+    }
+    $env:PATH += "$([io.path]::PathSeparator)${HOME}/${dotnetDir}"
     $dotnets = Get-Command -all -name dotnet -CommandType Application
-    foreach ( $dotnet in $dotnets ) {
-        if ( Test-Dotnet $dotnet.Source ) {
-            return $dotnet.Source
+    [array]$dotnetLocations = $dotnets.Source
+    foreach ( $dotnet in $dotnetLocations ) {
+        if ( Test-Dotnet $dotnet ) {
+            return $dotnet
         }
     }
     throw "Could not find proper dotnet"
