@@ -4,7 +4,7 @@
 		{
 			"Verb": "Invoke",
 			"Noun": "Echo",
-			"OriginalName": "EchoTool",
+			"OriginalName": "EchoTool.exe",
 			"Parameters": [
 				{
 					"Name": "hasht1",
