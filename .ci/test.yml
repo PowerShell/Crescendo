@@ -41,13 +41,13 @@ jobs:
       itemPattern: '**/*.nupkg'
       downloadPath: '$(System.ArtifactsDirectory)'
 
-  - task: DownloadBuildArtifacts@0
-    displayName: 'Download EchoTool package'
-    inputs:
-      buildType: current
-      downloadType: specific
-      itemPattern: '**/*EchoTool*'
-      downloadPath: '$(System.ArtifactsDirectory)'
+# - task: DownloadBuildArtifacts@0
+#   displayName: 'Download EchoTool package'
+#   inputs:
+#     buildType: current
+#     downloadType: specific
+#     itemPattern: '**/*EchoTool*'
+#     downloadPath: '$(System.ArtifactsDirectory)'
 
   - ${{ parameters.powershellExecutable }}: |
       $sourceName = 'pspackageproject-local-repo'
@@ -61,13 +61,13 @@ jobs:
     timeoutInMinutes: 10
 
   - ${{ parameters.powershellExecutable }}: |
-      Set-PSDebug -Trace 1
       Set-Location '$(Build.SourcesDirectory)'
+      Set-PSDebug -Trace 1
       ./build -BuildTestTool
+      Set-PSDebug -Trace 0
       Get-ChildItem -Rec -File -Path '$(System.ArtifactsDirectory)' | Write-Verbose -Verbose
       Get-ChildItem -Rec -File -Path '$(Build.SourcesDirectory)' | Write-Verbose -Verbose
-      Set-PSDebug -Trace 0
-    displayName: Place EchoTool
+    displayName: Build EchoTool
     timeoutInMinutes: 10
 
   - ${{ parameters.powershellExecutable }}: |

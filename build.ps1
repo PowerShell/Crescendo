@@ -148,15 +148,24 @@ function Build-TestTool {
         "--runtime",
         $runtime,
         "--self-contained",
+        "--nologo",
         "--output",
         "Microsoft.Powershell.Crescendo/test"
     if (!$SkipTestToolBuild) {
-        dotnet $dotnetArgs
-        if ($env:TF_BUILD) {
-            # In Azure DevOps
-            Write-Host "##vso[artifact.upload containerfolder=EchoTool;artifactname=EchoTool.exe;]${testRoot}/EchoTool.exe"
+        $dotnet = Find-DotNet
+        & $dotnet $dotnetArgs
+    }
+}
+
+# we have to find the proper dotnet as there may be multiple installations
+function Find-DotNet {
+    $dotnets = Get-Command -all -name dotnet -CommandType Application
+    foreach ( $dotnet in $dotnets ) {
+        if ( Test-Dotnet $dotnet.Source ) {
+            return $dotnet.Source
         }
     }
+    throw "Could not find proper dotnet"
 }
 
 function Install-DotNet {
@@ -182,11 +191,12 @@ function Get-RequiredDotnetVersion {
 }
 
 function Test-DotNet {
-    if ( -not (Get-Command dotnet -ea ignore)) {
+    param ( $dotnet = "dotnet" ) # default to the first one in the path
+    if ( -not (Get-Command $dotnet -ea ignore)) {
         return $false
     }
     $reqVersion = Get-RequiredDotnetVersion
-    $present = dotnet --list-sdks | Where-Object {$_ -match $reqVersion }
+    $present = & $dotnet --list-sdks | Where-Object {$_ -match $reqVersion }
     @($present).Count -ne 0
 }
 
