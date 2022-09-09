@@ -62,7 +62,9 @@ jobs:
 
   - ${{ parameters.powershellExecutable }}: |
       Set-PSDebug -Trace 1
-      Copy-Item -Verbose -Path '$(System.ArtifactsDirectory)/EchoTool/EchoTool.exe' -Destination '$(Build.SourcesDirectory)/Microsoft.PowerShell.Crescendo/test'
+      $targetExe = '$(Build.SourcesDirectory)/Microsoft.PowerShell.Crescendo/test/EchoTool.exe'
+      Copy-Item -Verbose -Path '$(System.ArtifactsDirectory)/EchoTool/EchoTool.exe' -Destination $targetExe
+      if ( ! $IsWindows ) { chmod 755 $targetExe }
       Get-ChildItem -Rec -File -Path '$(System.ArtifactsDirectory)' | Write-Verbose -Verbose
       Get-ChildItem -Rec -File -Path '$(Build.SourcesDirectory)' | Write-Verbose -Verbose
       Set-PSDebug -Trace 0
