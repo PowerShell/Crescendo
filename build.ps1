@@ -142,7 +142,7 @@ function Build-TestTool {
         $runtime = "osx-x64"
     }
     $dotnetArgs = "publish",
-        "${PSScriptRoot}/Microsoft.Powershell.Crescendo/test/src/EchoTool/EchoTool.csproj",
+        "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test/src/EchoTool/EchoTool.csproj",
         "--configuration",
         "Release",
         "--runtime",
@@ -150,7 +150,7 @@ function Build-TestTool {
         "--self-contained",
         "--nologo",
         "--output",
-        "${PSScriptRoot}/Microsoft.Powershell.Crescendo/test"
+        "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test"
     if (!$SkipTestToolBuild) {
         $dotnet = Find-DotNet
         & $dotnet $dotnetArgs
