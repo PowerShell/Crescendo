@@ -1,4 +1,6 @@
 /out/
+bin/
+obj/
 /signed/
 .DS_Store
 binskim.log
@@ -6,3 +8,6 @@ binskim-results.xml
 *.pester.xml
 *.swp
 CoverageOutput.xml
+/Microsoft.PowerShell.Crescendo/test/EchoTool
+EchoTool.exe
+EchoTool.pdb

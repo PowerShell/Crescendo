@@ -1,6 +1,8 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param (
     [switch]$test,
+    [switch]$SkipTestToolBuild,
+    [switch]$BuildTestTool,
     [switch]$build,
     [switch]$publish,
     [switch]$signed,
@@ -25,8 +27,8 @@ $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $SignVersion = "$SignRoot/$Version"
 $PubDir   = "${PubRoot}/${Version}"
 
-if (-not $test -and -not $build -and -not $publish -and -not $package) {
-    throw "must use 'build', 'test', 'publish', 'package'"
+if (-not $test -and -not $build -and -not $publish -and -not $package -and -not $BuildTestTool) {
+    throw "must use 'build', 'test', 'publish', 'package', 'BuildTestTool'"
 }
 
 [bool]$verboseValue = $PSBoundParameters['Verbose'].IsPresent ? $PSBoundParameters['Verbose'].ToBool() : $false
@@ -128,7 +130,96 @@ if ($package) {
     Export-Module
 }
 
+function Build-TestTool {
+    # build the echo test executable
+    if ($IsWindows) {
+        $runtime = "win-x64"
+    }
+    elseif ($IsLinux) {
+        $runtime = "linux-x64"
+    }
+    else {
+        $runtime = "osx-x64"
+    }
+    $dotnetArgs = "publish",
+        "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test/src/EchoTool/EchoTool.csproj",
+        "--configuration",
+        "Release",
+        "--runtime",
+        $runtime,
+        "--self-contained",
+        "--nologo",
+        "--output",
+        "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test"
+    if (!$SkipTestToolBuild) {
+        $dotnet = Find-DotNet
+        & $dotnet $dotnetArgs
+    }
+}
+
+# we have to find the proper dotnet as there may be multiple installations
+# try really hard
+function Find-DotNet {
+    if ( $IsWindows ) {
+        $dotnetDir = "AppData/Local/Microsoft/dotnet"
+    }
+    else {
+        $dotnetDir = ".dotnet"
+    }
+    $env:PATH += "$([io.path]::PathSeparator)${HOME}/${dotnetDir}"
+    $dotnets = Get-Command -all -name dotnet -CommandType Application
+    [array]$dotnetLocations = $dotnets.Source
+    foreach ( $dotnet in $dotnetLocations ) {
+        if ( Test-Dotnet $dotnet ) {
+            return $dotnet
+        }
+    }
+    throw "Could not find proper dotnet"
+}
+
+function Install-DotNet {
+    $installObtainUrl = "https://dotnet.microsoft.com/download/dotnet/scripts/v1"
+    $reqVersion = Get-RequiredDotnetVersion
+    if ( $IsWindows  ) {
+        $installScript = "dotnet-install.ps1"
+    }
+    else {
+        $installScript = "dotnet-install.sh"
+    }
+    Invoke-WebRequest -Uri $installObtainUrl/$installScript -OutFile $installScript
+    if ( ! $IsWindows ) {
+        chmod +x $installScript
+    }
+    & "./$installScript" -v $reqVersion -skipnonversionedfiles
+}
+
+function Get-RequiredDotnetVersion {
+    $globalConfig = "global.json"
+    $reqVersion = (Get-Content $globalConfig | ConvertFrom-Json).sdk.version
+    $reqVersion
+}
+
+function Test-DotNet {
+    param ( $dotnet = "dotnet" ) # default to the first one in the path
+    if ( -not (Get-Command $dotnet -ea ignore)) {
+        return $false
+    }
+    $reqVersion = Get-RequiredDotnetVersion
+    $present = & $dotnet --list-sdks | Where-Object {$_ -match $reqVersion }
+    @($present).Count -ne 0
+}
+
+if ($BuildTestTool) {
+    if ( -not (Test-DotNet)) {
+        Install-DotNet
+    }
+    Build-TestTool
+}
+
 if ($test) {
+    Build-TestTool
+
+    # run the tests, but we do this in a separate process
     $script = @"
     # be sure to not get pester 5
     if ( Get-Module Pester ) {

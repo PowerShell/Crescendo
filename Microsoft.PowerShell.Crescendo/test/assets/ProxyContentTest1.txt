@@ -37,7 +37,13 @@ PROCESS {
             }
             else {
                 if($param.OriginalName) { $__commandArgs += $param.OriginalName }
-                $__commandArgs += $value | Foreach-Object {$_}
+                if($param.ArgumentTransformType -eq 'inline') {
+                   $transform = [scriptblock]::Create($param.ArgumentTransform)
+                }
+                else {
+                   $transform = $param.ArgumentTransform
+                }
+                $__commandArgs += & $transform $value
             }
         }
     }

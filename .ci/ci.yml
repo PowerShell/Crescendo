@@ -59,7 +59,7 @@ stages:
         Copy-Item $(Build.SourcesDirectory)/out/*.nupkg $(System.ArtifactsDirectory) -Verbose
       displayName: Copy nupgk to artifacts
       timeoutInMinutes: 10
-
+    
 - stage: Compliance
   displayName: Compliance
   dependsOn: Build
