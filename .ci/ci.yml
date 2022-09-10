@@ -60,12 +60,6 @@ stages:
       displayName: Copy nupgk to artifacts
       timeoutInMinutes: 10
     
-#   - pwsh: |
-#       $(Build.SourcesDirectory)/build.ps1 -BuildTestTool
-#       Copy-Item Microsoft.PowerShell.Crescendo/test/EchoTool* $(System.ArtifactsDirectory) -Verbose
-#     displayName: Copy echotool to artifacts
-#     timeoutInMinutes: 10
-
 - stage: Compliance
   displayName: Compliance
   dependsOn: Build
