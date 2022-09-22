@@ -1,12 +1,30 @@
+using namespace System.Management.Automation.Language
+
 Describe "Crescendo supports transforming the parameter argument values" {
     BeforeAll {
-        $configPath = (Join-Path -Path $PSScriptRoot -ChildPath assets -AdditionalChildPath ArgumentTransform1.json)
-        $modulePath = "${TESTDRIVE}/TransformModule"
-        Export-CrescendoModule -ConfigurationFile $configPath -ModuleName $modulePath
-        Import-Module "${modulePath}.psd1"
         $originalPath = $env:PATH
         # add the current test path to the path so we can find the test executable
-        $env:PATH += "$([io.path]::PathSeparator)${PSScriptRoot}"
+        # add testdrive to the path so we can find the script
+        $pSeparator = [io.path]::PathSeparator
+        $env:PATH += "${pSeparator}${PSScriptRoot}${pSeparator}${TESTDRIVE}"
+        'Write-Object transformscript' > "${TESTDRIVE}/transformScript.ps1"
+        $null = New-Item -ItemType Directory "${TESTDRIVE}/modules"
+
+        $configPath1 = (Join-Path -Path $PSScriptRoot -ChildPath assets -AdditionalChildPath ArgumentTransform1.json)
+        $modulePath1 = "${TESTDRIVE}/modules/TransformModule1"
+        Export-CrescendoModule -ConfigurationFile $configPath1 -ModuleName $modulePath1
+        Import-Module "${modulePath1}.psd1"
+
+        # because we need functions available,  we should do this in module scope
+        InModuleScope Microsoft.PowerShell.Crescendo {
+            $modulePath2 = "${TESTDRIVE}/modules/TransformModule2"
+            $configPath2 = (Join-Path -Path $PSScriptRoot -ChildPath assets -AdditionalChildPath ArgumentTransform2.json)
+            function double { param([int[]]$v) $v.Foreach({2 * $_}) }
+            function myfunction { write-output myfunction }
+            Export-CrescendoModule -ConfigurationFile $configPath2 -ModuleName $modulePath2
+        }
+        # we need to import the module in the test scope
+        Import-Module "${TESTDRIVE}/modules/TransformModule2.psd1"
     }
 
     AfterAll {
@@ -63,7 +81,30 @@ Describe "Crescendo supports transforming the parameter argument values" {
         $result[0] | Should Be "Argument 1 <--p5>"
         $result[1] | Should Be "Argument 2 <6,8,10,12>"
     }
+
+    Context "Argument transform content tests" {
+        BeforeAll {
+            $t = $e = $null
+            $AST = [Parser]::ParseFile("${TESTDRIVE}/modules/TransformModule2.psm1",[ref]$t,[ref]$e)
+            $tCases = @{ Name = "double" },@{ Name = "myfunction" }
+        }
         
+        It "The transform module should have no syntax errors" {
+            @($e).Count | Should -Be 0
+        }
+
+        It "Should only contain a single instance of the transform function '<Name>'" -TestCases $tCases {
+            param ($Name)
+            $fda = $Ast.FindAll({$args[0] -is [FunctionDefinitionAst] -and $args[0].Name -eq $Name}, $true)
+            @($fda).Count | Should -Be 1
+        }
+
+        It "Should contain the transform script 'transformScript.ps1'" {
+            $m = Get-Module TransformModule2
+            $transformScriptPath = Join-Path -Path $m.ModuleBase -ChildPath transformScript.ps1
+            $transformScriptPath | Should -Exist
+        }
+    }
 
 
 }

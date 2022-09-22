@@ -1,4 +1,5 @@
 /out/
+/.vscode/
 bin/
 obj/
 /signed/

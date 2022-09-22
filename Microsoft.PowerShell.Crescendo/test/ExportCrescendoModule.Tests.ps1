@@ -48,6 +48,19 @@ Describe "The correct files are created when a module is created" {
             Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/SimpleProxy.json" -Force
             (Get-Item $manifestPath).Length | Should -BeGreaterThan 0
         }
+
+        It "The time of generating the psd1 should be earlier than the psm1 (10 second test)" {
+            $ModuleName = [guid]::NewGuid().ToString("n")
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/SimpleProxy.json" -Force
+            start-sleep -Seconds 5
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile "${PSScriptRoot}/assets/SimpleProxy.json" -Force -NoClobberManifest
+            $moduleContent = Get-Content "${TESTDRIVE}/${ModuleName}.psm1"
+            $psmTime = $moduleContent[3] -replace ".* at: " -as [datetime]
+            $psdInfo = import-powershelldatafile "${TESTDRIVE}/$moduleName.psd1"
+            $psdTime = $psdInfo.PrivateData.CrescendoGenerated -as [datetime]
+            $psdTime | Should -BeLessThan $psmTime
+
+        }
     }
 
     Context "Supports -WhatIf" {
@@ -117,5 +130,17 @@ Describe "The correct files are created when a module is created" {
             $observedSchemaUrl = $moduleContent[2] -replace ".* "
             $observedSchemaUrl | Should -Be $expectedSchemaUrl
         }
+
+        It "The time the module was created will be the same for both the psd1 and psm1" {
+            $ModuleName = [guid]::NewGuid()
+            $configurationPath = "${PSScriptRoot}/assets/FullProxy.json"
+            Export-CrescendoModule -ModuleName "${TESTDRIVE}/${ModuleName}" -ConfigurationFile $configurationPath
+            $moduleContent = Get-Content "${TESTDRIVE}/${ModuleName}.psm1"
+            $psmTime = $moduleContent[3] -replace ".* at: " -as [datetime]
+            $psdInfo = import-powershelldatafile "${TESTDRIVE}/$moduleName.psd1"
+            $psdTime = $psdInfo.PrivateData.CrescendoGenerated -as [datetime]
+            $psdTime | Should -Be $psmTime
+        }
+
     }
 }
