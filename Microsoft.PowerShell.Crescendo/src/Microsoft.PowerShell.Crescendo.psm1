@@ -271,10 +271,9 @@ class Command {
     }
 
     # collect the output handler functions and the argument transform functions
-    [string]GetFunctionHandlers()
+    [void]TestFunctionHandlers()
     {
         # TODO: check for duplicate names
-        $functionSB = [System.Text.StringBuilder]::new()
         if ( $this.OutputHandlers ) {
             foreach ($handler in $this.OutputHandlers ) {
                 if ( $handler.HandlerType -eq "Function" ) {
@@ -283,23 +282,19 @@ class Command {
                     if ( $null -eq $functionHandler ) {
                         throw "Cannot find output handler function '$handlerName'."
                     }
-                    $functionSB.AppendLine($functionHandler.Ast.Extent.Text)
                 }
             }
         }
-        # add the argument transform functions
-        # do not add duplicate functions
         if ( $this.Parameters ) {
             $transformFunctions = $this.Parameters.Where({$_.ArgumentTransformType -eq "Function"}) | Sort-Object -Unique -Property ArgumentTransform
             foreach ($transform in $transformFunctions) {
-                $transformHandler = Get-Content function:$transform -ErrorAction Ignore
+                $tName = $transform.ArgumentTransform
+                $transformHandler = Get-Content function:$tName -ErrorAction Ignore
                 if ( $null -eq $transformHandler ) {
-                    throw "Cannot find argument transform function '$transform'."
+                    throw "Cannot find argument transform function '$tName'."
                 }
-                $functionSB.AppendLine($transformHandler.Ast.Extent.Text)
             }
         }
-        return $functionSB.ToString()
     }
 
     [string]ToString()
@@ -379,12 +374,12 @@ class Command {
     # emit the function, if EmitAttribute is true, the Crescendo attribute will be included
     [string]ToString([bool]$EmitAttribute)
     {
-        $sb = [System.Text.StringBuilder]::new()
-        # emit any output handlers which are functions,
-        # they're available only in the exported module.
-        $sb.AppendLine($this.GetFunctionHandlers())
+        # Test output handler and argument transforms for availability.
+        # These are fatal errors if one is missing since we have to 
+        # code it into the .psm1.
+        $this.TestFunctionHandlers()
 
-        $sb.AppendLine()
+        $sb = [System.Text.StringBuilder]::new()
         # get the command declaration
         $sb.AppendLine($this.GetCommandDeclaration($EmitAttribute))
         # We will always provide a parameter block, even if it's empty
@@ -812,11 +807,12 @@ function Export-Schema() {
 }
 
 function Get-ModuleHeader {
-    param ([string]$schemaVersion)
+    param ([string]$schemaVersion, [datetime]$generationTime)
     $ModuleVersion = $MyInvocation.MyCommand.Version
     "# Module created by Microsoft.PowerShell.Crescendo"
     "# Version: $ModuleVersion"
     "# Schema: $SchemaVersion"
+    "# Generated at: ${generationTime}"
     'class PowerShellCustomFunctionAttribute : System.Attribute { '
     '    [bool]$RequiresElevation'
     '    [string]$Source'
@@ -871,6 +867,8 @@ function Export-CrescendoModule
         [Parameter(HelpMessage="Emit an object with the path to the .psm1 and the arguments to New-ModuleManifest.")][switch]$PassThru
         )
     BEGIN {
+        $TIMEGENERATED = Get-Date
+
         [array]$crescendoCollection = @()
         if ($ModuleName -notmatch "\.psm1$") {
             $ModuleName += ".psm1"
@@ -889,12 +887,10 @@ function Export-CrescendoModule
         if ( ! $SchemaVersion ) {
             $SchemaVersion = "unknown"
         }
-        Get-ModuleHeader -schemaVersion $schemaVersion > $ModuleName
-
-        # put the error handling code in the module
-        Get-CrescendoNativeErrorHelper >> $ModuleName
 
         $moduleBase = [System.IO.Path]::GetDirectoryName($ModuleName)
+        $TransformAndHandlerFunctions = [System.Collections.Generic.HashSet[string]]::new()
+        $TransformAndHandlerScripts = [System.Collections.Generic.HashSet[string]]::new()
     }
     PROCESS {
         if ( $PSBoundParameters['WhatIf'] ) {
@@ -903,7 +899,7 @@ function Export-CrescendoModule
         $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
         foreach($file in $resolvedConfigurationPaths) {
             Write-Verbose "Adding $file to Crescendo collection"
-            $crescendoCollection += Import-CommandConfiguration $file
+            $crescendoCollection += Import-CommandConfiguration -file $file
         }
     }
     END {
@@ -914,6 +910,20 @@ function Export-CrescendoModule
         [string[]]$aliases = @()
         [string[]]$SetAlias = @()
         [bool]$IncludeWindowsElevationHelper = $false
+
+        foreach ($configuration in $crescendoCollection) {
+            # by calling ToString() here we can check for fatal errors
+            # (if a function handler or transform is not available)
+            # TODO: create a configuration validator
+            $null = $configuration.ToString()
+        }
+
+        # Put the schema and native error helper in the module
+        Get-ModuleHeader -schemaVersion $schemaVersion -generationTime $TIMEGENERATED > $ModuleName
+        Get-CrescendoNativeErrorHelper >> $ModuleName
+
+        # if a proxy calls for elevation with the builtin,
+        # be sure to put it in the module.
         foreach($proxy in $crescendoCollection) {
             if ($proxy.Elevation.Command -eq "Invoke-WindowsNativeAppWithElevation") {
                 $IncludeWindowsElevationHelper = $true
@@ -925,10 +935,57 @@ function Export-CrescendoModule
                 # the actual set-alias command will be emited before the export-modulemember
                 $proxy.Aliases.ForEach({$SetAlias += "Set-Alias -Name '{0}' -Value '{1}'" -f $_,$proxy.FunctionName})
             }
-            # when set to true, we will emit the Crescendo attribute
+            # This emits the proxy code which is put in the .psm1 file,
+            # when set to true, we will also emit the Crescendo attribute
             $proxy.ToString($true) >> $ModuleName
+        
+            # put the functions and script in place
+            # we will handle putting these in the module after
+            foreach($outputHandler in $proxy.OutputHandlers) {
+                if ($outputHandler.HandlerType -eq "Function") {
+                    $null = $TransformAndHandlerFunctions.Add($outputHandler.Handler)
+                }
+                elseif ($outputHandler.HandlerType -eq "Script") {
+                    $null = $TransformAndHandlerScripts.Add($outputHandler.Handler)
+                }
+            }
+            foreach($parameter in $proxy.Parameters) {
+                if ($parameter.ArgumentTransformType -eq "Function") {
+                    $null = $TransformAndHandlerFunctions.Add($parameter.ArgumentTransform)
+                }
+                elseif ($parameter.ArgumentTransformType -eq "Script") {
+                    $null = $TransformAndHandlerScripts.Add($parameter.ArgumentTransform)
+                }
+            }
         }
         $SetAlias >> $ModuleName
+
+        # now copy the output handler and argument transform functions 
+        foreach($functionName in $TransformAndHandlerFunctions) {
+            $functionContent = Get-Content function:$functionName -ErrorAction Ignore
+            if ( $null -eq $functionContent ) {
+                throw "Cannot find OutputHandler/ArgumentTransform function '$functionName'."
+            }
+            # don't let any of the functions pollute the global space
+            $functionContent.Ast.Extent.Text -replace "^function global:","function " >> $ModuleName
+        }
+        # now copy the output handler and argument transform scripts to the module base
+        # this is a non-fatal error
+        foreach($scriptName in $TransformAndHandlerScripts) {
+            $scriptInfo = Get-Command -ErrorAction Ignore -CommandType ExternalScript $scriptName
+            if ($scriptInfo) {
+                Copy-Item -Path $scriptInfo.Source -Destination $moduleBase
+            }
+            else {
+                $errArgs = @{
+                    Category = "ObjectNotFound"
+                    TargetObject = $scriptInfo.Source
+                    Message = "Handler '$scriptName' not found."
+                    RecommendedAction = "Copy the handler/transform to the module directory before packaging."
+                }
+                Write-Error @errArgs
+            }
+        }
 
         # include the windows helper if it has been included
         if ($IncludeWindowsElevationHelper) {
@@ -946,7 +1003,10 @@ function Export-CrescendoModule
             AliasesToExport = @()
             VariablesToExport = @()
             FunctionsToExport = @()
-            PrivateData = @{ CrescendoGenerated = Get-Date; CrescendoVersion = (Get-Module Microsoft.PowerShell.Crescendo).Version }
+            PrivateData = @{
+                CrescendoGenerated = $TIMEGENERATED
+                CrescendoVersion = (Get-Module Microsoft.PowerShell.Crescendo).Version
+                }
         }
         if ( $cmdletNames ) {
             $ModuleManifestArguments['FunctionsToExport'] = $cmdletNames
@@ -964,29 +1024,6 @@ function Export-CrescendoModule
             [PSCustomObject]@{
                 ModulePath = $ModuleName
                 ManifestArguments = $ModuleManifestArguments
-            }
-        }
-
-        # TODO: 
-        # ArgumentTransforms need to be copied
-        # copy the script output handlers into place
-        foreach($config in $crescendoCollection) {
-            foreach($handler in $config.OutputHandlers) {
-                if ($handler.HandlerType -eq "Script") {
-                    $scriptInfo = Get-Command -ErrorAction Ignore -CommandType ExternalScript $handler.Handler
-                    if($scriptInfo) {
-                        Copy-Item $scriptInfo.Source $moduleBase
-                    }
-                    else {
-                        $errArgs = @{
-                            Category = "ObjectNotFound"
-                            TargetObject = $scriptInfo.Source
-                            Message = "Handler '" + $scriptInfo.Source + "' not found."
-                            RecommendedAction = "Copy the handler to the module directory before packaging."
-                        }
-                        Write-Error @errArgs
-                    }
-                }
             }
         }
     }

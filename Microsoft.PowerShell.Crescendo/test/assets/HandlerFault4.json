@@ -1,0 +1,18 @@
+{
+   "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2021-11",
+   "Commands": [
+        {
+            "Verb": "Test",
+            "Noun": "HandlerError3",
+            "OriginalName": "doesnotexist",
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "pset1",
+                    "StreamOutput": true,
+                    "HandlerType": "Function",
+                    "Handler": "ThisFunctionHandlerDoesNotExist"
+                }
+            ]
+        }
+    ]
+}
