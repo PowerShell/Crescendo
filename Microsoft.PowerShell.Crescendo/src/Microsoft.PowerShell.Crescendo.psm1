@@ -175,14 +175,17 @@ class ParameterInfo {
 class OutputHandler {
     [string]$ParameterSetName
     [string]$Handler # This is a scriptblock which does the conversion to an object
-    [string]$HandlerType # Inline, Function, or Script
+    [string]$HandlerType # Inline, Function, Script, or ByPass
     [bool]$StreamOutput # this indicates whether the output should be streamed to the handler
     OutputHandler() {
         $this.HandlerType = "Inline" # default is an inline script
     }
     [string]ToString() {
         $s = '        '
-        if ($this.HandlerType -eq "Inline") {
+        if ($this.HandlerType -eq "ByPass") {
+            '{0} = @{{ StreamOutput = $true; Handler = $null }}' -f $this.ParameterSetName
+        }
+        elseif ($this.HandlerType -eq "Inline") {
             $s += '{0} = @{{ StreamOutput = ${1}; Handler = {{ {2} }} }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
         }
         elseif ($this.HandlerType -eq "Script") {
@@ -513,13 +516,21 @@ class Command {
         $sb.AppendLine('          throw "Cannot find executable ''' + $this.OriginalName + '''"')
         $sb.AppendLine('        }')
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
+        $__bypassCmdLine = '                & "{0}" $__commandArgs' -f $this.OriginalName
         if ( $this.Elevation.Command ) {
             $__elevationArgs = $($this.Elevation.Arguments | Foreach-Object { "{0} {1}" -f $_.OriginalName, $_.DefaultValue }) -join " "
-            $sb.AppendLine(('            & "{0}" {1} "{2}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName))
+            $__cmdLine =  '                & "{0}" {1} "{2}" $__commandArgs' -f $this.Elevation.Command, $__elevationArgs, $this.OriginalName
         }
         else {
-            $sb.AppendLine(('            & "{0}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.OriginalName))
+            $__cmdLine =  '                & "{0}" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler' -f $this.OriginalName
         }
+        $sb.AppendLine('            if ( $null -eq $__handler ) {')
+        $sb.AppendLine("$__bypassCmdLine")
+        $sb.AppendLine('            }')
+        $sb.AppendLine('            else {')
+        $sb.AppendLine("$__cmdLine")
+        $sb.AppendLine('            }')
+
         $sb.AppendLine('        }')
         $sb.AppendLine('        else {')
         if ( $this.Elevation.Command ) {
@@ -942,7 +953,10 @@ function Export-CrescendoModule
             # put the functions and script in place
             # we will handle putting these in the module after
             foreach($outputHandler in $proxy.OutputHandlers) {
-                if ($outputHandler.HandlerType -eq "Function") {
+                if ($outputHandler.HandlerType -eq "ByPass") {
+                    continue
+                }
+                elseif ($outputHandler.HandlerType -eq "Function") {
                     $null = $TransformAndHandlerFunctions.Add($outputHandler.Handler)
                 }
                 elseif ($outputHandler.HandlerType -eq "Script") {
