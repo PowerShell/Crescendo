@@ -20,11 +20,11 @@ $SchemaRoot = "${ModRoot}/Schemas"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
 $ExpRoot = "${SrcRoot}/Experimental/HelpParsers"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
-$Version = $ManifestData.ModuleVersion
+$Version = ${ManifestData}.ModuleVersion
 $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
-$SignVersion = "$SignRoot/$Version"
+$SignVersion = "${SignRoot}/${Version}"
 $PubDir   = "${PubRoot}/${Version}"
 
 if (-not $test -and -not $build -and -not $publish -and -not $package -and -not $BuildTestTool) {
