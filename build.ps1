@@ -87,7 +87,7 @@ function Export-Module
     Register-PSRepository -Name $repoName -SourceLocation ${packageRoot} -InstallationPolicy Trusted
     Publish-Module -Path $packageRoot -Repository $repoName
     Unregister-PSRepository -Name $repoName
-    Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose
+    Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose -Verbose
     $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
     $nupkgPath = Join-Path $packageRoot $nupkgName
     if ($env:TF_BUILD) {
