@@ -23,13 +23,8 @@ Describe "Packaging tests" {
 
         It "<SchemaUrl>' is active" -TestCases @($schemas) {
             param ( $SchemaUrl )
-            if ( $SchemaUrl -match "2022-06" ) {
-                Set-ItResult -Pending -Because "2022-06 ArgumentTransform schema is not yet published"
-            }
-            else {
-                $schema = Invoke-RestMethod $SchemaUrl
-                $schema.title | Should -Be "JSON schema for PowerShell Crescendo files"
-            }
+            $schema = Invoke-RestMethod $SchemaUrl
+            $schema.title | Should -Be "JSON schema for PowerShell Crescendo files"
         }
     }
 

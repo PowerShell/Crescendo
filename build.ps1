@@ -20,12 +20,13 @@ $SchemaRoot = "${ModRoot}/Schemas"
 $ManifestPath = "${SrcRoot}/${Name}.psd1"
 $ExpRoot = "${SrcRoot}/Experimental/HelpParsers"
 $ManifestData = Import-PowerShellDataFile -path $ManifestPath
-$Version = $ManifestData.ModuleVersion
+$Version = ${ManifestData}.ModuleVersion
 $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
-$SignVersion = "$SignRoot/$Version"
+$SignVersion = "${SignRoot}/${Version}"
 $PubDir   = "${PubRoot}/${Version}"
+$PreRelease = ${ManifestData}.PrivateData.PSData.Prerelease
 
 if (-not $test -and -not $build -and -not $publish -and -not $package -and -not $BuildTestTool) {
     throw "must use 'build', 'test', 'publish', 'package', 'BuildTestTool'"
@@ -80,19 +81,27 @@ function Export-Module
     }
 
     if ( -not (test-path $packageRoot)) {
-        throw "'$PubDir' does not exist"
+        throw "'$packageRoot' does not exist"
     }
     # now constuct a nupkg by registering a local repository and calling publish module
     $repoName = [guid]::newGuid().ToString("N")
     Register-PSRepository -Name $repoName -SourceLocation ${packageRoot} -InstallationPolicy Trusted
     Publish-Module -Path $packageRoot -Repository $repoName
     Unregister-PSRepository -Name $repoName
-    Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose
-    $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
+    Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose -Verbose
+    if ($PreRelease) {
+        $nupkgName = "{0}.{1}-{2}.nupkg" -f ${Name},${Version},${PreRelease}
+    }
+    else {
+        $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
+    }
     $nupkgPath = Join-Path $packageRoot $nupkgName
     if ($env:TF_BUILD) {
         # In Azure DevOps
         Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"
+    }
+    else {
+        Write-Verbose -Verbose "package path: $nupkgPath (exists:$(Test-Path $nupkgPath))"
     }
 }
 
