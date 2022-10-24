@@ -81,7 +81,7 @@ function Export-Module
     }
 
     if ( -not (test-path $packageRoot)) {
-        throw "'$PubDir' does not exist"
+        throw "'$packageRoot' does not exist"
     }
     # now constuct a nupkg by registering a local repository and calling publish module
     $repoName = [guid]::newGuid().ToString("N")
@@ -90,7 +90,7 @@ function Export-Module
     Unregister-PSRepository -Name $repoName
     Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose -Verbose
     if ($PreRelease) {
-        $nupkgName = "{0}.{1}-{2}.nupkg" -f ${Name},${PreRelease},${Version}
+        $nupkgName = "{0}.{1}-{2}.nupkg" -f ${Name},${Version},${PreRelease}
     }
     else {
         $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
@@ -101,7 +101,7 @@ function Export-Module
         Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"
     }
     else {
-        Write-Verbose -Verbose "package name: $nupkgName"
+        Write-Verbose -Verbose "package path: $nupkgPath (exists:$(Test-Path $nupkgPath))"
     }
 }
 
