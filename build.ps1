@@ -26,6 +26,7 @@ $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $SignVersion = "${SignRoot}/${Version}"
 $PubDir   = "${PubRoot}/${Version}"
+$PreRelease = ${ManifestData}.PrivateData.PSData.Prerelease
 
 if (-not $test -and -not $build -and -not $publish -and -not $package -and -not $BuildTestTool) {
     throw "must use 'build', 'test', 'publish', 'package', 'BuildTestTool'"
@@ -88,11 +89,19 @@ function Export-Module
     Publish-Module -Path $packageRoot -Repository $repoName
     Unregister-PSRepository -Name $repoName
     Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose -Verbose
-    $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
+    if ($PreRelease) {
+        $nupkgName = "{0}.{1}-{2}.nupkg" -f ${Name},${PreRelease},${Version}
+    }
+    else {
+        $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
+    }
     $nupkgPath = Join-Path $packageRoot $nupkgName
     if ($env:TF_BUILD) {
         # In Azure DevOps
         Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"
+    }
+    else {
+        Write-Verbose -Verbose "package name: $nupkgName"
     }
 }
 
