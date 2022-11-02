@@ -77,7 +77,12 @@ PROCESS {
           throw "Cannot find executable '/bin/ls'"
         }
         if ( $__handlerInfo.StreamOutput ) {
-            & "/bin/ls" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler
+            if ( $null -eq $__handler ) {
+                & "/bin/ls" $__commandArgs
+            }
+            else {
+                & "/bin/ls" $__commandArgs 2>&1| Push-CrescendoNativeError | & $__handler
+            }
         }
         else {
             $result = & "/bin/ls" $__commandArgs 2>&1| Push-CrescendoNativeError
