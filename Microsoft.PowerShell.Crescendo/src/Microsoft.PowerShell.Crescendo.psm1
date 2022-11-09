@@ -183,7 +183,7 @@ class OutputHandler {
     [string]ToString() {
         $s = '        '
         if ($this.HandlerType -eq "ByPass") {
-            '{0} = @{{ StreamOutput = $true; Handler = $null }}' -f $this.ParameterSetName
+            $s += '{0} = @{{ StreamOutput = $true; Handler = $null }}' -f $this.ParameterSetName
         }
         elseif ($this.HandlerType -eq "Inline") {
             $s += '{0} = @{{ StreamOutput = ${1}; Handler = {{ {2} }} }}' -f $this.ParameterSetName, $this.StreamOutput, $this.Handler
@@ -792,6 +792,9 @@ function Test-Configuration
 
     # Validate the output handlers in the configuration
     foreach ( $handler in $configuration.OutputHandlers ) {
+        if ( $handler.HandlerType -eq "bypass") {
+            continue
+        }
         $parserErrors = $null
         if ( -not (Test-Handler -Script $handler.Handler -ParserErrors ([ref]$parserErrors))) {
             $configurationOK = $false

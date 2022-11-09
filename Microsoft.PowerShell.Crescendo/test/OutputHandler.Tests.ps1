@@ -58,4 +58,8 @@ PROCESS { "script:" + $date.date.ToString("MM/dd/yyyy") }
             Should -Throw -ErrorId "Cannot find output handler function 'ThisFunctionHandlerDoesNotExist'."
     }
 
+    It "will handle an output handler of type 'Bypass'" {
+        Invoke-GetDate2 | Should -BeOfType [DateTime]
+    }
+
 }

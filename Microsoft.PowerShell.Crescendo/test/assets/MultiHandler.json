@@ -43,6 +43,18 @@
 					"Handler": "Convert-GetDate.ps1"
 				}
 			]
-		}
+		},
+		{
+			"Verb": "Invoke",
+			"Noun": "GetDate2",
+			"OriginalName": "Get-Date",
+			"OriginalCommandElements": [ "7/1/2021 12:00:00 AM"],
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "HandlerType": "Bypass"
+                }
+            ]
+        }
 	]
 }
