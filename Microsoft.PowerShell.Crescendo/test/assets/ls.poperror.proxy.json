@@ -1,0 +1,62 @@
+{
+   "$schema" : "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06",
+   "Commands": [
+        {
+            "Verb" : "Invoke",
+            "Noun": "filelistproxy3",
+            "OriginalName": "/bin/ls",
+            "Parameters": [
+                {
+                    "Name": "Path",
+                    "OriginalName": "",
+                    "Position": 0,
+                    "OriginalPosition": 10,
+                    "DefaultValue": ".",
+                    "ParameterType": "string"
+                },
+                {
+                    "Name" : "Detail",
+                    "OriginalName" : "-l",
+                    "ParameterType" : "switch"
+                }
+            ],
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "StreamOutput": true,
+                    "HandlerType": "Inline",
+                    "Handler": "PROCESS { $_ } END { while ($e = Pop-CrescendoNativeError) { \"ERROR! $e\" } }"
+                }
+            ]
+        },
+        {
+            "Verb" : "Invoke",
+            "Noun": "filelistproxy4",
+            "OriginalName": "/bin/ls",
+            "Parameters": [
+                {
+                    "Name": "Path",
+                    "OriginalName": "",
+                    "Position": 0,
+                    "OriginalPosition": 10,
+                    "DefaultValue": ".",
+                    "ParameterType": "string"
+        
+                },
+                {
+                    "Name" : "Detail",
+                    "OriginalName" : "-l",
+                    "ParameterType" : "switch"
+                }
+            ],
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "StreamOutput": true,
+                    "HandlerType": "Inline",
+                    "Handler": "PROCESS { $_ } END { Pop-CrescendoNativeError -EmitAsError }"
+                }
+            ]
+        }
+    ]
+}
