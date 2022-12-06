@@ -46,7 +46,7 @@ Describe "Packaging tests" {
         }
 
         It "The module manifest includes the correct Tags" {
-            $ModuleInfo.PrivateData.PSData.Tags | Should -Be @('Crescendo','Software Generation')
+            $ModuleInfo.PrivateData.PSData.Tags | Should -Be @('Crescendo','SoftwareGeneration')
         }
     }
 
