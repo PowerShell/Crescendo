@@ -17,8 +17,15 @@
                     "Name": "Interface",
                     "OriginalName": "",
                     "Description": "This is the description for a parameter",
-                    "ParameterType": "string",
-                    "DefaultValue": ""
+                    "ParameterType": "string"
+                }
+            ],
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "HandlerType": "Inline",
+                    "StreamOutput": true,
+                    "Handler": "$input | jc --ifconfig | ConvertFrom-Json"
                 }
             ]
         }

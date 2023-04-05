@@ -50,7 +50,6 @@ class ExampleInfo { # used for .EXAMPLE of the comment-based help
     }
 }
 
-
 class ParameterInfo {
     [string]$Name # PS-function name
     [string]$OriginalName # original native parameter name
@@ -544,6 +543,8 @@ class Command {
         $sb.AppendLine('        }')
         $sb.AppendLine("    }")
         }
+        $sb.AppendLine("    # be sure to let the user know if there are any errors")
+        $sb.AppendLine("    Pop-CrescendoNativeError -EmitAsError")
         $sb.AppendLine("  } # end PROCESS") # always present
         return $sb.ToString()
     }
@@ -593,6 +594,7 @@ class Command {
         $sOptions.WriteIndented = $true
         $sOptions.MaxDepth = 10
         $sOptions.IgnoreNullValues = $true
+##### TODO: FIX UP SERIALIZATION TO MULTIPLE FILES
         $text = [System.Text.Json.JsonSerializer]::Serialize($this, $sOptions)
         Set-Content -Path $filePath -Value $text
     }
@@ -743,8 +745,7 @@ function Export-CrescendoCommand {
     }
 }
 
-function Import-CommandConfiguration
-{
+function Import-CommandConfiguration {
 [CmdletBinding()]
 param (
     [Parameter(Position=0,Mandatory=$true)][string]$file
@@ -769,8 +770,7 @@ param (
         }
 }
 
-function Test-Configuration
-{
+function Test-Configuration {
     param ([Command]$Configuration, [ref]$errors)
 
     $configErrors = @()
@@ -870,8 +870,7 @@ function Get-CrescendoNativeErrorHelper {
     ''
 }
 
-function Export-CrescendoModule
-{
+function Export-CrescendoModule {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
@@ -1148,8 +1147,7 @@ class CrescendoCommandInfo {
     }
 }
 
-function Test-IsCrescendoCommand
-{
+function Test-IsCrescendoCommand {
     [CmdletBinding()]
     param (
         [Parameter(ValueFromPipeline=$true,Mandatory=$true,Position=0)]

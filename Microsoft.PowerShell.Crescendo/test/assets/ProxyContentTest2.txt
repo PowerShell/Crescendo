@@ -89,6 +89,8 @@ PROCESS {
             & $__handler $result
         }
     }
+    # be sure to let the user know if there are any errors
+    Pop-CrescendoNativeError -EmitAsError
   } # end PROCESS
 
 <#
