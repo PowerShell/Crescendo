@@ -6,7 +6,7 @@ original tool to include object output for the PowerShell pipeline, privilege el
 integrated help information. A Crescendo module replaces cumbersome command-line tools with
 PowerShell cmdlets that are easier to use in automation and packaged to share with team members.
 
-The 1.0.0 release includes the following features and benefits:
+The 1.0.0 release includes the following features:
 
 - Ability to define cmdlets from simple `key/value` statements in a JSON file
 - Support for modular design - cmdlet definitions can be in a one or more JSON files
@@ -20,6 +20,15 @@ The 1.0.0 release includes the following features and benefits:
 - Example configurations for you to copy and reuse
 - Experimental Help parsers that provide proof-of-concept examples for auto-generating cmdlet
   configurations
+
+The 1.1.0 release adds the following features:
+
+- New schema to support additional parameter properties
+- Added `Export-CrescendoCommand` cmdlet
+- Added **NoClobber** parameter to `Export-CrescendoModule`
+- Added the ability to bypass all output handling
+- Added the ability to handle native command errors in the output handler
+- Added the ability to transform arguments
 
 ## Installing Crescendo
 
@@ -59,8 +68,10 @@ issues you find.
 
 Release announcements on the [PowerShell Blog](https://devblogs.microsoft.com/powershell/tag/powershell-crescendo/).
 
-- 12/20 - Crescendo.Preview.1
-- 05/21 - Crescendo.Preview.2
-- 07/21 - Crescendo.Preview.3
-- 10/21 - Crescendo.Preview.4
-- 12/21 - Crescendo.RC
+- Dec-2022 - Crescendo 1.1.0-Preview01
+- Mar-2022 - Crescendo 1.0.0 GA
+- Dec-2021 - Crescendo.RC
+- Oct-2021 - Crescendo.Preview.4
+- Jul-2021 - Crescendo.Preview.3
+- May-2021 - Crescendo.Preview.2
+- Dec-2020 - Crescendo.Preview.1
