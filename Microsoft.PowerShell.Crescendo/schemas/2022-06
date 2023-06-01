@@ -2,11 +2,11 @@
   "definitions": {
     "parameter": {
       "description": "The description of a parameter.",
-      "required": ["ParameterType","Name","OriginalName" ],
+      "required": ["Name"],
       "properties": {
         "ParameterType": {
           "type": "string",
-          "description": "This the type of the parameter. It should represent an actual type."
+          "description": "This the type of the parameter. It should represent an actual type. The default value is 'object'."
         },
         "Position": {
           "type": "integer",
@@ -167,7 +167,6 @@
           "description": "Converts the text output of the native command into an object. Each output handler is associated with a parameter set name.",
           "items": {
             "type": "object",
-            "required": ["ParameterSetName", "Handler" ],
             "properties": {
               "ParameterSetName": {
                 "type": "string",
@@ -186,10 +185,22 @@
                 "type": "boolean",
                 "description": "When used, output will be piped as a stream to the output handler."
               }
+            },
+            "if": {
+                "properties": {
+                    "HandlerType": {
+                        "enum": [ "ByPass" ]
+                    }
+                }
+            },
+            "then": {
+                "required": ["ParameterSetName"]
+            },
+            "else": {
+                "required": ["ParameterSetName", "Handler" ]
             }
           }
         },
-
         "OriginalCommandElements": {
           "type": "array",
           "items": {
@@ -257,11 +268,11 @@
           "description": "The parameters for the function.",
           "items": {
             "type": "object",
-            "required": ["ParameterType", "Name", "OriginalName" ],
+            "required": ["Name"],
             "properties": {
               "ParameterType": {
                 "type": "string",
-                "description": "This the type of the parameter. It should represent an actual type."
+                "description": "This the type of the parameter. It should represent an actual type. The default is 'object'."
               },
               "Position": {
                 "type": "integer",
@@ -390,7 +401,7 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://microsoft.com/powershell/crescendo",
   "title": "JSON schema for PowerShell Crescendo files",
   "properties": {
