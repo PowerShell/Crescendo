@@ -62,6 +62,7 @@ class ParameterInfo {
     [string]$DefaultMissingValue
     # this is in case that the parameters apply before the OriginalCommandElements
     [bool]$ApplyToExecutable
+    [bool]$ExcludeAsArgument # when true, we don't pass this parameter to the native application at all
     [string]$ParameterType = 'object' # PS type
 
     [string[]]$AdditionalParameterAttributes
@@ -308,6 +309,9 @@ class Command {
     {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine("BEGIN {")
+        # create a queue for the errors, and turn off the native error action preference
+        $sb.AppendLine('    $PSNativeCommandUseErrorActionPreference = $false')
+        $sb.AppendLine('    $__CrescendoNativeErrorQueue = [System.Collections.Queue]::new()')
         # get the parameter map, this may be null if there are no parameters
         $parameterMap = $this.GetParameterMap()
         if ( $parameterMap ) {
@@ -342,7 +346,7 @@ class Command {
         $sb.AppendLine('    $__commandArgs = @()')
         $sb.AppendLine('    $MyInvocation.MyCommand.Parameters.Values.Where({$_.SwitchParameter -and $_.Name -notmatch "Debug|Whatif|Confirm|Verbose" -and ! $__boundParameters[$_.Name]}).ForEach({$__boundParameters[$_.Name] = [switch]::new($false)})')
         $sb.AppendLine('    if ($__boundParameters["Debug"]){wait-debugger}')
-        if ($this.Parameters.Where({$_.ApplyToExecutable})) {
+        if ($this.Parameters.Where({$_.ApplyToExecutable -and ! $_.ExcludeAsArgument})) {
             $sb.AppendLine('    # look for those parameter values which apply to the executable and must be before the original command elements')
             $sb.AppendLine('    foreach ($paramName in $__boundParameters.Keys|Where-Object {$__PARAMETERMAP[$_].ApplyToExecutable}) {') # take those parameters which apply to the executable
             $sb.AppendLine('        $value = $__boundParameters[$paramName]')
@@ -411,6 +415,9 @@ class Command {
             $sb.AppendLine(('               ParameterType = ''{0}''' -f $parameter.ParameterType))
             $sb.AppendLine(('               ApplyToExecutable = ${0}' -f $parameter.ApplyToExecutable))
             $sb.AppendLine(('               NoGap = ${0}' -f $parameter.NoGap))
+            if ($parameter.ExcludeAsArgument) {
+                $sb.AppendLine(('               ExcludeAsArgument = ${0}' -f $parameter.ExcludeAsArgument))
+            }
             if($parameter.DefaultMissingValue) {
                 $sb.AppendLine(('               DefaultMissingValue = ''{0}''' -f $parameter.DefaultMissingValue))
             }
@@ -467,6 +474,7 @@ class Command {
         $sb = [System.Text.StringBuilder]::new()
         $sb.AppendLine('    foreach ($paramName in $__boundParameters.Keys|')
         $sb.AppendLine('            Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|') # skip those parameters which apply to the executable
+        $sb.AppendLine('            Where-Object {!$__PARAMETERMAP[$_].ExcludeAsArgument}|') # skip those parameters which are to be excluded
         $sb.AppendLine('            Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {')
         $sb.AppendLine('        $value = $__boundParameters[$paramName]')
         $sb.AppendLine('        $param = $__PARAMETERMAP[$paramName]')
@@ -478,9 +486,20 @@ class Command {
         $sb.AppendLine('                 elseif ($param.DefaultMissingValue) { $__commandArgs += $param.DefaultMissingValue }')
         $sb.AppendLine('            }')
         $sb.AppendLine('            elseif ( $param.NoGap ) {')
-        $sb.AppendLine('                $pFmt = "{0}{1}"')
-        $sb.AppendLine('                if($value -match "\s") { $pFmt = "{0}""{1}""" }')
-        $sb.AppendLine('                $__commandArgs += $pFmt -f $param.OriginalName, $value')
+        $sb.AppendLine('                # if a transform is specified, use it and the construction of the values is up to the transform')
+        $sb.AppendLine('                if($param.ArgumentTransform -ne ''$args'') {')
+        $sb.AppendLine('                    $transform = $param.ArgumentTransform')
+        $sb.AppendLine('                    if($param.ArgumentTransformType -eq ''inline'') {')
+        $sb.AppendLine('                        $transform = [scriptblock]::Create($param.ArgumentTransform)')
+        $sb.AppendLine('                    }')
+        $sb.AppendLine('                    $__commandArgs += & $transform $value')
+        $sb.AppendLine('                }')
+        $sb.AppendLine('                else {')
+        $sb.AppendLine('                    $pFmt = "{0}{1}"')
+        $sb.AppendLine('                    # quote the strings if they have spaces')
+        $sb.AppendLine('                    if($value -match "\s") { $pFmt = "{0}""{1}""" }')
+        $sb.AppendLine('                    $__commandArgs += $pFmt -f $param.OriginalName, $value')
+        $sb.AppendLine('                }')
         $sb.AppendLine('            }')
         $sb.AppendLine('            else {')
         $sb.AppendLine('                if($param.OriginalName) { $__commandArgs += $param.OriginalName }')
@@ -840,8 +859,6 @@ function Get-ModuleHeader {
 }
 
 function Get-CrescendoNativeErrorHelper {
-    '# Queue for holding errors'
-    '$__CrescendoNativeErrorQueue = [System.Collections.Queue]::new()'
     '# Returns available errors'
     '# Assumes that we are being called from within a script cmdlet when EmitAsError is used.'
     'function Pop-CrescendoNativeError {'

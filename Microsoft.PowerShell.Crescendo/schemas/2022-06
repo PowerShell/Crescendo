@@ -28,6 +28,10 @@
           "type": "boolean",
           "description": "Whether this parameter is placed before OriginalCommandElements. The default is false."
         },
+        "ExcludeAsArgument": {
+          "type": "boolean",
+          "description": "Whether this parameter provided to the application. The parameter value can be used in the output handler. The default is false."
+        },
         "Description": {
           "type": "string",
           "description": "The description of the parameter, this will be used by help."

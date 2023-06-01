@@ -14,6 +14,7 @@
       "Name": "p1",
       "OriginalName": "--parameter1",
       "ApplyToExecutable": false,
+      "ExcludeAsArgument": false,
       "ParameterType": "object",
       "Mandatory": false,
       "Position": 2147483647,

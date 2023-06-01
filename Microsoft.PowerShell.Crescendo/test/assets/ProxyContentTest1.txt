@@ -5,6 +5,8 @@ function Get-Crescendo
 param(    )
 
 BEGIN {
+    $PSNativeCommandUseErrorActionPreference = $false
+    $__CrescendoNativeErrorQueue = [System.Collections.Queue]::new()
     $__PARAMETERMAP = @{}
     $__outputHandlers = @{ Default = @{ StreamOutput = $true; Handler = { $input; Pop-CrescendoNativeError -EmitAsError } } }
 }
@@ -18,6 +20,7 @@ PROCESS {
     if ($__boundParameters["Debug"]){wait-debugger}
     foreach ($paramName in $__boundParameters.Keys|
             Where-Object {!$__PARAMETERMAP[$_].ApplyToExecutable}|
+            Where-Object {!$__PARAMETERMAP[$_].ExcludeAsArgument}|
             Sort-Object {$__PARAMETERMAP[$_].OriginalPosition}) {
         $value = $__boundParameters[$paramName]
         $param = $__PARAMETERMAP[$paramName]
@@ -29,9 +32,20 @@ PROCESS {
                  elseif ($param.DefaultMissingValue) { $__commandArgs += $param.DefaultMissingValue }
             }
             elseif ( $param.NoGap ) {
-                $pFmt = "{0}{1}"
-                if($value -match "\s") { $pFmt = "{0}""{1}""" }
-                $__commandArgs += $pFmt -f $param.OriginalName, $value
+                # if a transform is specified, use it and the construction of the values is up to the transform
+                if($param.ArgumentTransform -ne '$args') {
+                    $transform = $param.ArgumentTransform
+                    if($param.ArgumentTransformType -eq 'inline') {
+                        $transform = [scriptblock]::Create($param.ArgumentTransform)
+                    }
+                    $__commandArgs += & $transform $value
+                }
+                else {
+                    $pFmt = "{0}{1}"
+                    # quote the strings if they have spaces
+                    if($value -match "\s") { $pFmt = "{0}""{1}""" }
+                    $__commandArgs += $pFmt -f $param.OriginalName, $value
+                }
             }
             else {
                 if($param.OriginalName) { $__commandArgs += $param.OriginalName }
