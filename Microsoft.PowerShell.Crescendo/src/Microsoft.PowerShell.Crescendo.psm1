@@ -846,7 +846,7 @@ function Get-ModuleHeader {
     "# Version: $ModuleVersion"
     "# Schema: $SchemaVersion"
     "# Generated at: ${generationTime}"
-    'class PowerShellCustomFunctionAttribute : System.Attribute { '
+    'class PowerShellCustomFunctionAttribute : System.Attribute {'
     '    [bool]$RequiresElevation'
     '    [string]$Source'
     '    PowerShellCustomFunctionAttribute() { $this.RequiresElevation = $false; $this.Source = "Microsoft.PowerShell.Crescendo" }'
