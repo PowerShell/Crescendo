@@ -1,0 +1,32 @@
+{
+	"$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06#",
+	"Commands": [
+		{
+			"Verb": "Invoke",
+			"Noun": "Echo",
+			"OriginalName": "EchoTool",
+			"Parameters": [
+				{
+					"Name": "filter",
+					"OriginalName": "",
+					"ParameterType": "string",
+                    "ExcludeAsArgument": true
+				},
+                {
+                    "Name": "Argument1",
+                    "OriginalName": "",
+                    "ParameterType": "string[]",
+                    "OriginalPosition": 0
+                }
+            ],
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "StreamOutput": true,
+                    "HandlerType": "Inline",
+                    "Handler": "$input | Where-Object {$_ -match $filter}"
+                }
+            ]
+        }
+    ]
+}
