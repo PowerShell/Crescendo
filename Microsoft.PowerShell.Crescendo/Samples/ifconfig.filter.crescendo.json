@@ -1,0 +1,41 @@
+{
+   "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06",
+   "Commands": [
+        {
+            "Verb": "Invoke",
+            "Noun": "ifconfig2",
+            "Description": "Invoke ifconfig with an optional filter parameter.",
+            "OriginalName": "ifconfig",
+            "Aliases": [
+                "Get-NetworkConfiguration"
+            ],
+            "Usage": {
+                "Synopsis": "Run invoke-ifconfig"
+            },
+            "Parameters": [
+                {
+                    "Name": "Interface",
+                    "OriginalName": "",
+                    "Description": "A specific interface to query.",
+                    "ParameterType": "string"
+                },
+                {
+                    "Name": "Filter",
+                    "OriginalName": "",
+                    "Description": "Filter the output by name.",
+                    "DefaultValue": ".*",
+                    "ParameterType": "string",
+                    "ExcludeAsArgument": true
+                }
+            ],
+            "OutputHandlers": [
+                {
+                    "ParameterSetName": "Default",
+                    "HandlerType": "Inline",
+                    "StreamOutput": true,
+                    "Handler": "$input | jc --ifconfig | ConvertFrom-Json | Add-Member -Pass -TypeName Crescendo.Ifconfig | Where-Object {$_.name -match $Filter}"
+                }
+            ]
+        }
+    ]
+}
