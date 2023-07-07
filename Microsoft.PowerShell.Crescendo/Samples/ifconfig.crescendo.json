@@ -3,7 +3,7 @@
    "Commands": [
         {
             "Verb": "Invoke",
-            "Noun": "ifconfig",
+            "Noun": "ifconfig1",
             "Description": "This is a description of the proxy",
             "OriginalName": "ifconfig",
             "Aliases": [

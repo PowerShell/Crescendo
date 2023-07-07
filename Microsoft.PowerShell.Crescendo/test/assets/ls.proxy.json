@@ -4,6 +4,7 @@
         {
             "Verb" : "Invoke",
             "Noun": "filelistproxy2",
+            "SupportsShouldProcess": true,
             "OriginalName": "/bin/ls",
             "Parameters": [
                 {

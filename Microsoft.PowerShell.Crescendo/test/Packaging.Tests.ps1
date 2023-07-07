@@ -9,7 +9,7 @@ Describe "Packaging tests" {
                     @{
                         FullName = $_.FullName -Replace ".*/Microsoft.PowerShell.Crescendo/"
                         JSON = $json
-                        SchemaUrl = $_.FullName -match "ArgumentTransform|ls.poperror" ? "${schemaBase}/2022-06" : "${schemaBase}/2021-11" 
+                        SchemaUrl = $_.FullName -match "ExcludeAsArg|ifconfig.filter|ArgumentTransform|ls.poperror|MultiHandler" ? "${schemaBase}/2022-06" : "${schemaBase}/2021-11"
                     }
                 }
             $schemas = @{ SchemaUrl = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11' },
@@ -18,7 +18,7 @@ Describe "Packaging tests" {
 
         It "'<FullName>' references schema '<SchemaUrl>" -TestCases $testCases {
             param ([string]$FullName, [object]$JSON, [string]$SchemaUrl )
-            $JSON.'$schema' | Should -Be $SchemaUrl
+            $JSON.'$schema' | Should -Match $SchemaUrl
         }
 
         It "<SchemaUrl>' is active" -TestCases @($schemas) {

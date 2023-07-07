@@ -40,7 +40,7 @@
 					"ParameterType": "int[]",
 					"OriginalPosition": 3,
                     "ArgumentTransform": "double",
-                    "ArgumentTransformType": "function"
+                    "ArgumentTransformType": "Function"
 				},
                 {
 					"Name": "multmult2",
@@ -52,7 +52,7 @@
                 {
                     "Name" : "foobar1",
                     "ArgumentTransform": "myfunction",
-                    "ArgumentTransformType" : "function"
+                    "ArgumentTransformType" : "Function"
                 }
 			]
 		},
@@ -95,7 +95,7 @@
 					"ParameterType": "int[]",
 					"OriginalPosition": 3,
                     "ArgumentTransform": "double",
-                    "ArgumentTransformType": "function"
+                    "ArgumentTransformType": "Function"
 				},
                 {
 					"Name": "multmult2",
@@ -107,7 +107,7 @@
                 {
                     "Name" : "foobar1",
                     "ArgumentTransform": "transformScript.ps1",
-                    "ArgumentTransformType" : "script"
+                    "ArgumentTransformType" : "Script"
                 }
 			]
 		}

@@ -14,7 +14,7 @@
         },
         "Name": {
           "type": "string",
-          "description": "The name of the parameter that PowerShell will use. If NoGap is used, include the separator in the name. 'parameter=' for parameter=value"
+          "description": "The name of the parameter that PowerShell will use. If NoGap is used, include the separator in the name. 'parameter=' for parameter=value."
         },
         "OriginalName": {
           "type": "string",
@@ -34,7 +34,7 @@
         },
         "DefaultMissingValue": {
           "type": "string",
-          "description": "The default value provided if the parameter is not used"
+          "description": "The default value provided if the parameter is not used."
         },
         "AdditionalParameterAttributes": {
           "type": "array",
@@ -71,7 +71,7 @@
         },
         "NoGap": {
           "type": "boolean",
-          "description": "When constructing the native parameter and value do not separate with a space. Used for native parameters that look like parameter=value"
+          "description": "When constructing the native parameter and value do not separate with a space. Used for native parameters that look like parameter=value."
         },
         "ValueFromPipelineByPropertyName": {
           "type": "boolean",
@@ -84,7 +84,7 @@
       }
     },
     "command": {
-      "description": "A collection of Crescendo configurations",
+      "description": "A collection of Crescendo configurations.",
       "required": [ "Verb", "Noun", "OriginalName" ],
       "properties": {
         "Verb": {
@@ -131,7 +131,7 @@
         },
         "Noun": {
           "type": "string",
-          "description" : "The noun of the cmdlet"
+          "description" : "The noun of the cmdlet."
         },
         "Platform": {
           "type": "array",
@@ -162,7 +162,7 @@
               },
               "Handler": {
                 "type": "string",
-                "description": "This is the code which converts the output to objects"
+                "description": "This is the code which converts the output to objects."
               },
               "HandlerType": {
                 "type": "string",
@@ -187,14 +187,14 @@
         },
         "Aliases": {
           "type": "array",
-          "description" : "Aliases to the function that will be created",
+          "description" : "Aliases to the function that will be created.",
           "items": {
             "type": "string"
           }
         },
         "DefaultParameterSetName": {
           "type": "string",
-          "description": "The default parameter set name for the function"
+          "description": "The default parameter set name for the function."
 
         },
         "ConfirmImpact": {
@@ -264,7 +264,7 @@
                 "type": "string"
               },
               "OriginalText": {
-                "description": "The original text for the native parameter",
+                "description": "The original text for the native parameter.",
                 "type": "string"
               },
               "Description": {
@@ -313,7 +313,7 @@
                 "type": "boolean"
               },
               "NoGap": {
-                "description": "A boolean indicating whether the constructed parameter should have a gap. This is for parameters which have the shape of parameter=value",
+                "description": "A boolean indicating whether the constructed parameter should have a gap. This is for parameters which have the shape of parameter=value.",
                 "type": "boolean"
               },
               "ValueFromPipelineByPropertyName": {
@@ -350,11 +350,11 @@
           }
         },
         "OriginalText": {
-          "description": "The original help text of the native command",
+          "description": "The original help text of the native command.",
           "type": "string"
         },
         "HelpLinks": {
-          "description": "Help links for the command",
+          "description": "Help links for the command.",
           "type": "array",
           "items": {
             "type": "string"
@@ -369,7 +369,7 @@
     }
   },
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://microsoft.com/powershell/crescendo",
   "title": "JSON schema for PowerShell Crescendo files",
   "properties": {

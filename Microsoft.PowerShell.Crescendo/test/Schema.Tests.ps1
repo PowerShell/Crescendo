@@ -50,7 +50,8 @@ Describe "Schema tests" {
 
 		It "Each description for '<path>' should end with a period." -TestCases $testCases {
 			param ($path)
-			$schemaXml.SelectSingleNode($path).description[-1] | Should -Be "."
+            $description = $schemaXml.SelectSingleNode($path).description
+            $description[-1] | Should -Be "." -Because "'$description' missing ."
 		}
 
 	}
