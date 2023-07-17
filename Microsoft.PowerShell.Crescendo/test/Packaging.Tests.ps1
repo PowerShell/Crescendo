@@ -9,7 +9,7 @@ Describe "Packaging tests" {
                     @{
                         FullName = $_.FullName -Replace ".*/Microsoft.PowerShell.Crescendo/"
                         JSON = $json
-                        SchemaUrl = $_.FullName -match "ExcludeAsArg|ifconfig.filter|ArgumentTransform|ls.poperror|MultiHandler" ? "${schemaBase}/2022-06" : "${schemaBase}/2021-11"
+                        SchemaUrl = $_.FullName -match "ExportCrescendoCommand1|ExcludeAsArg|ifconfig.filter|ArgumentTransform|ls.poperror|MultiHandler" ? "${schemaBase}/2022-06" : "${schemaBase}/2021-11"
                     }
                 }
             $schemas = @{ SchemaUrl = 'https://aka.ms/PowerShell/Crescendo/Schemas/2021-11' },
