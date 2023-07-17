@@ -613,8 +613,11 @@ class Command {
         $sOptions.WriteIndented = $true
         $sOptions.MaxDepth = 10
         $sOptions.IgnoreNullValues = $true
-##### TODO: FIX UP SERIALIZATION TO MULTIPLE FILES
-        $text = [System.Text.Json.JsonSerializer]::Serialize($this, $sOptions)
+        $obj = @{
+            '$schema' = 'https://aka.ms/PowerShell/Crescendo/Schemas/2022-06#'
+            Commands = @($this)
+        }
+        $text = [System.Text.Json.JsonSerializer]::Serialize($obj, $sOptions)
         Set-Content -Path $filePath -Value $text
     }
 

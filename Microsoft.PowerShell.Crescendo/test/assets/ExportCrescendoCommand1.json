@@ -1,15 +1,20 @@
 {
-  "Verb": "Get",
-  "Noun": "Thing",
-  "OriginalName": "doesnotexist",
-  "Platform": [
-    "Windows",
-    "Linux",
-    "MacOS"
-  ],
-  "SupportsShouldProcess": false,
-  "SupportsTransactions": false,
-  "NoInvocation": false,
-  "Parameters": [],
-  "Examples": []
+  "$schema": "https://aka.ms/PowerShell/Crescendo/Schemas/2022-06#",
+  "Commands": [
+    {
+      "Verb": "Get",
+      "Noun": "Thing",
+      "OriginalName": "doesnotexist",
+      "Platform": [
+        "Windows",
+        "Linux",
+        "MacOS"
+      ],
+      "SupportsShouldProcess": false,
+      "SupportsTransactions": false,
+      "NoInvocation": false,
+      "Parameters": [],
+      "Examples": []
+    }
+  ]
 }

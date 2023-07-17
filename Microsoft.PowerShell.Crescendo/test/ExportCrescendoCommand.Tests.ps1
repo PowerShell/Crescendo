@@ -28,6 +28,13 @@ Describe "Export-CrescendoCommand tests" {
 			$filePath = Join-Path -Path TestDrive: -ChildPath $file
 			$filePath |  Should -Exist
 		}
+
+        It "The exported file should be able to be imported" -testCases $testCases {
+            param ( $file )
+            $filePath = Join-Path -Path TestDrive: -ChildPath $file
+            $modName = $file -replace ".json", "_module"
+            Export-CrescendoModule -ModuleName "${testdrive}/${modName}" -ConfigurationFile $filePath -Force
+        }
 	}
 
 	Context "SingleFile parameter set" {

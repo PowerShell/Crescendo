@@ -59,7 +59,6 @@ Describe "The correct files are created when a module is created" {
             $psdInfo = import-powershelldatafile "${TESTDRIVE}/$moduleName.psd1"
             $psdTime = $psdInfo.PrivateData.CrescendoGenerated -as [datetime]
             $psdTime | Should -BeLessThan $psmTime
-
         }
     }
 
