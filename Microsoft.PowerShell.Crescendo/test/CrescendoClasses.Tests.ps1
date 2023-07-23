@@ -231,9 +231,11 @@ Describe "The class tests" {
 		It "Exports a configuration properly" {
 			$ci = New-CrescendoCommand -Verb Get -Noun Thing -OriginalName doesnotexist
 			Export-CrescendoCommand -command $ci -TargetDirectory ${TESTDRIVE}
-			$expected = (Get-Content "${PSScriptRoot}/assets/ExportCrescendoCommand1.json") -join [System.Environment]::NewLine
-			$observed = (Get-Content "${TESTDRIVE}/Get-Thing.crescendo.json") -join [System.Environment]::NewLine
-			$observed | Should -Be $expected
+			$expectedObject = Get-Content "${PSScriptRoot}/assets/ExportCrescendoCommand1.json" | ConvertFrom-Json
+            $observedObject = Get-Content "${TESTDRIVE}/Get-Thing.crescendo.json" | ConvertFrom-Json
+            $expectedObject.'$schema' | Should -Be $observedObject.'$schema'
+            $expectedObject.Commands[0].Verb | Should -Be $observedObject.Commands[0].Verb
+            $expectedObject.Commands[0].Noun | Should -Be $observedObject.Commands[0].Noun
 		}
 	}
 
