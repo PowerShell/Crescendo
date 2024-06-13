@@ -80,6 +80,7 @@ extends:
               search_root: $(Build.SourcesDirectory)/out/Microsoft.PowerShell.Crescendo
               files_to_sign: |
                 **/*.psd1;
+                **/*.psm1;
                 **/*.ps1xml;
                 **/*.ps1;
           - task: ArchiveFiles@2
