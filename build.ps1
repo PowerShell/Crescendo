@@ -25,7 +25,8 @@ $PubBase  = "${PSScriptRoot}/out"
 $PubRoot  = "${PubBase}/${Name}"
 $SignRoot = "${PSScriptRoot}/signed/${Name}"
 $SignVersion = "${SignRoot}/${Version}"
-$PubDir   = "${PubRoot}/${Version}"
+# $PubDir   = "${PubRoot}/${Version}"
+$PubDir   = "${PubRoot}"
 $PreRelease = ${ManifestData}.PrivateData.PSData.Prerelease
 
 if (-not $test -and -not $build -and -not $publish -and -not $package -and -not $BuildTestTool) {
@@ -85,7 +86,7 @@ function Export-Module
     }
     # now constuct a nupkg by registering a local repository and calling publish module
     $repoName = [guid]::newGuid().ToString("N")
-    Register-PSRepository -Name $repoName -SourceLocation ${packageRoot} -InstallationPolicy Trusted
+    Register-PSRepository -Name $repoName -SourceLocation ${pubBase} -InstallationPolicy Trusted
     Publish-Module -Path $packageRoot -Repository $repoName
     Unregister-PSRepository -Name $repoName
     Get-ChildItem -Recurse -Name $packageRoot | Write-Verbose -Verbose
@@ -95,14 +96,14 @@ function Export-Module
     else {
         $nupkgName = "{0}.{1}.nupkg" -f ${Name},${Version}
     }
-    $nupkgPath = Join-Path $packageRoot $nupkgName
-    if ($env:TF_BUILD) {
-        # In Azure DevOps
-        Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"
-    }
-    else {
+    $nupkgPath = Join-Path $pubBase $nupkgName
+    #if ($env:TF_BUILD) {
+    #    # In Azure DevOps
+    #    Write-Host "##vso[artifact.upload containerfolder=$nupkgName;artifactname=$nupkgName;]$nupkgPath"
+    #}
+    #else {
         Write-Verbose -Verbose "package path: $nupkgPath (exists:$(Test-Path $nupkgPath))"
-    }
+    #}
 }
 
 if ($publish) {
