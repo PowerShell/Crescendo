@@ -75,3 +75,11 @@ Release announcements on the [PowerShell Blog](https://devblogs.microsoft.com/po
 - Jul-2021 - Crescendo.Preview.3
 - May-2021 - Crescendo.Preview.2
 - Dec-2020 - Crescendo.Preview.1
+
+## Code of Conduct
+
+Please see our [Code of Conduct](.github/CODE_OF_CONDUCT.md) before participating in this project.
+
+## Security Policy
+
+For any security issues, please see our [Security Policy](.github/SECURITY.md).
