@@ -100,7 +100,7 @@ extends:
             inputs:
               command: sign
               signing_profile: external_distribution
-              search_root: $(Build.SourcesDirectory)
+              search_root: $(Build.SourcesDirectory)/out
               files_to_sign: "**/*.nupkg"
     - stage: release
       dependsOn: build
