@@ -1,0 +1,9 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+       {
+         "file": "Experimental\\HelpParsers\\README.md",
+          "_justification": "Documentation example."
+        }
+     ]
+}
