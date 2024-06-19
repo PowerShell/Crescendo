@@ -18,6 +18,9 @@ resources:
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
 
+parameters:
+  publishToPowerShellGallery: false
+
 extends:
   # https://aka.ms/obpipelines/templates
   template: v2/OneBranch.Official.CrossPlat.yml@templates
@@ -133,6 +136,7 @@ extends:
           displayName: Download artifacts
         - task: NuGetCommand@2
           displayName: Publish Crescendo to PowerShell Gallery
+          condition: eq('{{ parameters.publishToPowerShellGallery }}', 'true')
           inputs:
             command: push
             packagesToPush: $(Build.SourcesDirectory)/Microsoft.PowerShell.Crescendo.$(package.nupkgVersion).nupkg
