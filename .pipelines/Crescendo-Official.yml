@@ -108,6 +108,7 @@ extends:
               files_to_sign: "**/*.nupkg"
     - stage: release
       dependsOn: build
+      condition: eq('{{ parameters.publishToPowerShellGallery }}', 'true')
       variables:
         version: $[ stageDependencies.build.main.outputs['package.version'] ]
         drop: $(Pipeline.Workspace)/drop_build_main
@@ -136,7 +137,6 @@ extends:
           displayName: Download artifacts
         - task: NuGetCommand@2
           displayName: Publish Crescendo to PowerShell Gallery
-          condition: eq('{{ parameters.publishToPowerShellGallery }}', 'true')
           inputs:
             command: push
             packagesToPush: $(Build.SourcesDirectory)/Microsoft.PowerShell.Crescendo.$(package.nupkgVersion).nupkg
