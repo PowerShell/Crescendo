@@ -1,6 +1,11 @@
 name: Crescendo-ModuleBuild-$(Build.BuildId)
 trigger: none
 pr: none
+parameters:
+  - name: 'publishToPowerShellGallery'
+    displayName: 'Publish module to PowerShell gallery'
+    type: boolean
+    default: false
 
 variables:
   BuildConfiguration: Release
@@ -105,6 +110,7 @@ extends:
               files_to_sign: "**/*.nupkg"
     - stage: release
       dependsOn: build
+      condition: ${{ parameters.publishToPowerShellGallery }}
       variables:
         version: $[ stageDependencies.build.main.outputs['package.version'] ]
         drop: $(Pipeline.Workspace)/drop_build_main
