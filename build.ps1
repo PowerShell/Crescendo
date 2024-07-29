@@ -142,8 +142,10 @@ if ($package) {
 
 function Build-TestTool {
     # build the echo test executable
+    $csproj = "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test/src/EchoTool/EchoTool.csproj"
     if ($IsWindows) {
         $runtime = "win-x64"
+        $csproj = "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test/src/EchoTool/EchoTool.Windows.csproj"
     }
     elseif ($IsLinux) {
         $runtime = "linux-x64"
@@ -151,16 +153,22 @@ function Build-TestTool {
     else {
         $runtime = "osx-x64"
     }
+
     $dotnetArgs = "publish",
-        "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test/src/EchoTool/EchoTool.csproj",
+        $csproj,
         "--configuration",
         "Release",
         "--runtime",
-        $runtime,
-        "--self-contained",
-        "--nologo",
+        $runtime
+
+    if (! $IsWindows ) {
+        $dotnetArgs += "--self-contained"
+    }
+
+    $dotnetArgs += "--nologo",
         "--output",
         "${PSScriptRoot}/Microsoft.PowerShell.Crescendo/test"
+
     if (!$SkipTestToolBuild) {
         $dotnet = Find-DotNet
         & $dotnet $dotnetArgs
