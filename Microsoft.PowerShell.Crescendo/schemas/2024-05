@@ -1,0 +1,332 @@
+{
+  "definitions": {
+    "parameter": {
+      "description": "The description of a parameter.",
+      "required": ["Name"],
+      "properties": {
+        "ParameterType": {
+          "type": "string",
+          "description": "This the type of the parameter. It should represent an actual type. The default value is 'object'."
+        },
+        "Position": {
+          "type": "integer",
+          "description": "The position of the parameter."
+        },
+        "Name": {
+          "type": "string",
+          "description": "The name of the parameter that PowerShell will use."
+        },
+        "OriginalName": {
+          "type": "string",
+          "description": "The original parameter name used by the native command. If NoGap is used, include the separator in the name. 'parameter=' for parameter=value."
+        },
+        "OriginalText": {
+          "type": "string",
+          "description": "The original help text for the native command parameter."
+        },
+        "ApplyToExecutable": {
+          "type": "boolean",
+          "description": "Whether this parameter is placed before OriginalCommandElements. The default is false."
+        },
+        "ExcludeAsArgument": {
+          "type": "boolean",
+          "description": "Whether this parameter provided to the application. The parameter value can be used in the output handler. The default is false."
+        },
+        "Description": {
+          "type": "string",
+          "description": "The description of the parameter, this will be used by help."
+        },
+        "DefaultValue": {
+          "type": "string",
+          "description": "The default value for the parameter."
+        },
+        "DefaultMissingValue": {
+          "type": "string",
+          "description": "The default value provided if the parameter is not used."
+        },
+        "AdditionalParameterAttributes": {
+          "type": "array",
+          "description": "Additional parameter attributes used by PowerShell. This will take the form of a standard script parameter attribute.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Mandatory": {
+          "type": "boolean",
+          "description": "A boolean indicating whether this parameter is mandatory."
+        },
+        "ParameterSetName": {
+          "type": "array",
+          "description": "The names of the parameter set for this parameter.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of aliases for the cmdlet."
+        },
+        "OriginalPosition": {
+          "type": "integer",
+          "description": "The original parameter position for the native executable. This is used to properly order parameters when calling the native command."
+        },
+        "ValueFromPipeline": {
+          "type": "boolean",
+          "description": "The value for this parameter is taken from the pipeline."
+        },
+        "NoGap": {
+          "type": "boolean",
+          "description": "When constructing the native parameter and value do not separate with a space. Used for native parameters that look like parameter=value."
+        },
+        "ValueFromPipelineByPropertyName": {
+          "type": "boolean",
+          "description": "When are assigning a value to the parameter from a piped object, use the same property as the parameter name."
+        },
+        "ValueFromRemainingArguments": {
+          "type": "boolean",
+          "description": "Assign the remaining values to the parameter."
+        },
+        "ArgumentTransform": {
+          "description": "A scriptblock, function, or script which will be used to transform the argument value.",
+          "type": "string"
+        },
+        "ArgumentTransformType": {
+          "type": "string",
+          "enum": ["Inline", "Function","Script"],
+          "description": "The type of argument transform script, by default this is 'Inline'."
+        }
+      }
+    },
+    "command": {
+      "description": "A collection of Crescendo configurations.",
+      "required": [ "Verb", "Noun", "OriginalName" ],
+      "properties": {
+        "Verb": {
+          "type": "string",
+          "enum": [
+            "Add","Approve","Assert",
+            "Backup","Block","Build",
+            "Checkpoint","Clear","Close","Compare","Complete","Compress","Confirm","Connect","Convert","ConvertFrom","ConvertTo","Copy",
+            "Debug","Deny","Deploy","Disable","Disconnect","Dismount",
+            "Edit","Enable","Enter","Exit","Expand","Export",
+            "Find","Format",
+            "Get","Grant","Group",
+            "Hide",
+            "Import","Initialize","Install","Invoke",
+            "Join",
+            "Limit","Lock",
+            "Measure","Merge","Mount","Move",
+            "New",
+            "Open","Optimize","Out",
+            "Ping","Pop","Protect","Publish","Push",
+            "Read","Receive","Redo","Register","Remove","Rename","Repair","Request","Reset","Resize","Resolve","Restart","Restore","Resume","Revoke",
+            "Save","Search","Select","Send","Set","Show","Skip","Split","Start","Step","Stop","Submit","Suspend","Switch","Sync",
+            "Test","Trace",
+            "Unblock","Undo","Uninstall","Unlock","Unprotect","Unpublish","Unregister","Update","Use",
+            "Wait","Watch","Write"
+          ],
+          "description" : "The verb of the cmdlet."
+        },
+        "Elevation": {
+          "type": "object",
+          "description": "When privilege elevation is required to run the command. Provide ElevationCommand and optional arguments.",
+          "required": ["Command"],
+          "properties": {
+            "Command": {
+              "type": "string",
+              "description": "The command which performs the elevation. Windows elevation may be done with the built-in function Invoke-WindowsNativeAppWithElevation."
+            },
+            "Arguments": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/parameter" },
+              "description": "Additional arguments required by the elevation command."
+            }
+          }
+        },
+        "Noun": {
+          "type": "string",
+          "description" : "The noun of the cmdlet."
+        },
+        "Platform": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [ "Windows", "Linux", "MacOS" ]
+          },
+          "description" : "The platform where the function will run, this may be 'Windows','Linux', or 'MacOS' in any combination. The default is all three values."
+        },
+        "OriginalName": {
+          "type": "string",
+          "description" : "The native command to be called by the function."
+        },
+
+        "OutputHandlers": {
+          "type": "array",
+          "description": "Converts the text output of the native command into an object. Each output handler is associated with a parameter set name.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ParameterSetName": {
+                "type": "string",
+                "description": "The name of the parameter set which will use the handler."
+              },
+              "Handler": {
+                "type": "string",
+                "description": "This is the code which converts the output to objects."
+              },
+              "HandlerType": {
+                "type": "string",
+                "enum": ["Inline", "Function","Script", "ByPass"],
+                "description": "The type of handler, by default this is 'Inline'. If set to 'ByPass' no handler or error handling will be done."
+              },
+              "StreamOutput": {
+                "type": "boolean",
+                "description": "When used, output will be piped as a stream to the output handler."
+              }
+            },
+            "if": {
+                "properties": {
+                    "HandlerType": {
+                        "enum": [ "ByPass" ]
+                    }
+                }
+            },
+            "then": {
+                "required": ["ParameterSetName"]
+            },
+            "else": {
+                "required": ["ParameterSetName", "Handler" ]
+            }
+          }
+        },
+        "OriginalCommandElements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional elements to be added to the invocation. This is for arguments provided to a Native application which are not part of the parameters."
+        },
+        "Aliases": {
+          "type": "array",
+          "description" : "Aliases to the function that will be created.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "DefaultParameterSetName": {
+          "type": "string",
+          "description": "The default parameter set name for the function."
+
+        },
+        "ConfirmImpact": {
+          "type": "string",
+          "enum": ["None", "Low","Medium","High"],
+          "description": "A string indicating the value of Confirm Impact. If not present, this attribute will not be added to the cmdlet declaration."
+        },
+        "SupportsShouldProcess": {
+          "type": "boolean",
+          "description": "A boolean indicating whether this command supports ShouldProcess."
+        },
+        "SupportsTransactions": {
+          "type": "boolean",
+          "description": "A boolean indicating whether this command supports transactions."
+        },
+        "Description": {
+          "description": "The description of the cmdlet.",
+          "type": "string"
+        },
+        "Usage": {
+          "description": "Information which explains how to use this command.",
+          "type": "object",
+          "required": [ "Synopsis" ],
+          "properties": {
+            "Synopsis": {
+              "description": "The synopsis on how to use this command.",
+              "type": "string"
+            },
+            "SupportsFlags": {
+              "description": "Unused.",
+              "type": "boolean"
+            },
+            "HasOptions": {
+              "description": "Unused.",
+              "type": "boolean"
+            },
+            "OriginalText": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The original text for the command help. Usually generated by command -?."
+            }
+          }
+        },
+        "Parameters": {
+          "type": "array",
+          "description": "The parameters for the function.",
+          "items": { "$ref": "#/definitions/parameter" },
+        },
+        "Examples": {
+          "description": "Examples for the command.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [ "Command", "Description" ],
+            "properties": {
+              "Command": {
+                "description": "The command for the example.",
+                "type": "string"
+              },
+              "OriginalCommand": {
+                "description": "The original command for the example.",
+                "type": "string"
+              },
+              "Description": {
+                "description": "The description of the example.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "OriginalText": {
+          "description": "The original help text of the native command.",
+          "type": "string"
+        },
+        "HelpLinks": {
+          "description": "Help links for the command.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "NoInvocation": {
+          "type":"boolean",
+          "description": "This option returns the arguments which would be sent to the native executable. If used, the native application will not be invoked."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://microsoft.com/powershell/crescendo",
+  "title": "JSON schema for PowerShell Crescendo files",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "Commands":{
+      "description": "The Crescendo command definitions.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/command"
+      }
+    }
+  }
+}
