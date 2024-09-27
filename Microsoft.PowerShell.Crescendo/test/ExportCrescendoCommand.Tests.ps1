@@ -35,6 +35,13 @@ Describe "Export-CrescendoCommand tests" {
             $modName = $file -replace ".json", "_module"
             Export-CrescendoModule -ModuleName "${testdrive}/${modName}" -ConfigurationFile $filePath -Force
         }
+
+        # check for proper case of commands element
+        It "The exported file '<file>' should have the proper 'Commands' element" -testcases $testCases {
+            param ($file)
+            $obj = Get-Content (Join-Path $testdrive $file) | ConvertFrom-Json
+            $obj.PSObject.Properties.Where({$_.Name -eq "commands"}).Name | Should -BeExactly "Commands"
+        }
 	}
 
 	Context "SingleFile parameter set" {
