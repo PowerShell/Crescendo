@@ -755,7 +755,7 @@ function Export-CrescendoCommand {
         # now save all the command configurations to a single file.
         $multiConfiguration = [System.Collections.Specialized.OrderedDictionary]::new()
         $multiConfiguration.Add('$schema', 'https://aka.ms/PowerShell/Crescendo/Schemas/2022-06')
-        $multiConfiguration.Add('commands', $commandConfigurations)
+        $multiConfiguration.Add('Commands', $commandConfigurations)
         $sOptions = [System.Text.Json.JsonSerializerOptions]::new()
         $sOptions.WriteIndented = $true
         $sOptions.MaxDepth = 10
