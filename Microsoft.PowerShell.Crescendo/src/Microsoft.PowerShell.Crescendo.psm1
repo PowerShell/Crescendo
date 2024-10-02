@@ -647,18 +647,137 @@ function Test-Handler {
 function New-ParameterInfo {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
-        [Parameter(Position=0,Mandatory=$true)][string]$Name,
-        [Parameter(Position=1,Mandatory=$true)][AllowEmptyString()][string]$OriginalName
+        [Parameter(Position=0,Mandatory=$true)]
+        [string]
+        $Name,
+
+        [Parameter(Position=1,Mandatory=$true)]
+        [AllowEmptyString()]
+        [string]
+        $OriginalName,
+
+        [Parameter()]
+        [string]
+        $OriginalText,
+
+        [Parameter()]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [string]
+        $DefaultValue,
+
+        # some parameters are -param or +param which can be represented with a switch parameter
+        # so we need way to provide for this
+        [Parameter()]
+        [string]
+        $DefaultMissingValue,
+
+        # this is in case that the parameters apply before the OriginalCommandElements
+        [Parameter()]
+        [bool]
+        $ApplyToExecutable,
+
+        # when true, we don't pass this parameter to the native application at all
+        [Parameter()]
+        [bool]
+        $ExcludeAsArgument, 
+
+        # PSType
+        [Parameter()]
+        [string]
+        $ParameterType = 'object',
+
+        [Parameter()]
+        [string[]]
+        $AdditionalParameterAttributes,
+
+        [Parameter()]
+        [bool] 
+        $Mandatory,
+
+        [Parameter()]
+        [string[]]
+        $ParameterSetName,
+
+        [Parameter()]
+        [string[]]
+        $Aliases,
+
+        [Parameter()]
+        [int]
+        $Position = [int]::MaxValue,
+
+        [Parameter()]
+        [int]
+        $OriginalPosition,
+
+        [Parameter()]
+        [bool]
+        $ValueFromPipeline,
+
+        [Parameter()]
+        [bool]
+        $ValueFromPipelineByPropertyName,
+
+        [Parameter()][bool]
+        $ValueFromRemainingArguments,
+
+        # this means that we need to construct the parameter as "foo=bar"
+        [Parameter()]
+        [bool]
+        $NoGap, 
+        
+        # This is a scriptblock, file or function which will transform the value(s) of the parameter
+        # If the value needs to be transformed, this is the scriptblock to do it
+        [Parameter()]
+        [string]
+        $ArgumentTransform,
+
+        # this can be inline, file, or function
+        # the default is inline, but we will follow the same logic as for output handlers
+        # if 'function' we will inspect the current environment for the function and embed it in the module
+        # if 'file' we will hunt for the file in the current environment and copy it to the module location
+        # the value as a single object will be passed as an argument to the scriptblock/file/function
+        [Parameter()]
+        [string]
+        $ArgumentTransformType
     )
-    [ParameterInfo]::new($Name, $OriginalName)
+    $pi = [ParameterInfo]::new($Name,$OriginalName)
+
+    $PSBoundParameters.GetEnumerator() | 
+    ForEach-Object {
+        $pi.$($PSItem.Key) = $PSItem.Value
+    }
+
+    $pi
 }
 
 function New-UsageInfo {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
-        [Parameter(Position=0,Mandatory=$true)][string]$usage
+        [Parameter(Position=0,Mandatory=$true)]
+        [string]
+        $Synopsis,
+
+        [Parameter()]
+        [Switch]
+        $SupportsFlags,
+
+        [Parameter()]
+        [Switch]
+        $HasOptions
+    
         )
-    [UsageInfo]::new($usage)
+    $ui = [UsageInfo]::new($usage)
+
+    $PSBoundParameters.GetEnumerator() | ForEach-Object {
+        $ui.$($PSItem.Key) = $PSItem.Value
+    }
+
+    $ui
+
 }
 
 function New-ExampleInfo {
@@ -673,20 +792,137 @@ function New-ExampleInfo {
 
 function New-OutputHandler {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
-    param ( )
-    [OutputHandler]::new()
+    param ( 
+        [Parameter()]
+        [string]
+        $ParameterSetName,
+        
+        # This is a scriptblock which does the conversion to an object
+        [Parameter()]
+        [string]
+        $Handler,
+
+        # Inline, Function, Script, or ByPass
+        [Parameter()]
+        [string]
+        $HandlerType,
+
+        # this indicates whether the output should be streamed to the handler
+        [Parameter()]
+        [switch]
+        $StreamOutput
+    
+    )
+
+    $oh = [OutputHandler]::new() # I O!
+    $PSBoundParameters.GetEnumerator() |
+    ForEach-Object {
+        $oh.$($psitem.Key) = $PSItem.Value
+    }
+    $oh
 
 }
 
 function New-CrescendoCommand {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions","")]
     param (
-        [Parameter(Position=0,Mandatory=$true)][string]$Verb,
-        [Parameter(Position=1,Mandatory=$true)][string]$Noun,
-        [Parameter(Position=2)][string]$OriginalName
+        [Parameter(Position = 0)]
+        [ArgumentCompleter( {
+            param ( $commandName,
+                    $parameterName,
+                    $wordToComplete,
+                    $commandAst,
+                    $fakeBoundParameters )
+                    if ($WordToComplete) {
+                        (Get-Verb).Verb | Where-Object { $_ -match "^$WordToComplete"}
+                    } 
+
+                    else {
+                        (Get-Verb).Verb
+                    }
+        } )]
+        [String]
+        $Verb,
+
+        [Parameter(Position = 1)]
+        [string]
+        $Noun,
+
+        [Parameter(Position=2)]
+        [string]
+        $OriginalName,
+
+         # e.g. "cubectl get user" -> "get", "user"
+        [Parameter(Position=3)]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [string[]]
+        $OriginalCommandElements,
+
+        # can be any (or all) of "Windows","Linux","MacOS"
+        [Parameter()]
+        [ValidateSet('Windows','Linux','MacOS')]
+        [string[]]
+        $Platform, 
+
+        [Parameter()]
+        [string[]]
+        $Aliases,
+
+        [Parameter()]
+        [string] $DefaultParameterSetName,
+
+        [Parameter()]
+        [bool] 
+        $SupportsShouldProcess,
+
+        [Parameter()]
+        [string] 
+        $ConfirmImpact,
+
+        [Parameter()]
+        [bool] 
+        $SupportsTransactions,
+
+        [Parameter()]
+        [bool]
+        $NoInvocation,
+         # certain scenarios want to use the generated code as a front end. When true, the generated code will return the arguments only.
+        [Parameter()]
+        [UsageInfo]
+        $Usage,
+
+        [Parameter()]
+        [List[ParameterInfo]]
+        $Parameters,
+
+        [Parameter()]
+        [List[ExampleInfo]]
+        $Examples,
+
+        [Parameter()]
+        [string]
+        $OriginalText,
+
+        [Parameter()]
+        [string[]]
+        $HelpLinks,
+    
+        [Parameter()]
+        [OutputHandler[]]
+        $OutputHandlers
+    
+
+
     )
     $cmd = [Command]::new($Verb, $Noun)
     $cmd.OriginalName = $OriginalName
+    $PSBoundParameters.GetEnumerator() |
+    ForEach-Object {
+        $cmd.$($psitem.Key) = $PSItem.Value
+    }
     $cmd
 }
 
