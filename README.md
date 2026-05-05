@@ -1,5 +1,24 @@
 # PowerShell Crescendo
 
+> [!IMPORTANT]
+> ⚠️ Project Status Update: Crescendo is no longer maintained.
+>
+> Crescendo project is no longer being actively maintained by the team. Future releases or updates
+> are unlikely.
+>
+> We want to thank everyone who experimented with the project, filed issues, and provided feedback.
+>
+> The repository will remain available in its current state for reference, but:
+>
+> - Issues and pull requests are not being monitored
+> - No new features or bug fixes are planned
+> - The project should be considered archived from an engineering standpoint
+>
+> You can use the [Discussions](https://github.com/PowerShell/PowerShell/discussions) in GitHub to
+> dicuss the future of the project.
+>
+> We will update this notice if the status of the project changes.
+
 Crescendo is a development accelerator enabling you to rapidly build PowerShell cmdlets that
 leverage existing command-line tools. Crescendo amplifies the command-line experience of the
 original tool to include object output for the PowerShell pipeline, privilege elevation, and
@@ -59,10 +78,12 @@ Thanks Sean!
 
 - Crescendo on the [PowerShell Community Blog](https://devblogs.microsoft.com/powershell-community/tag/crescendo/).
 
+<!--
 ## Future plans
 
 We value your ideas and feedback and hope you will give Crescendo a try and let us know of any
 issues you find.
+-->
 
 ## Release history
 

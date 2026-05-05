@@ -1,0 +1,45 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.PowerShell.Crescendo", "Microsoft.PowerShell.Crescendo", "{2C0D1AB3-5D03-2235-8BD4-332ECC63AFBB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7BA6BBA8-1425-457E-5ABB-7197C93CA140}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A3537580-1219-99DB-E9FF-EE45790315E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EchoTool", "Microsoft.PowerShell.Crescendo\test\src\EchoTool\EchoTool.csproj", "{D0F91340-92D5-D3C2-1D4E-CB172008552C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EchoTool (1)", "EchoTool (1)", "{F0F69EBC-E64C-DCC9-0BEE-9B37EC78B786}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EchoTool.Windows", "Microsoft.PowerShell.Crescendo\test\src\EchoTool\EchoTool.Windows.csproj", "{E10D79E6-3711-6092-56DF-109F8B1250F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0F91340-92D5-D3C2-1D4E-CB172008552C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0F91340-92D5-D3C2-1D4E-CB172008552C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0F91340-92D5-D3C2-1D4E-CB172008552C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0F91340-92D5-D3C2-1D4E-CB172008552C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E10D79E6-3711-6092-56DF-109F8B1250F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E10D79E6-3711-6092-56DF-109F8B1250F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E10D79E6-3711-6092-56DF-109F8B1250F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E10D79E6-3711-6092-56DF-109F8B1250F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7BA6BBA8-1425-457E-5ABB-7197C93CA140} = {2C0D1AB3-5D03-2235-8BD4-332ECC63AFBB}
+		{A3537580-1219-99DB-E9FF-EE45790315E7} = {7BA6BBA8-1425-457E-5ABB-7197C93CA140}
+		{D0F91340-92D5-D3C2-1D4E-CB172008552C} = {A3537580-1219-99DB-E9FF-EE45790315E7}
+		{F0F69EBC-E64C-DCC9-0BEE-9B37EC78B786} = {A3537580-1219-99DB-E9FF-EE45790315E7}
+		{E10D79E6-3711-6092-56DF-109F8B1250F3} = {F0F69EBC-E64C-DCC9-0BEE-9B37EC78B786}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6EE135C0-9644-4679-B849-D5ED81A4F732}
+	EndGlobalSection
+EndGlobal
